@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -7,6 +7,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import type { Prediction } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
 import { createStarfield } from '../../lib/starfield';
+import { latLonToVec } from '../../lib/globe';
+import { moonLighting } from '../../lib/astro';
 
 interface MoonMapProps {
   predictions: Prediction[];
@@ -33,6 +35,10 @@ interface Marker {
 export function MoonMap({ predictions }: MoonMapProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
+  const phaseRef = useRef<HTMLSpanElement>(null);
+  // Frozen per mount: the phase is computed once for this render of the scene.
+  const now = useMemo(() => new Date(), []);
+  const phase = useMemo(() => moonLighting(now), [now]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -68,14 +74,24 @@ export function MoonMap({ predictions }: MoonMapProps) {
     controls.minDistance = 2.6;
     controls.maxDistance = 9;
 
-    // ---- Lighting: hard low-angle sun so relief reads strongly ---------------
+    // ---- Lighting: the real Sun direction at this instant --------------------
+    // The sub-solar point is where the Sun is overhead, so it is also the
+    // direction the sunlight comes from. This places the terminator where it
+    // actually is right now, so the illuminated fraction matches the real
+    // lunar phase.
+    const lighting = moonLighting(now);
     const sun = new THREE.DirectionalLight(0xfff6e8, 2.6);
-    sun.position.set(5, 1.2, 4);
+    sun.position.copy(latLonToVec(lighting.subSolarLat, lighting.subSolarLon, 10));
     scene.add(sun);
-    const earthshine = new THREE.DirectionalLight(0x8fb4ff, 0.25);
-    earthshine.position.set(-6, -2, -4);
+
+    // A little light from Earth on the night side, so the dark limb is not
+    // pure black (earthshine is genuinely visible on the real Moon).
+    const earthshine = new THREE.DirectionalLight(0x8fb4ff, 0.12);
+    earthshine.position.copy(sun.position).multiplyScalar(-1);
     scene.add(earthshine);
-    scene.add(new THREE.AmbientLight(0x1b2540, 0.5));
+
+    // Very low ambient so the unlit side stays genuinely dark.
+    scene.add(new THREE.AmbientLight(0x0e1428, 0.18));
 
     // ---- Moon ---------------------------------------------------------------
     const RADIUS = 1.5;
@@ -140,17 +156,6 @@ export function MoonMap({ predictions }: MoonMapProps) {
     moon.add(markerGroup);
 
     const markers: Marker[] = [];
-
-    // Matches THREE.SphereGeometry's UV mapping (and therefore the textures).
-    const latLonToVec = (lat: number, lon: number, radius: number) => {
-      const phi = ((90 - lat) * Math.PI) / 180;
-      const theta = ((lon + 180) * Math.PI) / 180;
-      return new THREE.Vector3(
-        -radius * Math.sin(phi) * Math.cos(theta),
-        radius * Math.cos(phi),
-        radius * Math.sin(phi) * Math.sin(theta),
-      );
-    };
 
     const pinGeometry = new THREE.SphereGeometry(0.052, 16, 16);
     disposable.push(pinGeometry);
@@ -263,10 +268,20 @@ export function MoonMap({ predictions }: MoonMapProps) {
     resizeObserver.observe(mount);
 
     // ---- Render loop --------------------------------------------------------
+    // The Moon's day is ~29.53 Earth days, so the sub-solar point drifts
+    // 360/29.53 = 12.19 deg of longitude per Earth day. At real speed that is
+    // imperceptible, so it is accelerated; the drift direction and the
+    // starting position are still the real ones for `now`.
+    const TIME_SCALE = 900; // ~1 lunar day per 1.6 minutes
+    const LON_RATE_PER_SEC = (360 / 29.530588853 / 86400) * TIME_SCALE;
+
     const clock = new THREE.Clock();
     let frameId = 0;
     const animate = () => {
       const t = clock.getElapsedTime();
+      sun.position.copy(
+        latLonToVec(lighting.subSolarLat, lighting.subSolarLon + LON_RATE_PER_SEC * t, 10),
+      );
       controls.update();
 
       markers.forEach((m, i) => {
@@ -306,6 +321,12 @@ export function MoonMap({ predictions }: MoonMapProps) {
     <div className="moon-map">
       <div ref={mountRef} className="three-mount" />
       <div ref={tipRef} className="moon-tip" />
+      <div className="moon-phase">
+        <span className="moon-phase-dot" />
+        <span ref={phaseRef}>
+          {phase.phaseName} · {Math.round(phase.illumination * 100)}% lit
+        </span>
+      </div>
     </div>
   );
 }
