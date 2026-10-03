@@ -6,6 +6,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import type { Prediction } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
+import { createStarfield } from '../../lib/starfield';
 
 interface MoonMapProps {
   predictions: Prediction[];
@@ -43,7 +44,12 @@ export function MoonMap({ predictions }: MoonMapProps) {
 
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 1000);
+    // Real starfield geometry behind the Moon (not a CSS layer), so it stays
+    // put while the globe rotates under the camera.
+    const starfield = createStarfield();
+    scene.add(starfield.group);
+
+    const camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 2000);
     camera.position.set(0, 1.2, 4.6);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -285,6 +291,7 @@ export function MoonMap({ predictions }: MoonMapProps) {
       controls.dispose();
       bloom.dispose();
       composer.dispose();
+      starfield.dispose();
       textures.forEach((t) => t.dispose());
       disposable.forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());

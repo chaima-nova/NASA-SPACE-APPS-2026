@@ -88,6 +88,20 @@ the [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) (LRO LROC colour mosaic
 and LOLA 16 px/degree elevation). NASA data is in the public domain; the files
 are committed so the app has no runtime dependency on an external host.
 
+### Verifying the Moon
+
+`npm run verify:moon` samples both textures at the coordinates of known lunar
+features and checks they behave as expected — maria darker than highlands,
+Tycho bright, basins lower than the highlands. It also runs a
+mirrored-longitude control, which fails, confirming the orientation is correct
+rather than merely plausible.
+
+Two things the globe deliberately does **not** model: the elevation map is
+normalised to its observed range rather than to real metres (the kit ships
+unscaled uint16 counts), so vertical relief is exaggerated and exaggerated
+uniformly; and the sky has no fixed date, time or observer, so the starfield
+is decorative rather than an accurate view from a given place.
+
 ## Notes / next steps
 
 - The 3D bar scene is still a structural placeholder — swap the bar grid for
