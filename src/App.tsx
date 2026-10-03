@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { Panel } from './components/layout/Panel';
-import { MapView } from './components/map/MapView';
 import { DataSourceList } from './components/panels/DataSourceList';
 import { AnalogScene } from './components/three/AnalogScene';
+import { MoonMap } from './components/three/MoonMap';
 import { getDatasets, getPredictions, usingMockData } from './services/api';
 import type { DataSource, Prediction } from './data-contracts/types';
 
@@ -85,10 +85,10 @@ export default function App() {
       <main className="grid">
         <Panel
           title="Analog site map"
-          subtitle="Candidate terrestrial analogs, scored by fit (click a site)"
+          subtitle="Interactive Moon globe — drag to orbit, hover a site for its analog fit"
           className="span-2"
         >
-          <MapView predictions={predictions} />
+          <MoonMap predictions={predictions} />
         </Panel>
 
         <Panel title="Analog fit columns" subtitle="Height + colour encode fit">
