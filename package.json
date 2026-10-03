@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "build:moon": "node scripts/build-moon-textures.mjs"
+    "build:moon": "node scripts/build-moon-textures.mjs",
+    "verify:moon": "node scripts/verify-moon.mjs"
   },
   "dependencies": {
     "maplibre-gl": "^5.1.0",
