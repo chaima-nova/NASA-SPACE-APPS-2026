@@ -1,8 +1,14 @@
-import type { DataSource } from '../../data-contracts/types';
+import type { DataSource, FocusArea } from '../../data-contracts/types';
 
 interface DataSourceListProps {
   datasets: DataSource[];
 }
+
+const FOCUS_LABELS: Record<FocusArea, string> = {
+  'moon-base-analog': 'Moon base analog',
+  'mars-base-analog': 'Mars base analog',
+  'dual-analog': 'Dual analog',
+};
 
 /** Read-only view of the NASA datasets catalogued by Abid. */
 export function DataSourceList({ datasets }: DataSourceListProps) {
@@ -21,7 +27,7 @@ export function DataSourceList({ datasets }: DataSourceListProps) {
           <div className="source-tags">
             {dataset.focusAreas.map((area) => (
               <span key={area} className="tag">
-                {area}
+                {FOCUS_LABELS[area] ?? area}
               </span>
             ))}
           </div>

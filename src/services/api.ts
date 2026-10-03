@@ -5,6 +5,9 @@
  * the mock fixtures; as soon as VITE_API_BASE_URL is set (Chaima's backend), it
  * fetches from the live endpoints instead. No component needs to change.
  *
+ * Domain: candidate terrestrial analog sites for Moon/Mars base locations
+ * (predictions are analog-fit scores from Harshil's pipeline).
+ *
  * Expected backend endpoints:
  *   GET {base}/predictions   -> Prediction[]
  *   GET {base}/datasets      -> DataSource[]

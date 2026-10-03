@@ -1,6 +1,8 @@
 # Visualization / Web Shell — Jasmine's part
 
-Reusable web shell for the NASA challenge: **map + charts + 3D visualization**,
+Reusable web shell for the NASA Space Apps 2026 challenge **"Identify Earth
+Locations that Analog the Permanent Moon Base Locations and Mars"**:
+**map + charts + 3D visualization** of candidate terrestrial analog sites,
 running on typed sample data now and structured to receive real outputs from the
 rest of the team later.
 
@@ -25,11 +27,17 @@ npm run build      # typecheck + production build
 
 ## What's built
 
-- `Risk map` — MapLibre map, one coloured/sized point per prediction.
-- `3D risk columns` — Three.js grid where height + colour encode risk.
-- `Risk distribution` — histogram of heat-risk scores.
+- `Analog site map` — MapLibre world map, one coloured/sized point per candidate site.
+- `Analog fit columns` — Three.js bars where height + colour encode analog fit.
+- `Fit distribution` — histogram of analog-fit scores.
 - `Feature influence` — mean absolute feature contribution.
 - `Data sources` — the NASA datasets catalogued by Abid.
+
+Candidate sites in the mock set are real, well-known analog locations (Atacama
+Desert, Haughton Crater, Death Valley, McMurdo Dry Valleys, Mauna Kea/Kilauea,
+Río Tinto, Lanzarote, Craters of the Moon, Qaidam Basin, Mojave, Askja). The
+numeric feature vectors and the analog-fit scores are illustrative sample values
+— they stand in for Harshil's model output, not measurements.
 
 ## How this plugs into the rest of the system
 
@@ -41,7 +49,7 @@ The whole UI reads through **one seam**: `src/services/api.ts`.
 Expected endpoints:
 
 ```
-GET {base}/predictions   -> Prediction[]    (Harshil, ML output)
+GET {base}/predictions   -> Prediction[]    (Harshil, ML output / analog-fit scores)
 GET {base}/datasets      -> DataSource[]    (Abid, NASA catalogue)
 GET {base}/space/objects -> OrbitalObject[] (Zehra, space systems)
 ```
@@ -50,12 +58,12 @@ GET {base}/space/objects -> OrbitalObject[] (Zehra, space systems)
 
 All shapes live in `src/data-contracts/types.ts` and are the agreed interface:
 
-| Type            | Owner                | Purpose                                  |
-| --------------- | -------------------- | ---------------------------------------- |
-| `DataSource`    | Abid                 | NASA dataset catalogue entry             |
-| `GeoPoint`      | Farwa                | Sample point + numeric feature vector    |
-| `Prediction`    | Harshil              | ML inference result (score, label, etc.) |
-| `OrbitalObject` | Zehra                | TLE / orbital element set                |
+| Type            | Owner                | Purpose                                     |
+| --------------- | -------------------- | ------------------------------------------- |
+| `DataSource`    | Abid                 | NASA dataset catalogue entry                |
+| `GeoPoint`      | Farwa                | Candidate site + numeric feature vector     |
+| `Prediction`    | Harshil              | Analog-fit inference result (score, label)  |
+| `OrbitalObject` | Zehra                | TLE / orbital element set                   |
 
 If the backend field names differ, update **only** `types.ts` + `services/api.ts`;
 components stay untouched.
@@ -70,7 +78,7 @@ components stay untouched.
 
 - The demo MapLibre style (`demotiles.maplibre.org`) needs no API key. Swap it
   for a proper basemap (or vector tiles from Farwa) when needed.
-- The 3D scene is a structural placeholder — swap the box grid for city blocks
-  / terrain / a globe once Farwa's geometry is final.
+- The 3D scene is a structural placeholder — swap the bar grid for terrain
+  plates, regolith cross-sections, or a globe once Farwa's geometry is final.
 - `getOrbitalObjects()` is already wired but not yet rendered; a space-systems
   panel can consume it directly.

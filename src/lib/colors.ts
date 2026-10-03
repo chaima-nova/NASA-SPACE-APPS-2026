@@ -1,5 +1,5 @@
 /**
- * Shared colour scale: cool (low risk) -> warm (high risk).
+ * Shared colour scale: cool (low analog fit) -> warm (high analog fit).
  * Kept in one place so map, charts and 3D stay visually consistent.
  */
 

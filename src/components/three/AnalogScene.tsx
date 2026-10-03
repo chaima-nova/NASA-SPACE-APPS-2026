@@ -4,20 +4,20 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Prediction } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
 
-interface UrbanHeatSceneProps {
+interface AnalogSceneProps {
   predictions: Prediction[];
 }
 
-const COLS = 6;
-const SPACING = 3.2;
+const COLS = 4;
+const SPACING = 4.2;
 const MAX_CELLS = COLS * COLS;
 
 /**
- * 3D bars over a grid: height and colour encode heat risk. This is the
- * structural placeholder for richer 3D work later (city blocks, terrain, globe)
- * once Farwa's geometry and Harshil's outputs are final.
+ * 3D bars: height and colour encode analog-fit score, one bar per candidate
+ * site. This is the structural placeholder for richer 3D work later (terrain
+ * plates, regolith cross-sections, a globe) once Farwa's geometry is final.
  */
-export function UrbanHeatScene({ predictions }: UrbanHeatSceneProps) {
+export function AnalogScene({ predictions }: AnalogSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function UrbanHeatScene({ predictions }: UrbanHeatSceneProps) {
       0.1,
       1000,
     );
-    camera.position.set(18, 16, 18);
+    camera.position.set(20, 18, 20);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
@@ -50,7 +50,7 @@ export function UrbanHeatScene({ predictions }: UrbanHeatSceneProps) {
     scene.add(keyLight);
 
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(26, 26),
+      new THREE.PlaneGeometry(28, 28),
       new THREE.MeshStandardMaterial({ color: '#16213e' }),
     );
     ground.rotation.x = -Math.PI / 2;
@@ -65,11 +65,11 @@ export function UrbanHeatScene({ predictions }: UrbanHeatSceneProps) {
     predictions.slice(0, MAX_CELLS).forEach((p, i) => {
       const gx = i % COLS;
       const gz = Math.floor(i / COLS);
-      const height = 0.5 + p.heatRisk * 8;
+      const height = 0.5 + p.analogScore * 8;
 
-      const geometry = new THREE.BoxGeometry(1.6, height, 1.6);
+      const geometry = new THREE.BoxGeometry(2.2, height, 2.2);
       const material = new THREE.MeshStandardMaterial({
-        color: scoreColorHex(p.heatRisk),
+        color: scoreColorHex(p.analogScore),
         roughness: 0.6,
         metalness: 0.1,
       });
