@@ -15,7 +15,7 @@ interface ScoreDistributionProps {
   predictions: Prediction[];
 }
 
-/** Histogram of heat risk across all predictions, in 10 buckets. */
+/** Histogram of analog-fit scores across all candidate sites, in 10 buckets. */
 export function ScoreDistribution({ predictions }: ScoreDistributionProps) {
   const buckets = Array.from({ length: 10 }, (_, i) => ({
     label: `${i * 10}–${i * 10 + 10}`,
@@ -24,7 +24,7 @@ export function ScoreDistribution({ predictions }: ScoreDistributionProps) {
   }));
 
   for (const p of predictions) {
-    const idx = Math.min(9, Math.max(0, Math.floor(p.heatRisk * 10)));
+    const idx = Math.min(9, Math.max(0, Math.floor(p.analogScore * 10)));
     buckets[idx].count += 1;
   }
 
@@ -43,7 +43,7 @@ export function ScoreDistribution({ predictions }: ScoreDistributionProps) {
             color: '#f2f6ff',
             backdropFilter: 'blur(12px)',
           }}
-          labelFormatter={(value) => `Risk ${value}%`}
+          labelFormatter={(value) => `Analog fit ${value}%`}
         />
         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
           {buckets.map((b) => (

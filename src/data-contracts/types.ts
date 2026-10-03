@@ -9,21 +9,25 @@
  *   Harshil (ML)           -> Prediction[]            (GET /predictions)
  *   Zehra (space systems)  -> OrbitalObject[]         (GET /space/objects)
  *
+ * Challenge: identify Earth locations that analog the permanent Moon base
+ * locations and Mars. The shell visualises candidate terrestrial analog sites
+ * and the analog-fit scores the rest of the pipeline produces.
+ *
  * If the backend field names change, update ONLY this file + src/services/api.ts.
  */
 
 export type FocusArea =
-  | 'urban-heat-equity'
-  | 'atmospheric-environmental-health'
-  | 'space-systems';
+  | 'moon-base-analog'
+  | 'mars-base-analog'
+  | 'dual-analog';
 
-/** One NASA dataset, as catalogued by Abid. */
+/** One NASA (or partner-agency) dataset, as catalogued by Abid. */
 export interface DataSource {
   id: string;
   name: string;
-  /** e.g. "NASA" / "NASA POWER" / "NASA Earthdata" */
+  /** e.g. "NASA" / "NASA Earthdata" / "NASA PDS" */
   provider: string;
-  /** e.g. "MODIS", "Landsat 9 OLI", "Sentinel-5P TROPOMI" */
+  /** e.g. "MODIS", "Landsat 9 OLI", "LRO Diviner", "HiRISE" */
   instrument?: string;
   url: string;
   focusAreas: FocusArea[];
@@ -35,9 +39,11 @@ export interface DataSource {
   retrievedAt: string;
 }
 
-/** A geospatial sample point / feature vector prepared by Farwa. */
+/** A geospatial candidate site / feature vector prepared by Farwa. */
 export interface GeoPoint {
   id: string;
+  /** Human-readable site name, e.g. "Atacama Desert, Chile". */
+  name: string;
   lat: number;
   lon: number;
   focusArea: FocusArea;
@@ -45,11 +51,13 @@ export interface GeoPoint {
   features: Record<string, number>;
 }
 
-/** One ML inference result produced by Harshil's pipeline. */
+/** One analog-fit inference result produced by Harshil's pipeline. */
 export interface Prediction {
   id: string;
   /** Links back to the GeoPoint this prediction covers. */
   pointId: string;
+  /** Site name, carried through for labelling on the map. */
+  siteName: string;
   lat: number;
   lon: number;
   focusArea: FocusArea;
@@ -59,11 +67,11 @@ export interface Prediction {
   };
   /** ISO-8601 */
   predictedAt: string;
-  /** Primary score in [0, 1]. Higher = more at-risk. */
-  heatRisk: number;
-  /** Optional secondary target for the atmospheric focus area, [0, 1]. */
-  airQualityRisk?: number;
-  /** Human-readable bucket, e.g. "High" / "Moderate" / "Low". */
+  /** Primary analog-fit score in [0, 1]. Higher = better terrestrial analog. */
+  analogScore: number;
+  /** Optional secondary fit for Mars base sites specifically, [0, 1]. */
+  marsFit?: number;
+  /** Human-readable bucket, e.g. "Strong" / "Promising" / "Weak". */
   label: string;
   /** Model confidence in [0, 1]. */
   confidence: number;

@@ -15,7 +15,7 @@ interface FeatureImportanceProps {
 
 /**
  * Mean absolute feature contribution across predictions — a quick, model-side
- * view of what is driving the risk scores Harshil produces.
+ * view of what is driving the analog-fit scores Harshil produces.
  */
 export function FeatureImportance({ predictions }: FeatureImportanceProps) {
   const totals = new Map<string, number>();

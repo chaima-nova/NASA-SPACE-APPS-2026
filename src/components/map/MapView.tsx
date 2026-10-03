@@ -8,12 +8,12 @@ interface MapViewProps {
   predictions: Prediction[];
 }
 
-const SOURCE_ID = 'heat-risk';
+const SOURCE_ID = 'analog-fit';
 
 /**
- * MapLibre map that renders one point per prediction, coloured and sized by
- * heat risk. Data-driven paint expressions mean we only swap the GeoJSON
- * payload when new predictions arrive instead of rebuilding layers.
+ * MapLibre map that renders one point per candidate analog site, coloured and
+ * sized by analog-fit score. Data-driven paint expressions mean we only swap the
+ * GeoJSON payload when new predictions arrive instead of rebuilding layers.
  */
 export function MapView({ predictions }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,8 +27,8 @@ export function MapView({ predictions }: MapViewProps) {
       container,
       // Public demo style — no API key required, safe for a hackathon shell.
       style: 'https://demotiles.maplibre.org/style.json',
-      center: [-112.074, 33.4484],
-      zoom: 9,
+      center: [0, 20],
+      zoom: 1.4,
     });
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapRef.current = map;
@@ -50,9 +50,11 @@ export function MapView({ predictions }: MapViewProps) {
         geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
         properties: {
           id: p.id,
+          siteName: p.siteName,
           label: p.label,
-          heatRisk: p.heatRisk,
-          airQualityRisk: p.airQualityRisk ?? 0,
+          focusArea: p.focusArea,
+          analogScore: p.analogScore,
+          marsFit: p.marsFit ?? 0,
         },
       })),
     };
@@ -73,7 +75,7 @@ export function MapView({ predictions }: MapViewProps) {
           'circle-color': [
             'interpolate',
             ['linear'],
-            ['get', 'heatRisk'],
+            ['get', 'analogScore'],
             0,
             '#3182bd',
             0.5,
@@ -84,7 +86,7 @@ export function MapView({ predictions }: MapViewProps) {
           'circle-radius': [
             'interpolate',
             ['linear'],
-            ['get', 'heatRisk'],
+            ['get', 'analogScore'],
             0,
             5,
             1,
@@ -100,16 +102,17 @@ export function MapView({ predictions }: MapViewProps) {
         const feature = event.features?.[0];
         if (!feature) return;
         const props = feature.properties as {
-          id: string;
+          siteName: string;
           label: string;
-          heatRisk: number;
+          focusArea: string;
+          analogScore: number;
         };
         new maplibregl.Popup()
           .setLngLat(event.lngLat)
           .setHTML(
-            `<strong>${props.id}</strong><br/>Risk: ${props.label} (${props.heatRisk.toFixed(
+            `<strong>${props.siteName}</strong><br/>Analog fit: ${props.label} (${props.analogScore.toFixed(
               2,
-            )})`,
+            )})<br/><span style="opacity:.7;font-size:11px">${props.focusArea}</span>`,
           )
           .addTo(map);
       });
