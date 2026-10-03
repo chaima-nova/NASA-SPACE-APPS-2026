@@ -11,9 +11,8 @@ rest of the team later.
 | Concern    | Library                |
 | ---------- | ---------------------- |
 | App shell  | React 19 + Vite (TS)   |
-| Map        | MapLibre GL JS         |
 | Charts     | Recharts               |
-| 3D         | Three.js (+ OrbitControls) |
+| 3D / Moon  | Three.js (+ OrbitControls, postprocessing) |
 
 ## Run
 
@@ -23,11 +22,19 @@ npm run dev        # http://localhost:5173
 npm run build      # typecheck + production build
 ```
 
+The Moon surface textures in `public/moon/` are committed, so nothing extra is
+needed to run. To regenerate them from the original NASA TIFFs, download
+`lroc_color_poles_8k.tif` and `ldem_16_uint.tif` from the
+[CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) and run
+`node scripts/build-moon-textures.mjs <sourceDir>`.
+
 > The shell currently runs entirely on **mock data** — no backend needed.
 
 ## What's built
 
-- `Analog site map` — MapLibre world map, one coloured/sized point per candidate site.
+- `Analog site map` — interactive Three.js Moon globe. Real LROC colour and
+  LOLA elevation (displaced geometry + bump), one coloured/pulsing marker per
+  candidate site. Drag to orbit, scroll to zoom, hover for the analog-fit score.
 - `Analog fit columns` — Three.js bars where height + colour encode analog fit.
 - `Fit distribution` — histogram of analog-fit scores.
 - `Feature influence` — mean absolute feature contribution.
@@ -74,11 +81,16 @@ components stay untouched.
 2. Create `.env` with `VITE_API_BASE_URL=https://<backend-host>`.
 3. Restart `npm run dev`. The header badge flips from **Mock data** to **Live API**.
 
+## Moon surface data
+
+`public/moon/lroc-color-4k.jpg` and `public/moon/ldem-4k.png` are derived from
+the [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) (LRO LROC colour mosaic
+and LOLA 16 px/degree elevation). NASA data is in the public domain; the files
+are committed so the app has no runtime dependency on an external host.
+
 ## Notes / next steps
 
-- The demo MapLibre style (`demotiles.maplibre.org`) needs no API key. Swap it
-  for a proper basemap (or vector tiles from Farwa) when needed.
-- The 3D scene is a structural placeholder — swap the bar grid for terrain
-  plates, regolith cross-sections, or a globe once Farwa's geometry is final.
+- The 3D bar scene is still a structural placeholder — swap the bar grid for
+  terrain plates or regolith cross-sections once Farwa's geometry is final.
 - `getOrbitalObjects()` is already wired but not yet rendered; a space-systems
   panel can consume it directly.
