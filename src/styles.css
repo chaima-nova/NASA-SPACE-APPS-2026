@@ -1,13 +1,51 @@
+/* =============================================================================
+   Theme: "PureFlow" — deep-space palette on translucent glass surfaces.
+
+   Palette and glass treatment follow the reference design: near-black void
+   background, nebula purple/blue/cyan accents, and low-alpha surfaces with a
+   blur plus a coloured inset highlight. Everything is driven from the custom
+   properties below so the whole look can be retuned in one place.
+   ========================================================================== */
+
 :root {
   color-scheme: dark;
-  --glass: rgba(255, 255, 255, 0.07);
-  --glass-strong: rgba(255, 255, 255, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-highlight: rgba(255, 255, 255, 0.35);
-  --text: #f2f6ff;
-  --muted: rgba(226, 236, 255, 0.62);
-  --accent: #7ee8ff;
-  --accent-2: #b388ff;
+
+  /* Space palette */
+  --space-void: #0a0a0f;
+  --space-deep: #0f0f1a;
+  --space-dark: #1a1a2e;
+  --space-medium: #16213e;
+  --space-blue: #0f3460;
+
+  /* Cosmic accents */
+  --nebula-purple: #6c5ce7;
+  --nebula-blue: #74b9ff;
+  --nebula-cyan: #00cec9;
+  --star-white: #ddd6fe;
+  --star-yellow: #fdcb6e;
+  --mars-red: #e84393;
+
+  /* Functional */
+  --success-green: #00b894;
+  --warning-orange: #e17055;
+  --error-red: #d63031;
+
+  /* Glass surfaces */
+  --glass-bg: rgba(15, 15, 26, 0.45);
+  --glass-bg-hover: rgba(26, 26, 46, 0.6);
+  --glass-border: rgba(116, 185, 255, 0.22);
+  --glass-border-strong: rgba(116, 185, 255, 0.42);
+  --glass-highlight: rgba(116, 185, 255, 0.2);
+  --glass-glow: rgba(116, 185, 255, 0.1);
+
+  /* Type */
+  --text: #ddd6fe;
+  --muted: rgba(221, 214, 254, 0.62);
+  --accent: var(--nebula-blue);
+
+  /* Motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
@@ -19,25 +57,43 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text);
-  background:
-    radial-gradient(circle at 12% 8%, rgba(78, 121, 255, 0.55) 0%, transparent 42%),
-    radial-gradient(circle at 88% 4%, rgba(179, 136, 255, 0.5) 0%, transparent 40%),
-    radial-gradient(circle at 78% 92%, rgba(126, 232, 255, 0.42) 0%, transparent 45%),
-    radial-gradient(circle at 15% 85%, rgba(255, 110, 196, 0.4) 0%, transparent 42%),
-    linear-gradient(160deg, #0a0f24 0%, #0d1330 45%, #090c1c 100%);
+  background-color: var(--space-void);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(108, 92, 231, 0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 10%, rgba(116, 185, 255, 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(0, 206, 201, 0.16) 0%, transparent 60%),
+    linear-gradient(160deg, #0a0a0f 0%, #0f0f1a 45%, #12122a 100%);
   background-attachment: fixed;
 }
 
-body::before {
-  /* Soft frosted overlay that makes the blobs read as "behind glass". */
+/* Reading-progress bar pinned to the top of the viewport. */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 10;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(
+    90deg,
+    var(--nebula-purple),
+    var(--nebula-blue),
+    var(--nebula-cyan)
+  );
+  box-shadow: 0 0 12px rgba(116, 185, 255, 0.6);
+  pointer-events: none;
+}
+
+/* Very subtle vignette so the panel edges read against the starfield. */
+body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: rgba(10, 15, 36, 0.35);
-  backdrop-filter: blur(60px) saturate(140%);
-  -webkit-backdrop-filter: blur(60px) saturate(140%);
   pointer-events: none;
   z-index: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(5, 5, 10, 0.55) 100%);
 }
 
 .app {
@@ -45,135 +101,255 @@ body::before {
   z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 24px 56px;
+  padding: 2rem 1.5rem 3.5rem;
 }
+
+/* =============================================================================
+   Header
+   ========================================================================== */
 
 .app-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
-  padding: 20px 24px;
-  border-radius: 20px;
-  background: var(--glass);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   box-shadow:
-    0 8px 32px rgba(3, 7, 20, 0.45),
-    inset 0 1px 0 var(--glass-highlight);
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 var(--glass-highlight),
+    0 0 60px var(--glass-glow);
 }
 
 .app-head h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 300;
   letter-spacing: -0.01em;
-  text-shadow: 0 1px 20px rgba(126, 232, 255, 0.25);
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(116, 185, 255, 0.35);
 }
 
 .app-sub {
-  margin: 6px 0 0;
+  margin: 0.5rem 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.875rem;
+  font-weight: 300;
+  max-width: 60ch;
 }
 
 .badge {
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   white-space: nowrap;
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s var(--ease);
 }
 
 .badge-mock {
-  background: rgba(255, 214, 120, 0.16);
-  color: #ffdf8a;
-  box-shadow: 0 0 18px rgba(255, 214, 120, 0.22);
+  color: var(--star-yellow);
+  border-color: rgba(253, 203, 110, 0.35);
+  box-shadow: 0 0 20px rgba(253, 203, 110, 0.15);
 }
 
 .badge-live {
-  background: rgba(126, 232, 255, 0.16);
-  color: var(--accent);
-  box-shadow: 0 0 18px rgba(126, 232, 255, 0.28);
+  color: var(--nebula-cyan);
+  border-color: rgba(0, 206, 201, 0.35);
+  box-shadow: 0 0 20px rgba(0, 206, 201, 0.2);
 }
 
 .error {
-  background: rgba(255, 90, 130, 0.14);
-  border: 1px solid rgba(255, 90, 130, 0.4);
-  border-radius: 14px;
-  padding: 12px 16px;
-  font-size: 13px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(214, 48, 49, 0.12);
+  border: 1px solid rgba(214, 48, 49, 0.4);
+  border-radius: 1rem;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
+
+/* =============================================================================
+   Stats
+   ========================================================================== */
 
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: var(--glass);
+  gap: 0.25rem;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   box-shadow:
-    0 8px 26px rgba(3, 7, 20, 0.4),
-    inset 0 1px 0 var(--glass-highlight);
-  transition: transform 0.25s ease, background 0.25s ease;
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 var(--glass-highlight),
+    0 0 60px var(--glass-glow);
+  transition: all 0.3s var(--ease);
 }
 
 .stat:hover {
-  transform: translateY(-2px);
-  background: var(--glass-strong);
+  transform: translateY(-3px);
+  border-color: var(--nebula-blue);
+  background: var(--glass-bg-hover);
+  box-shadow:
+    0 20px 40px rgba(116, 185, 255, 0.2),
+    0 0 20px rgba(116, 185, 255, 0.1),
+    inset 0 1px 0 var(--glass-highlight);
 }
 
 .stat-value {
-  font-size: 26px;
-  font-weight: 700;
-  background: linear-gradient(120deg, #ffffff, #7ee8ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px rgba(116, 185, 255, 0.4);
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--muted);
+  font-weight: 300;
 }
+
+/* =============================================================================
+   Layout + panels
+   ========================================================================== */
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 1.25rem;
 }
 
 .panel {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 1rem;
   min-width: 0;
-  padding: 18px;
-  border-radius: 20px;
-  background: var(--glass);
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   box-shadow:
-    0 10px 34px rgba(3, 7, 20, 0.42),
-    inset 0 1px 0 var(--glass-highlight);
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 var(--glass-highlight),
+    0 0 60px var(--glass-glow);
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+/* Hairline gradient rule along the top edge, as in the reference. */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--nebula-blue), transparent);
+  opacity: 0.6;
+}
+
+.panel:hover {
+  border-color: var(--glass-border-strong);
+}
+
+/* Scroll-in reveal. Only opacity/transform animate, so there is no layout
+   shift while scrolling.
+
+   The hidden state is scoped under `.reveal-enabled`, which the app sets from
+   JS once it mounts. Without that guard the panels would be invisible forever
+   if scripting failed, so this keeps content visible in the no-JS case. */
+.reveal-enabled .panel:not(.is-revealed) {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.panel {
+  transition:
+    opacity 0.6s var(--ease),
+    transform 0.6s var(--ease),
+    border-color 0.3s var(--ease);
+}
+
+.panel.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Pointer-tracked tilt, driven by --tilt-x / --tilt-y from useTilt. */
+.panel-tilt {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.35s var(--ease);
+  transform-style: preserve-3d;
+}
+
+/* Soft glow that follows the cursor across the panel. */
+.panel-tilt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  background: radial-gradient(
+    340px circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    rgba(116, 185, 255, 0.1),
+    transparent 70%
+  );
+}
+
+.panel:hover .panel-tilt::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-enabled .panel:not(.is-revealed) {
+    opacity: 1;
+    transform: none;
+  }
+  .panel {
+    transition: none;
+  }
+  .panel-tilt {
+    transform: none;
+    transition: none;
+  }
+  .panel-tilt::after {
+    display: none;
+  }
+  .moon-phase-dot {
+    animation: none;
+  }
 }
 
 .panel.span-2 {
@@ -182,14 +358,16 @@ body::before {
 
 .panel-head h2 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 650;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #ffffff;
 }
 
 .panel-head p {
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: 0.3rem 0 0;
+  font-size: 0.75rem;
   color: var(--muted);
+  font-weight: 300;
 }
 
 .panel-body {
@@ -197,73 +375,26 @@ body::before {
   min-height: 0;
 }
 
-.three-mount {
-  width: 100%;
-  height: 340px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(9, 14, 34, 0.55);
-  border: 1px solid var(--glass-border);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
-}
+/* =============================================================================
+   Moon globe
+   ========================================================================== */
 
-.source-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
-}
-
-.source-list li {
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.source-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.source-meta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.source-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.tag {
-  font-size: 11px;
-  color: var(--accent);
-  background: rgba(126, 232, 255, 0.14);
-  border: 1px solid rgba(126, 232, 255, 0.28);
-  border-radius: 6px;
-  padding: 2px 8px;
-}
-
-/* Moon globe: stars behind the 3D Moon + hover tooltip */
 .moon-map {
   position: relative;
   width: 100%;
   height: 340px;
 }
 
-.moon-map .three-mount {
+.three-mount {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
   /* The starfield is real 3D geometry inside the scene; this is just the
      deep-space backdrop visible through it. */
-  background: #000205;
+  background: var(--nebula-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 .moon-tip {
@@ -272,26 +403,146 @@ body::before {
   left: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.12s ease;
-  padding: 8px 11px;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1.45;
+  transition: opacity 0.15s var(--ease);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
   color: var(--text);
-  background: rgba(14, 20, 44, 0.82);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  box-shadow: 0 10px 30px rgba(3, 7, 20, 0.5);
+  background: rgba(15, 15, 26, 0.85);
+  border: 1px solid var(--glass-border-strong);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   z-index: 2;
 }
 
 .moon-tip-meta {
-  opacity: 0.7;
-  font-size: 11px;
+  opacity: 0.65;
+  font-size: 0.7rem;
   text-transform: capitalize;
 }
+
+/* Live lunar phase readout, computed from the real sub-solar point. */
+.moon-phase {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 300;
+  color: var(--text);
+  background: rgba(15, 15, 26, 0.7);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.moon-phase-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--nebula-cyan);
+  box-shadow: 0 0 10px var(--nebula-cyan);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* =============================================================================
+   Data sources
+   ========================================================================== */
+
+.source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.source-list li {
+  position: relative;
+  padding: 1rem;
+  border-radius: 1.1rem;
+  background: rgba(26, 26, 46, 0.3);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: all 0.3s var(--ease);
+}
+
+.source-list li:hover {
+  transform: translateY(-3px);
+  border-color: var(--nebula-blue);
+  box-shadow:
+    0 20px 40px rgba(116, 185, 255, 0.2),
+    0 0 20px rgba(116, 185, 255, 0.1);
+}
+
+.source-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.source-meta {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  font-weight: 300;
+}
+
+.source-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.tag {
+  font-size: 0.65rem;
+  color: var(--nebula-cyan);
+  background: rgba(0, 206, 201, 0.1);
+  border: 1px solid rgba(0, 206, 201, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-weight: 300;
+}
+
+/* =============================================================================
+   Charts (Recharts) — keep tooltips on-theme
+   ========================================================================== */
+
+.recharts-default-tooltip {
+  background: rgba(15, 15, 26, 0.9) !important;
+  border: 1px solid var(--glass-border-strong) !important;
+  border-radius: 0.75rem !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* =============================================================================
+   Responsive
+   ========================================================================== */
 
 @media (max-width: 1000px) {
   .grid {
@@ -302,5 +553,24 @@ body::before {
   }
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    padding: 1rem 0.9rem 2.5rem;
+  }
+  .app-head {
+    flex-direction: column;
+    border-radius: 1.25rem;
+  }
+  .app-head h1 {
+    font-size: 1.35rem;
+  }
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 1.1rem;
   }
 }
