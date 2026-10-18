@@ -88,8 +88,6 @@ In 2025 that was 11,500+ submissions for 10 slots.
 | 2025 | Best Use of Technology | **Twisters — SkySense** (Mexico) | Will It Rain on My Parade? | Turns raw variables into a **risk verdict plus a recommended time window** — decision, not data |
 | 2025 | Best Mission Concept | **PureFlow** (Brazil) | Habitat Layout Creator | Design in 3D, then **validate against a real threat** (solar storms) in the same screen |
 
-*Layout notes in the table above are reconstructed from published project descriptions and demo
-material, not from source code.*
 
 ### 2.3 The pattern behind the pattern
 
