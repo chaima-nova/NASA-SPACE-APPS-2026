@@ -1,7 +1,7 @@
 # Benchmark: Existing Spatial-Exploration Tools + a Lightweight UI Layout
 
 **Project:** NASA International Space Apps Challenge 2026
-**Challenge:** *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*
+**Challenge:** Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars
 **Track:** Planetary Science & Earth Analogs
 **Owner:** Jasmine, UI and frontend (shell, visualization, interaction)
 **Doc type:** Research benchmark + wireframe proposal
@@ -11,11 +11,11 @@
 ## Summary
 
 1. **Nothing on the market does what this challenge asks.** Every tool we found falls into one
-   of three groups. *Analog galleries* have no ranking, *planetary maps* never compare back to
-   Earth, and *data archives* have a catalog but no analysis. Nobody has built a **ranked,
+   of three groups. Analog galleries have no ranking, planetary maps never compare back to
+   Earth, and data archives have a catalog but no analysis. Nobody has built a **ranked,
    explainable Earth-site discovery surface**.
 2. **Winners win on one strong canvas and one honest claim**, not on feature count. The 2023
-   science *and* technology awards both went to Moonquake Map 2.0 projects. In 2024 the science
+   science and technology awards both went to Moonquake Map 2.0 projects. In 2024 the science
    award went to a physically-correct 3D orrery. Depth beats breadth.
 3. **The closest incumbent is NASA's own Planetary Analog Explorer**: 11 hand-picked
    Earth↔other-world pairs with a before/after slider. It is beautiful and completely
@@ -23,8 +23,8 @@
 4. **The closest data incumbent is the USGS Terrestrial Analogs Data Portal (TADP)**, a
    ScienceBase-backed repository of analog sites, samples and field guides. Provenance is
    strong, discovery is weak. Borrow its provenance model, not its UI.
-5. **Our thesis:** *one screen that answers "which Earth sites are the best analogs, for which
-   target, and why"*. That means a ranked list, a globe, a per-site dossier and dataset
+5. **Our thesis:** one screen that answers "which Earth sites are the best analogs, for which
+   target, and why". That means a ranked list, a globe, a per-site dossier and dataset
    provenance, with a Moon-fit / Mars-fit split and the brief's terrain facets as first-class
    filters.
 
@@ -48,7 +48,7 @@ Three verbs drive the UI:
 |---|---|
 | **Identify** | A discovery surface: candidate sites, coverage, filtering, ranking |
 | **Characterize** | A per-site dossier with the factors named in the brief (topography, geology, environment, resources) |
-| **Analog** (to Moon *or* Mars) | A visible Moon-vs-Mars fit split, not one opaque number |
+| **Analog** (to Moon or Mars) | A visible Moon-vs-Mars fit split, not one opaque number |
 
 The brief names the terrain types explicitly: **desert, polar, volcanic, arid, cave**. That makes
 terrain type a filter, not a tag buried in a tooltip.
@@ -75,7 +75,7 @@ terrain type a filter, not a tag buried in a tooltip.
 Judging runs from the local event to Global Nominee, then Global Finalist, then executive
 judging, and ends with 10 Global Winners. In 2025 that meant 11,500+ submissions for 10 slots.
 
-### 2.2 Winners whose *layout* is worth copying
+### 2.2 Winners whose layout is worth copying
 
 | Year | Award | Project | Challenge | What the layout proved |
 |---|---|---|---|---|
@@ -97,12 +97,12 @@ Winners consistently ship **one screen with one job**:
 1. **A hero spatial canvas** dominates; panels are subordinate.
 2. **Filters, not search boxes.** The user narrows a space instead of guessing at keywords.
 3. **Time is a control**, not a caption (SkyShield's reverse time; Worldview's timeline).
-4. **Click, then evidence.** The detail view explains *why* using the numbers that produced it.
+4. **Click, then evidence.** The detail view explains why using the numbers that produced it.
 5. **A decision, stated in words.** Say "safest window 14:00 to 16:00", not "humidity 62%".
 6. **Export or share** the artifact (CSV, PDF, permalink) so the work survives the demo.
 7. **Accessibility is designed, not patched** (Landsat Connect won a concept award on a Figma
    prototype largely because it specified WCAG 2.1, localization and offline behaviour).
-8. **A story frame.** A human sentence at the top of the screen says why this matters.
+8. **A story frame.** A statement of why this matters.
 
 What did **not** win: grids of equal-weight cards with no focal point, dashboards that show every
 metric at once, and projects whose data source is more impressive than the answer.
@@ -126,7 +126,7 @@ metric at once, and projects whose data source is more impressive than the answe
 | 9 | **Google Earth Pro / Google Mars** | Google | Consumer globe with historical imagery and measurement | Search + fly-to + measure | Familiarity, speed, imagery history | No planetary science layers, no analog logic, no scoring |
 | 10 | **QGIS / ArcGIS Earth** | Open source / Esri | Professional GIS | Layer stack + analysis toolbox | Full analytical control, export | Not planetary by default, not a public-facing product |
 
-### 3.2 Scorecard (1 = absent, 5 = best in class; ratings are relative to *this* challenge)
+### 3.2 Scorecard (1 = absent, 5 = best in class; ratings are relative to this challenge)
 
 | Tool | 3D / spatial | Multi-layer | Time control | Side-by-side compare | Site ranking / scoring | Per-site evidence | Mobile & a11y | Time-to-first-insight |
 |---|---|---|---|---|---|---|---|---|
@@ -150,35 +150,35 @@ Lake Salda (↔ Mars), Pilot Valley (↔ Mars), Atacama (↔ Mars), Gulkana Glac
 Askja (↔ lunar south pole), Aden Crater (↔ Venus), Verde Valley (↔ Mars), and a Mars ripple field
 (↔ Iceland). Each pair is a draggable before/after with a short "why this pair" paragraph and a
 scale note.
-*Borrow:* the slider comparison, the plain-language caption, the honesty about scale.
-*Beat:* it is curated and closed. Ours is generated, ranked, filterable and exportable.
+Borrow: the slider comparison, the plain-language caption, the honesty about scale.
+Beat: it is curated and closed. Ours is generated, ranked, filterable and exportable.
 
 **Solar System Treks: the 3D benchmark.**
 Browser portals over real mission data with 3D flyovers, distance/elevation measurement (with
 CSV export), sun-angle calculation, VR flyovers, 3D-printable terrain, and OGC map services that
 can be embedded in other clients.
-*Borrow:* elevation profile as a first-class tool; sun-angle as a proxy for illumination;
+Borrow: elevation profile as a first-class tool; sun-angle as a proxy for illumination;
 "download the artifact" as a habit; WMS as the path to real basemaps.
-*Beat:* it never asks which Earth site is the better analog, and it cannot show two worlds at once.
+Beat: it never asks which Earth site is the better analog, and it cannot show two worlds at once.
 
 **LROC QuickMap + JMARS: the analyst benchmark.**
 QuickMap is the accessible end (2D/3D, a very large layer catalog, draw-and-profile); JMARS is the deep
 end (>1 TB, layer manager, ROI tools, landing-site layers, SQL-like scripting, mission planning).
-*Borrow:* the layer tree pattern; the "region of interest" concept, because our analog site *is* an ROI.
-*Beat:* both require the user to already know what they are looking for. Neither has an opinion.
+Borrow: the layer tree pattern; the "region of interest" concept, because our analog site is an ROI.
+Beat: both require the user to already know what they are looking for. Neither has an opinion.
 
 **TADP + USGS analog pages: the data benchmark.**
 The USGS has run analog work since Apollo: Cinder Lake crater field (blasted to match two Apollo
 landing sites), Meteor Crater, SP Mountain, Sunset Crater, Lava River Cave, Grand Canyon, plus a
 sample collection and the TADP repository.
-*Borrow:* cite the dataset behind every number; treat sample/field data as provenance, not decoration.
-*Beat:* turn a repository into a discovery surface.
+Borrow: cite the dataset behind every number; treat sample/field data as provenance, not decoration.
+Beat: turn a repository into a discovery surface.
 
 **Worldview: the time benchmark.**
 1,200+ layers, near-real-time imagery, timeline animation, swipe/opacity/spy comparison, an events
 tab, and an OpenLayers/GIBS architecture that is embeddable.
-*Borrow:* the compare modes and the timeline scrubber.
-*Beat:* Worldview shows what Earth looks like; we say which parts of it behave like Mars.
+Borrow: the compare modes and the timeline scrubber.
+Beat: Worldview shows what Earth looks like; we say which parts of it behave like Mars.
 
 ---
 
@@ -189,13 +189,13 @@ tab, and an OpenLayers/GIBS architecture that is embeddable.
 | No tool ranks terrestrial analogs by fit | **Ranked candidate list** with score, bucket and confidence |
 | One score hides the Moon-vs-Mars question | **Moon-fit / Mars-fit split bar** per site |
 | Analog galleries are curated, not computed | **Filterable candidate set** (terrain, target, region, score floor) |
-| No explanation of *why* a site scores | **Factor breakdown** mapped to the brief's four axes |
+| No explanation of why a site scores | **Factor breakdown** mapped to the brief's four axes |
 | Provenance is invisible in most UIs | **Dataset chip row** per site, linked to the source catalogue |
 | Analyst tools are expert-only | **Plain-language verdict** ("Strong Mars analog: arid, basaltic, low UV shelter") |
 | Results die in the browser | **CSV / permalink export** of the shortlist |
 
-**One-line thesis:** *the discovery layer that sits between NASA's analog science and everyone
-else*. Rank the sites, show the evidence, and let people take the shortlist away.
+**One-line thesis:** the discovery layer that sits between NASA's analog science and everyone
+else. Rank the sites, show the evidence, and let people take the shortlist away.
 
 ---
 
@@ -313,7 +313,7 @@ The bottom strip is collapsible so the globe can take 100vh in demo mode.
 ## 6. Sources
 
 Challenge
-- NASA Space Apps 2026 challenge page, *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*: https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/
+- NASA Space Apps 2026 challenge page, Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars: https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/
 - 2025 award definitions: https://www.spaceappschallenge.org/2025/awards/
 
 Winners
@@ -338,6 +338,6 @@ Tools
 
 ---
 
-*Prepared for the UI/Frontend lane. Benchmark ratings are relative assessments for this
+Prepared for the UI/Frontend lane. Benchmark ratings are relative assessments for this
 challenge, not vendor benchmarks. Layout notes on past winners are inferred from published
-project descriptions and demo material.*
+project descriptions and demo material.
