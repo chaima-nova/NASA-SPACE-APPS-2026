@@ -3,29 +3,30 @@
 **Project:** NASA International Space Apps Challenge 2026
 **Challenge:** *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*
 **Track:** Planetary Science & Earth Analogs
-**Owner:** Jasmine — UI / Frontend (shell, visualization, interaction)
+**Owner:** Jasmine, UI and frontend (shell, visualization, interaction)
 **Doc type:** Research benchmark + wireframe proposal
 
 ---
 
 ## Summary
 
-1. **Nothing on the market does what this challenge asks.** Every existing tool is either
-   (a) an *analog gallery* with no ranking, (b) a *planetary map* with no Earth comparison,
-   or (c) a *data archive* with a catalog UI but no analysis. The gap is a **ranked, explainable
-   Earth-site discovery surface**.
-2. **Winners win on one strong canvas + one honest claim**, not on feature count. The 2023
-   science *and* technology awards both went to Moonquake Map 2.0 projects; the 2024 science
+1. **Nothing on the market does what this challenge asks.** Every tool we found falls into one
+   of three groups. *Analog galleries* have no ranking, *planetary maps* never compare back to
+   Earth, and *data archives* have a catalog but no analysis. Nobody has built a **ranked,
+   explainable Earth-site discovery surface**.
+2. **Winners win on one strong canvas and one honest claim**, not on feature count. The 2023
+   science *and* technology awards both went to Moonquake Map 2.0 projects. In 2024 the science
    award went to a physically-correct 3D orrery. Depth beats breadth.
-3. **The closest incumbent is NASA's own Planetary Analog Explorer** — 11 hand-picked
+3. **The closest incumbent is NASA's own Planetary Analog Explorer**: 11 hand-picked
    Earth↔other-world pairs with a before/after slider. It is beautiful and completely
-   non-quantitative. We should match its clarity and beat it on coverage + ranking.
-4. **The closest data incumbent is the USGS Terrestrial Analogs Data Portal (TADP)** — a
-   ScienceBase-backed repository of analog sites, samples and field guides. Strong provenance,
-   weak discovery experience. We should borrow its provenance model, not its UI.
+   non-quantitative. Match its clarity, then beat it on coverage and ranking.
+4. **The closest data incumbent is the USGS Terrestrial Analogs Data Portal (TADP)**, a
+   ScienceBase-backed repository of analog sites, samples and field guides. Provenance is
+   strong, discovery is weak. Borrow its provenance model, not its UI.
 5. **Our thesis:** *one screen that answers "which Earth sites are the best analogs, for which
-   target, and why"* — ranked list + globe + per-site dossier + dataset provenance, with a
-   Moon-fit / Mars-fit split and the brief's terrain facets as first-class filters.
+   target, and why"*. That means a ranked list, a globe, a per-site dossier and dataset
+   provenance, with a Moon-fit / Mars-fit split and the brief's terrain facets as first-class
+   filters.
 
 ---
 
@@ -34,9 +35,9 @@
 The published challenge text (2026 challenge page) says, in substance:
 
 > Selecting future landing sites and lunar base locations depends on topography, geology,
-> environment and available resources. Earth sites analogous to the Moon or Mars — the
-> Atacama Desert, Haughton Crater, Death Valley — let teams test equipment and methods before
-> they fly, but such terrestrial analog sites are **not entirely well characterized**.
+> environment and available resources. Earth sites analogous to the Moon or Mars, such as the
+> Atacama Desert, Haughton Crater and Death Valley, let teams test equipment and methods before
+> they fly. Yet these terrestrial analog sites are **not entirely well characterized**.
 > Use open Earth, Moon and Mars data to **identify and characterize new terrestrial analogs**,
 > drawing on **deserts, polar regions, volcanic and arid terrains, caves** and other
 > environments that share conditions with the lunar or Martian surface.
@@ -49,8 +50,8 @@ Three verbs drive the UI:
 | **Characterize** | A per-site dossier with the factors named in the brief (topography, geology, environment, resources) |
 | **Analog** (to Moon *or* Mars) | A visible Moon-vs-Mars fit split, not one opaque number |
 
-The brief lists terrain types explicitly — **desert, polar, volcanic, arid, cave** — so terrain
-type is a filter, not a tag buried in a tooltip.
+The brief names the terrain types explicitly: **desert, polar, volcanic, arid, cave**. That makes
+terrain type a filter, not a tag buried in a tooltip.
 
 ---
 
@@ -71,21 +72,21 @@ type is a filter, not a tag buried in a tooltip.
 | Art & Technology | Most effectively combines technical and creative skills |
 | Local Impact | Greatest potential for local impact |
 
-Judging runs local event → Global Nominee → Global Finalist → executive judging → 10 Global Winners.
-In 2025 that was 11,500+ submissions for 10 slots.
+Judging runs from the local event to Global Nominee, then Global Finalist, then executive
+judging, and ends with 10 Global Winners. In 2025 that meant 11,500+ submissions for 10 slots.
 
 ### 2.2 Winners whose *layout* is worth copying
 
 | Year | Award | Project | Challenge | What the layout proved |
 |---|---|---|---|---|
-| 2023 | Best Use of Science | **LunarTech Ensemble** (Egypt) | Make a Moonquake Map 2.0 | A website **plus** an immersive game over Apollo seismic data — same dataset, two entry points for two audiences |
-| 2023 | Best Use of Technology | **Spacebee** (US/Argentina) | Make a Moonquake Map 2.0 | Map of quake locations, quake **type**, date, and ALSEP data plots in one view — map + evidence side by side |
-| 2024 | Best Use of Science | **WMPGang — SkyShield** (Canada) | Orrery web app for NEOs | One full-screen 3D canvas; filters for orbit, size, Palermo rating; time that runs live, fast and **backwards** |
-| 2024 | Best Mission Concept | **AsturExplorers — Landsat Connect** (Spain) | Landsat reflectance on the fly | Map pin → notification → 3×3 pixel readout → CSV/PDF export; WCAG 2.1 specified up front |
-| 2024 | Local Impact | **Team I.O. — G.R.O.W.** (Brazil) | Community mapping | GIS complexity hidden behind plain-language answers for non-experts |
-| 2024 | Art & Technology | **Connected Earth Museum** (Brazil) | Imagine our Connected Earth | 3D + 2D visualization gallery with a guided host — narrative wrapper around charts |
-| 2025 | Best Use of Science | **SpaceGenes+** (Germany) | Space Biology Knowledge Engine | A single interactive dashboard that answers one research question well — no feature sprawl |
-| 2025 | Best Use of Technology | **Twisters — SkySense** (Mexico) | Will It Rain on My Parade? | Turns raw variables into a **risk verdict plus a recommended time window** — decision, not data |
+| 2023 | Best Use of Science | **LunarTech Ensemble** (Egypt) | Make a Moonquake Map 2.0 | A website **plus** an immersive game over Apollo seismic data: same dataset, two entry points for two audiences |
+| 2023 | Best Use of Technology | **Spacebee** (US/Argentina) | Make a Moonquake Map 2.0 | Map of quake locations, quake **type**, date, and ALSEP data plots in one view: map and evidence side by side |
+| 2024 | Best Use of Science | **WMPGang's SkyShield** (Canada) | Orrery web app for NEOs | One full-screen 3D canvas; filters for orbit, size, Palermo rating; time that runs live, fast and **backwards** |
+| 2024 | Best Mission Concept | **AsturExplorers' Landsat Connect** (Spain) | Landsat reflectance on the fly | Map pin → notification → 3×3 pixel readout → CSV/PDF export; WCAG 2.1 specified up front |
+| 2024 | Local Impact | **Team I.O.'s G.R.O.W.** (Brazil) | Community mapping | GIS complexity hidden behind plain-language answers for non-experts |
+| 2024 | Art & Technology | **Connected Earth Museum** (Brazil) | Imagine our Connected Earth | 3D + 2D visualization gallery with a guided host: a narrative wrapper around the charts |
+| 2025 | Best Use of Science | **SpaceGenes+** (Germany) | Space Biology Knowledge Engine | A single interactive dashboard that answers one research question well, with no feature sprawl |
+| 2025 | Best Use of Technology | **Twisters' SkySense** (Mexico) | Will It Rain on My Parade? | Turns raw variables into a **risk verdict plus a recommended time window**: a decision, not data |
 | 2025 | Best Mission Concept | **PureFlow** (Brazil) | Habitat Layout Creator | Design in 3D, then **validate against a real threat** (solar storms) in the same screen |
 
 
@@ -94,17 +95,17 @@ In 2025 that was 11,500+ submissions for 10 slots.
 Winners consistently ship **one screen with one job**:
 
 1. **A hero spatial canvas** dominates; panels are subordinate.
-2. **Filters, not search boxes** — the user narrows a space, they don't guess keywords.
+2. **Filters, not search boxes.** The user narrows a space instead of guessing at keywords.
 3. **Time is a control**, not a caption (SkyShield's reverse time; Worldview's timeline).
-4. **Click → evidence.** The detail view explains *why*, with the numbers that produced it.
-5. **A decision, stated in words** — "safest window 14:00–16:00", not "humidity 62%".
+4. **Click, then evidence.** The detail view explains *why* using the numbers that produced it.
+5. **A decision, stated in words.** Say "safest window 14:00 to 16:00", not "humidity 62%".
 6. **Export or share** the artifact (CSV, PDF, permalink) so the work survives the demo.
 7. **Accessibility is designed, not patched** (Landsat Connect won a concept award on a Figma
    prototype largely because it specified WCAG 2.1, localization and offline behaviour).
-8. **A story frame** — a human sentence at the top of the screen that says why this matters.
+8. **A story frame.** A human sentence at the top of the screen says why this matters.
 
 What did **not** win: grids of equal-weight cards with no focal point, dashboards that show every
-metric at once, and projects where the data source is more impressive than the answer.
+metric at once, and projects whose data source is more impressive than the answer.
 
 ---
 
@@ -125,7 +126,7 @@ metric at once, and projects where the data source is more impressive than the a
 | 9 | **Google Earth Pro / Google Mars** | Google | Consumer globe with historical imagery and measurement | Search + fly-to + measure | Familiarity, speed, imagery history | No planetary science layers, no analog logic, no scoring |
 | 10 | **QGIS / ArcGIS Earth** | Open source / Esri | Professional GIS | Layer stack + analysis toolbox | Full analytical control, export | Not planetary by default, not a public-facing product |
 
-### 3.2 Scorecard (1 = absent, 5 = best in class — assessment relative to *this* challenge)
+### 3.2 Scorecard (1 = absent, 5 = best in class; ratings are relative to *this* challenge)
 
 | Tool | 3D / spatial | Multi-layer | Time control | Side-by-side compare | Site ranking / scoring | Per-site evidence | Mobile & a11y | Time-to-first-insight |
 |---|---|---|---|---|---|---|---|---|
@@ -138,12 +139,12 @@ metric at once, and projects where the data source is more impressive than the a
 | Eyes on the Solar System | **5** | 2 | 4 | 1 | 1 | 2 | 3 | 4 |
 | **Our shell (target)** | 4 | 3 | 3 | 4 | **5** | **5** | 4 | **5** |
 
-The empty columns across the entire market are **site ranking** and **explainable per-site
-evidence**. Those are our two differentiators.
+The columns that stay empty across the whole market are **site ranking** and **explainable
+per-site evidence**. Those are our two differentiators.
 
 ### 3.3 Profiles of the four that matter most
 
-**Planetary Analog Explorer — the experience benchmark.**
+**Planetary Analog Explorer: the experience benchmark.**
 Eleven curated pairs: lava caves (California ↔ Moon), Death Valley (↔ Mars), Kilauea (↔ Moon),
 Lake Salda (↔ Mars), Pilot Valley (↔ Mars), Atacama (↔ Mars), Gulkana Glacier (↔ Enceladus),
 Askja (↔ lunar south pole), Aden Crater (↔ Venus), Verde Valley (↔ Mars), and a Mars ripple field
@@ -152,7 +153,7 @@ scale note.
 *Borrow:* the slider comparison, the plain-language caption, the honesty about scale.
 *Beat:* it is curated and closed. Ours is generated, ranked, filterable and exportable.
 
-**Solar System Treks — the 3D benchmark.**
+**Solar System Treks: the 3D benchmark.**
 Browser portals over real mission data with 3D flyovers, distance/elevation measurement (with
 CSV export), sun-angle calculation, VR flyovers, 3D-printable terrain, and OGC map services that
 can be embedded in other clients.
@@ -160,20 +161,20 @@ can be embedded in other clients.
 "download the artifact" as a habit; WMS as the path to real basemaps.
 *Beat:* it never asks which Earth site is the better analog, and it cannot show two worlds at once.
 
-**LROC QuickMap + JMARS — the analyst benchmark.**
+**LROC QuickMap + JMARS: the analyst benchmark.**
 QuickMap is the accessible end (2D/3D, a very large layer catalog, draw-and-profile); JMARS is the deep
 end (>1 TB, layer manager, ROI tools, landing-site layers, SQL-like scripting, mission planning).
-*Borrow:* the layer tree pattern; the "region of interest" concept — our analog site *is* an ROI.
+*Borrow:* the layer tree pattern; the "region of interest" concept, because our analog site *is* an ROI.
 *Beat:* both require the user to already know what they are looking for. Neither has an opinion.
 
-**TADP + USGS analog pages — the data benchmark.**
+**TADP + USGS analog pages: the data benchmark.**
 The USGS has run analog work since Apollo: Cinder Lake crater field (blasted to match two Apollo
 landing sites), Meteor Crater, SP Mountain, Sunset Crater, Lava River Cave, Grand Canyon, plus a
 sample collection and the TADP repository.
 *Borrow:* cite the dataset behind every number; treat sample/field data as provenance, not decoration.
 *Beat:* turn a repository into a discovery surface.
 
-**Worldview — the time benchmark.**
+**Worldview: the time benchmark.**
 1,200+ layers, near-real-time imagery, timeline animation, swipe/opacity/spy comparison, an events
 tab, and an OpenLayers/GIBS architecture that is embeddable.
 *Borrow:* the compare modes and the timeline scrubber.
@@ -190,11 +191,11 @@ tab, and an OpenLayers/GIBS architecture that is embeddable.
 | Analog galleries are curated, not computed | **Filterable candidate set** (terrain, target, region, score floor) |
 | No explanation of *why* a site scores | **Factor breakdown** mapped to the brief's four axes |
 | Provenance is invisible in most UIs | **Dataset chip row** per site, linked to the source catalogue |
-| Analyst tools are expert-only | **Plain-language verdict** ("Strong Mars analog — arid, basaltic, low UV shelter") |
+| Analyst tools are expert-only | **Plain-language verdict** ("Strong Mars analog: arid, basaltic, low UV shelter") |
 | Results die in the browser | **CSV / permalink export** of the shortlist |
 
 **One-line thesis:** *the discovery layer that sits between NASA's analog science and everyone
-else* — rank the sites, show the evidence, let people take the shortlist away.
+else*. Rank the sites, show the evidence, and let people take the shortlist away.
 
 ---
 
@@ -203,7 +204,7 @@ else* — rank the sites, show the evidence, let people take the shortlist away.
 ### 5.1 Principles
 
 - **One hero canvas.** The globe is the screen; everything else orbits it.
-- **Three zones, one glance.** Candidates (left) → place (centre) → proof (right).
+- **Three zones, one glance.** Candidates on the left, place in the centre, proof on the right.
 - **Nothing more than one click from a number to its source.**
 - **Filters before search.** The brief already names the facets; expose them as chips.
 - **Keep the existing theme.** The PureFlow space-glass system (`--space-void`, `--glass-bg`,
@@ -277,16 +278,16 @@ The bottom strip is collapsible so the globe can take 100vh in demo mode.
 
 | Zone | Content | Interaction | Existing code |
 |---|---|---|---|
-| Top bar | Title, data-mode badge, search | Type-ahead over site name | `App.tsx` header — keep |
+| Top bar | Title, data-mode badge, search | Type-ahead over site name | `App.tsx` header: keep |
 | Facet row | Target toggle, terrain chips, sort | Multi-select chips, URL-synced | **new** `FilterBar.tsx` |
 | Ranked list | Rank, name, score, mini bar, terrain dot | Click selects; ↑/↓ walks the list | **new** `SiteList.tsx` |
 | Hero globe | Earth basemap, markers sized/coloured by fit, terminator | Drag, scroll, click marker, hover tooltip | refactor `MoonMap.tsx` → `Globe.tsx` |
 | Compare control | Moon / Mars target, split toggle | Toggles the `marsFit` layer | **new** inside `Globe.tsx` |
 | Dossier | Name, region, terrain, Moon/Mars bars, 4 factor bars, dataset chips, verdict sentence | Scroll; dataset chip → catalogue | **new** `SiteInspector.tsx` |
-| Fit distribution | Histogram of `analogScore` | Hover bucket → highlight members | `ScoreDistribution.tsx` — reuse |
-| Feature influence | Mean and per-site contributions | Toggle "all sites" / "this site" | `FeatureImportance.tsx` — extend |
-| Data sources | Dataset catalogue with focus areas | Expand row | `DataSourceList.tsx` — reuse |
-| Optional | 3D fit columns | Secondary "demo" panel | `AnalogScene.tsx` — demote or retire |
+| Fit distribution | Histogram of `analogScore` | Hover bucket → highlight members | `ScoreDistribution.tsx`: reuse |
+| Feature influence | Mean and per-site contributions | Toggle "all sites" / "this site" | `FeatureImportance.tsx`: extend |
+| Data sources | Dataset catalogue with focus areas | Expand row | `DataSourceList.tsx`: reuse |
+| Optional | 3D fit columns | Secondary "demo" panel | `AnalogScene.tsx`: demote or retire |
 
 ### 5.5 Interaction spec
 
@@ -296,14 +297,14 @@ The bottom strip is collapsible so the globe can take 100vh in demo mode.
   `Esc` clears selection, `/` focuses search.
 - **URL state:** `?site=atacama&target=mars&terrain=desert,polar` so a demo can be linked.
 - **Loading:** skeleton blocks, never a spinner over the whole page.
-- **Empty:** "No sites match these filters — clear one to see 16 candidates."
+- **Empty:** "No sites match these filters. Clear one to see all 16 candidates."
 - **Error:** keep the last good render, show an inline banner with the failing endpoint.
 - **Reduced motion:** respect `prefers-reduced-motion`; disable bloom pulses and count-up.
 
 ### 5.6 Visual rules to keep it "lightweight"
 
 - One accent per meaning: `--nebula-blue` = Moon, `--mars-red` = Mars, `--success-green` = strong fit.
-- Score colour ramp stays in `src/lib/colors.ts` — single source of truth.
+- Score colour ramp stays in `src/lib/colors.ts`: single source of truth.
 - Maximum three type sizes inside a panel; the dossier is the only place with four.
 - No new fonts, no new icon library, no new chart library.
 
@@ -312,7 +313,7 @@ The bottom strip is collapsible so the globe can take 100vh in demo mode.
 ## 6. Sources
 
 Challenge
-- NASA Space Apps 2026 challenge page — *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*: https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/
+- NASA Space Apps 2026 challenge page, *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*: https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/
 - 2025 award definitions: https://www.spaceappschallenge.org/2025/awards/
 
 Winners
