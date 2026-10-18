@@ -55,6 +55,56 @@ export function julianCenturies(date: Date): number {
 }
 
 /**
+ * Greenwich mean sidereal time, in degrees (0..360).
+ *
+ * This is the right ascension currently over 0 deg longitude, so it anchors a
+ * celestial map to the Earth-fixed frame. Meeus, "Astronomical Algorithms",
+ * eq. 12.4; accuracy is well under a second of time for this century.
+ */
+export function greenwichSiderealTime(date: Date): number {
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const d = jd - 2451545.0;
+  const T = d / 36525;
+  const gmst =
+    280.46061837 +
+    360.98564736629 * d +
+    0.000387933 * T * T -
+    (T * T * T) / 38710000;
+  return norm360(gmst);
+}
+
+/** Sidereal rotation rate: 360.9856 deg per solar day, in degrees per second. */
+export const SIDEREAL_DEG_PER_SEC = 360.98564736629 / 86400;
+
+export interface EarthLighting {
+  /** Geographic latitude of the sub-solar point, degrees (-23.44..23.44). */
+  subSolarLat: number;
+  /** Geographic longitude of the sub-solar point, degrees (-180..180). */
+  subSolarLon: number;
+}
+
+/**
+ * Where the Sun is overhead on Earth at `date`.
+ *
+ * Solar declination follows the usual day-of-year approximation, and the
+ * sub-solar longitude falls out of UTC: the Sun is over 0 deg longitude at
+ * 12:00 UTC. The equation of time (+-16 min) is ignored, which moves the
+ * terminator by at most 4 deg of longitude — invisible at this scale.
+ */
+export function earthLighting(date: Date): EarthLighting {
+  const dayOfYear =
+    (Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) -
+      Date.UTC(date.getUTCFullYear(), 0, 0)) /
+    86400000;
+
+  const subSolarLat = -23.44 * Math.cos((360 / 365.24) * (dayOfYear + 10) * RAD);
+  const utcHours = date.getUTCHours() + date.getUTCMinutes() / 60;
+  const subSolarLon = norm180(180 - utcHours * 15);
+
+  return { subSolarLat, subSolarLon };
+}
+
+/**
  * Where the Sun is overhead on the Moon at `date`.
  */
 export function moonLighting(date: Date): MoonLighting {

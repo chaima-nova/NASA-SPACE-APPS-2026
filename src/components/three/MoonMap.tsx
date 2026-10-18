@@ -8,10 +8,16 @@ import type { Prediction } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
 import { createStarfield } from '../../lib/starfield';
 import { latLonToVec } from '../../lib/globe';
-import { moonLighting } from '../../lib/astro';
+import { greenwichSiderealTime, moonLighting } from '../../lib/astro';
 
 interface MoonMapProps {
   predictions: Prediction[];
+  /**
+   * Plot candidate sites on the lunar surface. The discovery surface keeps the
+   * Moon as a *comparison target*, so there the markers are off — terrestrial
+   * sites do not belong on a lunar sphere.
+   */
+  showMarkers?: boolean;
 }
 
 interface Marker {
@@ -32,7 +38,7 @@ interface Marker {
  *
  * Drag to orbit, scroll to zoom, hover a marker for its analog-fit score.
  */
-export function MoonMap({ predictions }: MoonMapProps) {
+export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const phaseRef = useRef<HTMLSpanElement>(null);
@@ -52,7 +58,7 @@ export function MoonMap({ predictions }: MoonMapProps) {
 
     // Real starfield geometry behind the Moon (not a CSS layer), so it stays
     // put while the globe rotates under the camera.
-    const starfield = createStarfield();
+    const starfield = createStarfield({ siderealDeg: greenwichSiderealTime(now) });
     scene.add(starfield.group);
 
     const camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 2000);
@@ -160,7 +166,7 @@ export function MoonMap({ predictions }: MoonMapProps) {
     const pinGeometry = new THREE.SphereGeometry(0.052, 16, 16);
     disposable.push(pinGeometry);
 
-    predictions.forEach((p) => {
+    if (showMarkers) predictions.forEach((p) => {
       const position = latLonToVec(p.lat, p.lon, RADIUS + 0.02);
       const color = scoreColorHex(p.analogScore);
 
@@ -315,7 +321,7 @@ export function MoonMap({ predictions }: MoonMapProps) {
         mount.removeChild(renderer.domElement);
       }
     };
-  }, [predictions]);
+  }, [predictions, showMarkers]);
 
   return (
     <div className="moon-map">

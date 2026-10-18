@@ -31,17 +31,17 @@ export function ScoreDistribution({ predictions }: ScoreDistributionProps) {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={buckets} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-        <CartesianGrid stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
-        <XAxis dataKey="label" stroke="rgba(226, 236, 255, 0.6)" fontSize={10} tickLine={false} />
-        <YAxis stroke="rgba(226, 236, 255, 0.6)" fontSize={10} allowDecimals={false} tickLine={false} />
+        <CartesianGrid stroke="#1a2230" vertical={false} />
+        <XAxis dataKey="label" stroke="#6f7c92" fontSize={10} tickLine={false} />
+        <YAxis stroke="#6f7c92" fontSize={10} allowDecimals={false} tickLine={false} />
         <Tooltip
-          cursor={{ fill: 'rgba(76, 201, 240, 0.08)' }}
+          cursor={{ fill: 'rgba(34, 211, 238, 0.07)' }}
           contentStyle={{
-            background: 'rgba(14, 20, 44, 0.72)',
-            border: '1px solid rgba(255, 255, 255, 0.16)',
-            borderRadius: 12,
-            color: '#f2f6ff',
-            backdropFilter: 'blur(12px)',
+            background: '#0c1118',
+            border: '1px solid #253041',
+            borderRadius: 6,
+            color: '#e7edf7',
+            fontSize: 12,
           }}
           labelFormatter={(value) => `Analog fit ${value}%`}
         />

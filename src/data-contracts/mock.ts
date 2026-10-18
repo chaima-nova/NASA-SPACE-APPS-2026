@@ -10,13 +10,23 @@
  * the numeric feature vectors are illustrative sample values, not measurements.
  */
 
-import type { DataSource, FocusArea, GeoPoint, OrbitalObject, Prediction } from './types';
+import type {
+  DataSource,
+  FocusArea,
+  GeoPoint,
+  OrbitalObject,
+  Prediction,
+  TerrainType,
+} from './types';
 
 interface SiteSpec {
   name: string;
   lat: number;
   lon: number;
   focusArea: FocusArea;
+  terrainType: TerrainType;
+  region: string;
+  elevationM: number;
   features: Record<string, number>;
 }
 
@@ -43,6 +53,9 @@ const SITES: SiteSpec[] = [
     lat: -23.5,
     lon: -69.2,
     focusArea: 'dual-analog',
+    terrainType: 'arid',
+    region: 'Antofagasta, Chile',
+    elevationM: 2400,
     features: { aridity: 0.99, diurnalTempSwingC: 38, regolithMatch: 0.82, dustIndex: 0.7, solarUvIndex: 0.95, radiationAnalog: 0.8, terrainRoughness: 0.5, isolationIndex: 0.9, elevationM: 2400, lavaTubePotential: 0.1 },
   },
   {
@@ -50,6 +63,9 @@ const SITES: SiteSpec[] = [
     lat: 75.37,
     lon: -89.68,
     focusArea: 'moon-base-analog',
+    terrainType: 'impact',
+    region: 'Devon Island, Nunavut, Canada',
+    elevationM: 200,
     features: { aridity: 0.9, diurnalTempSwingC: 22, regolithMatch: 0.74, dustIndex: 0.4, solarUvIndex: 0.5, radiationAnalog: 0.7, terrainRoughness: 0.8, isolationIndex: 0.97, elevationM: 200, lavaTubePotential: 0.2 },
   },
   {
@@ -57,6 +73,9 @@ const SITES: SiteSpec[] = [
     lat: 36.24,
     lon: -116.82,
     focusArea: 'mars-base-analog',
+    terrainType: 'desert',
+    region: 'California, USA',
+    elevationM: -60,
     features: { aridity: 0.95, diurnalTempSwingC: 30, regolithMatch: 0.6, dustIndex: 0.55, solarUvIndex: 0.88, radiationAnalog: 0.6, terrainRoughness: 0.7, isolationIndex: 0.6, elevationM: -60, lavaTubePotential: 0.15 },
   },
   {
@@ -64,6 +83,9 @@ const SITES: SiteSpec[] = [
     lat: -77.5,
     lon: 162.0,
     focusArea: 'mars-base-analog',
+    terrainType: 'polar',
+    region: 'Victoria Land, Antarctica',
+    elevationM: 500,
     features: { aridity: 0.98, diurnalTempSwingC: 18, regolithMatch: 0.68, dustIndex: 0.75, solarUvIndex: 0.35, radiationAnalog: 0.65, terrainRoughness: 0.6, isolationIndex: 0.99, elevationM: 500, lavaTubePotential: 0.1 },
   },
   {
@@ -71,6 +93,9 @@ const SITES: SiteSpec[] = [
     lat: 19.82,
     lon: -155.47,
     focusArea: 'moon-base-analog',
+    terrainType: 'volcanic',
+    region: 'Hawai\u02bbi, USA',
+    elevationM: 4200,
     features: { aridity: 0.55, diurnalTempSwingC: 12, regolithMatch: 0.86, dustIndex: 0.2, solarUvIndex: 0.9, radiationAnalog: 0.55, terrainRoughness: 0.75, isolationIndex: 0.5, elevationM: 4200, lavaTubePotential: 0.3 },
   },
   {
@@ -78,6 +103,9 @@ const SITES: SiteSpec[] = [
     lat: 19.42,
     lon: -155.29,
     focusArea: 'moon-base-analog',
+    terrainType: 'volcanic',
+    region: 'Hawai\u02bbi, USA',
+    elevationM: 1247,
     features: { aridity: 0.4, diurnalTempSwingC: 10, regolithMatch: 0.9, dustIndex: 0.3, solarUvIndex: 0.85, radiationAnalog: 0.5, terrainRoughness: 0.65, isolationIndex: 0.35, elevationM: 1247, lavaTubePotential: 0.5 },
   },
   {
@@ -85,6 +113,9 @@ const SITES: SiteSpec[] = [
     lat: 37.69,
     lon: -6.56,
     focusArea: 'mars-base-analog',
+    terrainType: 'fluvial',
+    region: 'Huelva, Spain',
+    elevationM: 400,
     features: { aridity: 0.7, diurnalTempSwingC: 20, regolithMatch: 0.78, dustIndex: 0.45, solarUvIndex: 0.7, radiationAnalog: 0.4, terrainRoughness: 0.45, isolationIndex: 0.3, elevationM: 400, lavaTubePotential: 0.05 },
   },
   {
@@ -92,6 +123,9 @@ const SITES: SiteSpec[] = [
     lat: 29.0,
     lon: -13.7,
     focusArea: 'moon-base-analog',
+    terrainType: 'volcanic',
+    region: 'Lanzarote, Canary Islands',
+    elevationM: 300,
     features: { aridity: 0.8, diurnalTempSwingC: 16, regolithMatch: 0.8, dustIndex: 0.4, solarUvIndex: 0.8, radiationAnalog: 0.45, terrainRoughness: 0.6, isolationIndex: 0.25, elevationM: 300, lavaTubePotential: 0.4 },
   },
   {
@@ -99,6 +133,9 @@ const SITES: SiteSpec[] = [
     lat: 43.42,
     lon: -113.52,
     focusArea: 'moon-base-analog',
+    terrainType: 'volcanic',
+    region: 'Idaho, USA',
+    elevationM: 1800,
     features: { aridity: 0.6, diurnalTempSwingC: 22, regolithMatch: 0.83, dustIndex: 0.35, solarUvIndex: 0.6, radiationAnalog: 0.45, terrainRoughness: 0.7, isolationIndex: 0.4, elevationM: 1800, lavaTubePotential: 0.45 },
   },
   {
@@ -106,6 +143,9 @@ const SITES: SiteSpec[] = [
     lat: 37.5,
     lon: 94.0,
     focusArea: 'mars-base-analog',
+    terrainType: 'arid',
+    region: 'Qinghai, China',
+    elevationM: 2800,
     features: { aridity: 0.96, diurnalTempSwingC: 28, regolithMatch: 0.7, dustIndex: 0.6, solarUvIndex: 0.85, radiationAnalog: 0.75, terrainRoughness: 0.5, isolationIndex: 0.85, elevationM: 2800, lavaTubePotential: 0.1 },
   },
   {
@@ -113,6 +153,9 @@ const SITES: SiteSpec[] = [
     lat: 35.0,
     lon: -116.0,
     focusArea: 'mars-base-analog',
+    terrainType: 'desert',
+    region: 'California, USA',
+    elevationM: 800,
     features: { aridity: 0.88, diurnalTempSwingC: 26, regolithMatch: 0.62, dustIndex: 0.5, solarUvIndex: 0.82, radiationAnalog: 0.5, terrainRoughness: 0.55, isolationIndex: 0.35, elevationM: 800, lavaTubePotential: 0.05 },
   },
   {
@@ -120,7 +163,20 @@ const SITES: SiteSpec[] = [
     lat: 65.03,
     lon: -16.75,
     focusArea: 'dual-analog',
+    terrainType: 'volcanic',
+    region: 'Highlands, Iceland',
+    elevationM: 1100,
     features: { aridity: 0.55, diurnalTempSwingC: 14, regolithMatch: 0.79, dustIndex: 0.5, solarUvIndex: 0.4, radiationAnalog: 0.5, terrainRoughness: 0.8, isolationIndex: 0.7, elevationM: 1100, lavaTubePotential: 0.25 },
+  },
+  {
+    name: 'Lava Beds National Monument, California, USA',
+    lat: 41.71,
+    lon: -121.51,
+    focusArea: 'moon-base-analog',
+    terrainType: 'cave',
+    region: 'California, USA',
+    elevationM: 1400,
+    features: { aridity: 0.5, diurnalTempSwingC: 20, regolithMatch: 0.72, dustIndex: 0.25, solarUvIndex: 0.55, radiationAnalog: 0.4, terrainRoughness: 0.7, isolationIndex: 0.45, elevationM: 1400, lavaTubePotential: 0.95 },
   },
 ];
 
@@ -132,6 +188,9 @@ function buildGeoPoints(): GeoPoint[] {
     lon: site.lon,
     focusArea: site.focusArea,
     features: site.features,
+    terrainType: site.terrainType,
+    region: site.region,
+    elevationM: site.elevationM,
   }));
 }
 
@@ -178,6 +237,42 @@ function buildPredictions(points: GeoPoint[]): Prediction[] {
         0.15 * f.solarUvIndex,
     );
 
+    // The Moon rewards regolith match, vacuum-grade dryness and radiation,
+    // Mars rewards dust, aridity and thermal swing. Two scores, not one blob.
+    const moonFit = clamp01(
+      0.28 * f.regolithMatch +
+        0.2 * f.aridity +
+        0.18 * f.radiationAnalog +
+        0.14 * f.solarUvIndex +
+        0.1 * f.isolationIndex +
+        0.1 * f.terrainRoughness,
+    );
+
+    // Illustrative per-pillar breakdown for the dossier, following the
+    // proposal's four pillars. The real model may supply `factors` directly.
+    const elevationNorm = clamp01((f.elevationM + 100) / 4500);
+    const factors = {
+      geomorphology: round3(clamp01(0.55 * f.terrainRoughness + 0.45 * elevationNorm)),
+      mineralogy: round3(clamp01(0.8 * f.regolithMatch + 0.2 * f.lavaTubePotential)),
+      environment: round3(
+        clamp01(
+          0.3 * f.aridity +
+            0.25 * tempSwingNorm +
+            0.2 * f.solarUvIndex +
+            0.15 * f.radiationAnalog +
+            0.1 * f.dustIndex,
+        ),
+      ),
+      // Accessibility: remote, rough, dry sites are harder to support.
+      logistics: round3(
+        clamp01(
+          0.6 * (1 - f.isolationIndex) +
+            0.25 * (1 - f.terrainRoughness) +
+            0.15 * (1 - f.aridity),
+        ),
+      ),
+    };
+
     const label = analogScore > 0.72 ? 'Strong' : analogScore > 0.55 ? 'Promising' : 'Weak';
 
     return {
@@ -190,7 +285,12 @@ function buildPredictions(points: GeoPoint[]): Prediction[] {
       model: { id: 'analog-fit-baseline', version: '0.1.0-mock' },
       predictedAt: '2026-01-15T00:00:00.000Z',
       analogScore: round3(analogScore),
+      moonFit: round3(moonFit),
       marsFit: round3(marsFit),
+      terrainType: point.terrainType,
+      region: point.region,
+      elevationM: point.elevationM,
+      factors,
       label,
       confidence: round3(0.6 + 0.35 * ((Math.sin(i * 7.13) + 1) / 2)),
       featureContributions: {

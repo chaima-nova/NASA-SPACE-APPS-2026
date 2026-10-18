@@ -41,28 +41,28 @@ export function FeatureImportance({ predictions }: FeatureImportanceProps) {
         layout="vertical"
         margin={{ top: 4, right: 12, bottom: 0, left: 24 }}
       >
-        <CartesianGrid stroke="rgba(255, 255, 255, 0.12)" horizontal={false} />
-        <XAxis type="number" stroke="rgba(226, 236, 255, 0.6)" fontSize={10} tickLine={false} />
+        <CartesianGrid stroke="#1a2230" horizontal={false} />
+        <XAxis type="number" stroke="#6f7c92" fontSize={10} tickLine={false} />
         <YAxis
           type="category"
           dataKey="feature"
-          stroke="rgba(226, 236, 255, 0.6)"
+          stroke="#6f7c92"
           fontSize={10}
           width={120}
           tickLine={false}
         />
         <Tooltip
-          cursor={{ fill: 'rgba(76, 201, 240, 0.08)' }}
+          cursor={{ fill: 'rgba(34, 211, 238, 0.07)' }}
           contentStyle={{
-            background: 'rgba(14, 20, 44, 0.72)',
-            border: '1px solid rgba(255, 255, 255, 0.16)',
-            borderRadius: 12,
-            color: '#f2f6ff',
-            backdropFilter: 'blur(12px)',
+            background: '#0c1118',
+            border: '1px solid #253041',
+            borderRadius: 6,
+            color: '#e7edf7',
+            fontSize: 12,
           }}
           formatter={(value) => [Number(value).toFixed(3), 'mean |contribution|']}
         />
-        <Bar dataKey="value" fill="#4cc9f0" radius={[0, 4, 4, 0]} />
+        <Bar dataKey="value" fill="#22d3ee" radius={[0, 3, 3, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

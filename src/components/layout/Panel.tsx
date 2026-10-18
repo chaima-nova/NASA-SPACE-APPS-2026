@@ -1,35 +1,28 @@
 import type { ReactNode } from 'react';
-import { useScrollReveal, useTilt } from '../../lib/useScrollReveal';
 
 interface PanelProps {
   title: string;
   subtitle?: string;
   className?: string;
+  actions?: ReactNode;
   children: ReactNode;
 }
 
 /**
- * Glass panel with a scroll-in reveal and a subtle pointer-tracked tilt.
- * The tilt is applied to an inner wrapper so the panel's own layout box stays
- * stable and neighbouring panels do not shift.
+ * Flat instrument card: solid surface, hairline border, no blur or tilt.
+ * The header row is deliberately fixed-height so stacked cards stay aligned.
  */
-export function Panel({ title, subtitle, className, children }: PanelProps) {
-  const { ref, revealed } = useScrollReveal<HTMLElement>();
-  const tiltRef = useTilt<HTMLDivElement>(4);
-
-  const classes = ['panel', className, revealed ? 'is-revealed' : '']
-    .filter(Boolean)
-    .join(' ');
-
+export function Panel({ title, subtitle, className, actions, children }: PanelProps) {
   return (
-    <section ref={ref} className={classes}>
-      <div ref={tiltRef} className="panel-tilt">
-        <header className="panel-head">
+    <section className={['card', className].filter(Boolean).join(' ')}>
+      <header className="card-head">
+        <div className="card-head-text">
           <h2>{title}</h2>
           {subtitle ? <p>{subtitle}</p> : null}
-        </header>
-        <div className="panel-body">{children}</div>
-      </div>
+        </div>
+        {actions}
+      </header>
+      <div className="card-body">{children}</div>
     </section>
   );
 }

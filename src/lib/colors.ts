@@ -9,10 +9,12 @@ export interface Rgb {
   b: number;
 }
 
+// Cold indigo (weak analog) -> cyan -> amber (strong analog). Three stops keep
+// the ramp readable on the dark instrument surfaces without reading as "alarm".
 const STOPS: { t: number; c: Rgb }[] = [
-  { t: 0, c: { r: 49, g: 130, b: 189 } }, // cool blue
-  { t: 0.5, c: { r: 254, g: 224, b: 139 } }, // warm yellow
-  { t: 1, c: { r: 189, g: 0, b: 38 } }, // hot red
+  { t: 0, c: { r: 99, g: 102, b: 241 } },
+  { t: 0.55, c: { r: 34, g: 211, b: 238 } },
+  { t: 1, c: { r: 251, g: 191, b: 36 } },
 ];
 
 const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
