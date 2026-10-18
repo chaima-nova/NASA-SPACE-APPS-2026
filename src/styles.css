@@ -2177,7 +2177,12 @@ body::before {
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0.3;
+  /*
+   * 0.324: 20% more photo than the original 0.3, then 10% back off that, which
+   * is the amount that reads as present without crowding the panels. The wash
+   * below is untouched, so the near-black blue they sit on stays as dark.
+   */
+  opacity: 0.324;
   transition: opacity 700ms var(--ease);
 }
 

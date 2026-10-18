@@ -69,6 +69,18 @@ const REPORTED_COLOR = 0xfbbf24;
 const HOME_DISTANCE = 6.81;
 const HOME = new THREE.Vector3(0.9, 1.3, 5.3).setLength(HOME_DISTANCE);
 
+/**
+ * How close, in CSS pixels, the pointer has to get to a beacon's centre.
+ *
+ * Picking used to be a raycast against the sprite, which tests the whole quad
+ * including its glow: measured in the running globe that came to a ~34 px
+ * radius, so three sites a few degrees apart all answered with whichever
+ * sprite happened to be nearest the camera — one name for the whole cluster.
+ * 14 px keeps a 28 px target around each dot, close enough to the visible core
+ * that neighbouring beacons resolve to themselves.
+ */
+const PICK_RADIUS_PX = 14;
+
 interface GlobeApi {
   rebuild: (items: MarkerItem[]) => void;
   select: (id: string | null) => void;
@@ -472,7 +484,6 @@ export function EarthGlobe({
     earth.add(markerGroup);
 
     const markers = new Map<string, THREE.Sprite>();
-    const pickTargets: THREE.Sprite[] = [];
     let activeId: string | null = null;
     let focusPoint: THREE.Vector3 | null = null;
     let tween: Tween | null = null;
@@ -517,7 +528,6 @@ export function EarthGlobe({
         sprite.material.dispose();
       });
       markers.clear();
-      pickTargets.length = 0;
 
       // Additive sprites read better when the low end is not pitch black.
       for (const item of items) {
@@ -538,7 +548,6 @@ export function EarthGlobe({
         sprite.userData = { ...item, base };
         markerGroup.add(sprite);
         markers.set(item.id, sprite);
-        pickTargets.push(sprite);
       }
 
       if (activeId) {
@@ -582,10 +591,42 @@ export function EarthGlobe({
     };
 
     // ---- Picking -----------------------------------------------------------
-    const raycaster = new THREE.Raycaster();
-    raycaster.params.Sprite = { threshold: 0.1 };
-    const pointer = new THREE.Vector2();
+    const markerWorld = new THREE.Vector3();
+    const projected = new THREE.Vector3();
+    const toCamera = new THREE.Vector3();
     let hovered: string | null = null;
+
+    /**
+     * The beacon nearest the pointer, or null.
+     *
+     * Measured in screen space rather than raycast: distance to each beacon's
+     * centre decides, so the tooltip belongs to the dot you are actually over
+     * and the closest centre breaks ties inside a cluster. Beacons around the
+     * back of the globe are skipped the way the sphere already hides them.
+     */
+    const pickBeacon = (event: MouseEvent | PointerEvent): THREE.Sprite | null => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      let best: THREE.Sprite | null = null;
+      let bestDistance = PICK_RADIUS_PX;
+      markers.forEach((sprite) => {
+        sprite.getWorldPosition(markerWorld);
+        toCamera.subVectors(camera.position, markerWorld);
+        // Behind the horizon: the tangent test, not just the projected depth.
+        if (toCamera.dot(markerWorld) <= 0) return;
+        projected.copy(markerWorld).project(camera);
+        if (projected.z > 1) return;
+        const sx = (projected.x * 0.5 + 0.5) * rect.width;
+        const sy = (-projected.y * 0.5 + 0.5) * rect.height;
+        const distance = Math.hypot(sx - x, sy - y);
+        if (distance <= bestDistance) {
+          bestDistance = distance;
+          best = sprite;
+        }
+      });
+      return best;
+    };
 
     /**
      * Tap, not drag.
@@ -657,13 +698,7 @@ export function EarthGlobe({
         if (dragging) return;
       }
 
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const hit = raycaster.intersectObjects(pickTargets, false)[0]?.object as
-        | THREE.Sprite
-        | undefined;
+      const hit = pickBeacon(event);
 
       if (hit) {
         const data = hit.userData as MarkerItem;
@@ -697,13 +732,7 @@ export function EarthGlobe({
         return;
       }
 
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const hit = raycaster.intersectObjects(pickTargets, false)[0]?.object as
-        | THREE.Sprite
-        | undefined;
+      const hit = pickBeacon(event);
       if (!hit) return;
       const data = hit.userData as MarkerItem;
       onSelectRef.current(data.id);

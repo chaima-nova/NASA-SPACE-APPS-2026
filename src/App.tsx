@@ -102,8 +102,8 @@ export default function App() {
   const [imagery, setImagery] = useState<ImageryState | null>(null);
   const [showClouds, setShowClouds] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(true);
-  /** Site whose local 3D terrain is open over the globe, if any. */
-  const [terrainId, setTerrainId] = useState<string | null>(null);
+  /** True while a site's local 3D terrain is open over the globe. */
+  const [terrainOpen, setTerrainOpen] = useState(false);
   /** Bumped to ask the globe to pull back after the terrain closes. */
   const [homeSignal, setHomeSignal] = useState(0);
   /** Site whose field-photo gallery is open, if any. */
@@ -198,15 +198,16 @@ export default function App() {
     : ranked.find((item) => item.prediction.id === selectedId)?.prediction ??
       ranked[0]?.prediction ??
       null;
-  // The terrain view outlives list re-selection: it stays on the site it dived
-  // into, whether that was a scored prediction or a researcher's report.
+  // The 3D view shows the site that is selected, it does not remember one of
+  // its own. Holding a separate id here let the list and the terrain drift
+  // apart — you could pick Antarctica and still be looking at Hawaii — so the
+  // site is derived from the selection instead, and every way of picking a
+  // site (list, report row, beacon, filter fallback) moves the view with it.
   const terrainSite: SiteRef | Prediction | null = useMemo(() => {
-    if (!terrainId) return null;
-    const prediction = predictions.find((p) => p.id === terrainId);
-    if (prediction) return prediction;
-    const reported = community.reportedSites.find((r) => r.id === terrainId);
-    return reported ? siteRefOf(reported) : null;
-  }, [terrainId, predictions, community.reportedSites]);
+    if (!terrainOpen) return null;
+    if (selectedReported) return siteRefOf(selectedReported);
+    return selected;
+  }, [terrainOpen, selected, selectedReported]);
   const selectedRank = selected
     ? ranked.findIndex((item) => item.prediction.id === selected.id) + 1
     : null;
@@ -337,7 +338,7 @@ export default function App() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       // The terrain view and the photo gallery own the keyboard while open.
-      if (terrainId || gallerySite) return;
+      if (terrainOpen || gallerySite) return;
       const tag = (event.target as HTMLElement | null)?.tagName;
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 
@@ -374,7 +375,7 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [ranked, selected, terrainId, gallerySite]);
+  }, [ranked, selected, terrainOpen, gallerySite]);
 
   // Keep the URL shareable without polluting browser history.
   useEffect(() => {
@@ -650,7 +651,10 @@ export default function App() {
               onImagery={setImagery}
               showClouds={showClouds}
               onToggleClouds={toggleClouds}
-              onOpenSite={setTerrainId}
+              onOpenSite={(id) => {
+                setSelectedId(id);
+                setTerrainOpen(true);
+              }}
               reportedSites={reportedMarkers}
               homeSignal={homeSignal}
             />
@@ -702,9 +706,10 @@ export default function App() {
 
             {terrainSite ? (
               <SiteTerrain
+                key={terrainSite.id}
                 prediction={terrainSite}
                 onClose={() => {
-                  setTerrainId(null);
+                  setTerrainOpen(false);
                   setHomeSignal((n) => n + 1);
                 }}
               />
@@ -750,7 +755,10 @@ export default function App() {
               site={selectedReported}
               community={community}
               actions={communityActionsFor(selectedReported.id)}
-              onFlyIn={(site) => setTerrainId(site.id)}
+              onFlyIn={(site) => {
+                setSelectedId(site.id);
+                setTerrainOpen(true);
+              }}
               onCompare={openCompare}
               onEdit={(site) => setReportDraft({ mode: 'edit', site })}
               onDelete={deleteReport}
