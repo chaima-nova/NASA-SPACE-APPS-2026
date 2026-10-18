@@ -4,12 +4,11 @@
 **Challenge:** *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*
 **Track:** Planetary Science & Earth Analogs
 **Owner:** Jasmine — UI / Frontend (shell, visualization, interaction)
-**Doc type:** Research benchmark + wireframe proposal (no ML / data-pipeline work)
-**Last updated:** 18 October 2026
+**Doc type:** Research benchmark + wireframe proposal
 
 ---
 
-## 0. TL;DR
+## Summary
 
 1. **Nothing on the market does what this challenge asks.** Every existing tool is either
    (a) an *analog gallery* with no ranking, (b) a *planetary map* with no Earth comparison,
@@ -27,11 +26,6 @@
 5. **Our thesis:** *one screen that answers "which Earth sites are the best analogs, for which
    target, and why"* — ranked list + globe + per-site dossier + dataset provenance, with a
    Moon-fit / Mars-fit split and the brief's terrain facets as first-class filters.
-
-> **Important design flag.** The current shell plots **terrestrial** sites on a **lunar** globe.
-> That is visually striking but factually wrong — the Atacama is not on the Moon. The layout
-> below puts the candidate sites on an **Earth** globe and keeps the Moon/Mars as the
-> *comparison target* (inset or split view). See §8.
 
 ---
 
