@@ -276,14 +276,13 @@ Earth's rotation axis and the real sky rather than being decorative; it also
 advances at the real sidereal rate. Verified against 20 bright stars
 (20/20 land on bright pixels).
 
-**Cover.** Two photographs, both from [NASA's Image and Video
-Library](https://images.nasa.gov/) and both cropped to 1920×1080:
-`public/home/arctic.jpg` (Operation IceBridge over the Geikie Plateau,
-Greenland) is the Home backdrop, and `public/home/desert.jpg` (NASA/JPL-Caltech,
-star dunes in the Algerian Sahara) is the patch that opens under the pointer.
-The hero credit names both. NASA imagery is in the public domain, so the files
-are committed and the page has no runtime dependency on an external host;
-swapping in other photographs is a file replacement, no code change. The patch
+**Cover.** `public/home/arctic.jpg` (NASA Operation IceBridge over the Geikie
+Plateau, Greenland, cropped to 1920×1080) is the Home backdrop, and
+`public/home/desert.jpg` (the team's own dune photograph, 1024×576) is painted
+on top by the pointer: a soft brush stamps into a canvas mask, so a sweep leaves
+a trail that persists until the pointer leaves, then fades and clears. Both
+files are committed, so the page has no runtime dependency on an external host;
+swapping in other photographs is a file replacement, no code change. The brush
 follows a fine pointer only — touch, reduced motion and blind mode keep the ice
 frame.
 

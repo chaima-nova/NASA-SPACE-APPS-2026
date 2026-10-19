@@ -3887,7 +3887,7 @@ html[data-a11y-motion='reduced'] *::after {
   isolation: isolate;
 }
 
-/* Two photographs, one frame: ice underneath, sand revealed by the pointer.
+/* Two photographs, one frame: ice underneath, sand painted on by the pointer.
    Decorative throughout, so the block is inert and has no accessible name. */
 .home-photo {
   position: absolute;
@@ -3898,8 +3898,7 @@ html[data-a11y-motion='reduced'] *::after {
   user-select: none;
 }
 
-.home-photo-ice,
-.home-photo-sand img {
+.home-photo-ice {
   display: block;
   width: 100%;
   height: 100%;
@@ -3915,46 +3914,24 @@ html[data-a11y-motion='reduced'] *::after {
   animation: home-photo-pan 64s ease-in-out infinite alternate;
 }
 
-/* The patch of desert. Its radius is an animatable custom property, so opening
-   it is a CSS transition rather than a frame loop in JavaScript. */
-@property --reveal-r {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
+/* The canvas the brush paints into. Its trails fade out when the pointer
+   leaves, so the next sweep starts on clean ice. */
 .home-photo-sand {
   position: absolute;
   inset: 0;
-  --reveal-r: 0px;
+  display: block;
+  width: 100%;
+  height: 100%;
   opacity: 0;
-  -webkit-mask-image: radial-gradient(
-    circle at var(--reveal-x, 50%) var(--reveal-y, 50%),
-    #000 0,
-    #000 calc(var(--reveal-r) * 0.52),
-    transparent var(--reveal-r)
-  );
-  mask-image: radial-gradient(
-    circle at var(--reveal-x, 50%) var(--reveal-y, 50%),
-    #000 0,
-    #000 calc(var(--reveal-r) * 0.52),
-    transparent var(--reveal-r)
-  );
-  transition:
-    opacity 0.3s var(--ease),
-    --reveal-r 0.42s var(--ease);
-}
-
-.home-photo-sand img {
-  filter: saturate(1.08);
+  filter: saturate(1.06);
+  transition: opacity 0.32s var(--ease);
 }
 
 .home-hero[data-revealed='true'] .home-photo-sand {
-  --reveal-r: clamp(170px, 17vw, 260px);
   opacity: 1;
 }
 
-/* No pointer, no patch: the poster frame stays whole on touch screens. */
+/* No pointer, no paint: the poster frame stays whole on touch screens. */
 @media (hover: none) {
   .home-photo-sand {
     display: none;
@@ -3990,14 +3967,12 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 /* Reduced motion, or blind mode: the same frame, held. */
-.home[data-still='true'] .home-photo-ice,
-.home[data-still='true'] .home-orbit svg {
+.home[data-still='true'] .home-photo-ice {
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-photo-ice,
-  .home-orbit svg {
+  .home-photo-ice {
     animation: none;
   }
 }
@@ -4022,54 +3997,6 @@ html[data-a11y-motion='reduced'] *::after {
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-
-/* A slow orbit on the right, drawn rather than photographed so it costs a few
-   hundred bytes and freezes under reduced motion. */
-.home-orbit {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  right: -10%;
-  width: min(640px, 56vw);
-  transform: translateY(-50%);
-  opacity: 0.38;
-  pointer-events: none;
-}
-
-.home-orbit svg {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  transform-origin: 50% 50%;
-  animation: home-orbit-spin 140s linear infinite;
-}
-
-.home-orbit ellipse {
-  fill: none;
-  stroke: var(--line-3);
-  stroke-width: 1;
-}
-
-.home-orbit ellipse + ellipse {
-  stroke: var(--line-2);
-  stroke-dasharray: 3 9;
-}
-
-.home-orbit-body {
-  fill: #0b1420;
-  stroke: var(--line-3);
-  stroke-width: 1;
-}
-
-.home-orbit-dot {
-  fill: var(--signal);
-}
-
-@keyframes home-orbit-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .home-hero-inner {
@@ -4252,9 +4179,6 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 @media (max-width: 900px) {
-  .home-orbit {
-    display: none;
-  }
   .home-steps ol {
     grid-template-columns: 1fr;
   }
