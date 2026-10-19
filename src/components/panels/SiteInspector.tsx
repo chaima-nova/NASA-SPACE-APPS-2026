@@ -188,24 +188,30 @@ export function SiteInspector({
           onClick={onCompare}
           title="NASA satellite imagery next to the ground photograph"
         >
-          {/* The same 16 px line weight as the photograph glyph above: the tilted
-              satellite of the reference mark — body with a cap, gridded solar
-              panels across two corners, a dish and two signal arcs. Drawn upright
-              and rotated, so the two panels stay symmetrical. */}
+          {/* The reference mark, traced to its proportions: a body with a cap on
+              its upper end, wide solar wings with a cell divider, the dish beyond
+              the body's lower end and two signal arcs outside that. Drawn upright
+              and rotated 45°, which is what puts the panels across opposite
+              corners. The wings carry one divider rather than the reference's
+              eight cells: at 16 px a panel is about 2 px deep and a finer grid
+              turns to noise. */}
           <svg viewBox="0 0 24 24" aria-hidden="true" className="compare-icon">
-            <g transform="rotate(45 12 12)">
-              <rect x="9.6" y="7.4" width="4.8" height="9.4" rx="1.4" />
-              <rect x="10.6" y="4.6" width="2.8" height="2.8" rx="1" />
-              <rect x="5" y="8.6" width="3.6" height="7" rx="0.9" />
-              <rect x="15.4" y="8.6" width="3.6" height="7" rx="0.9" />
-              <path d="M5.8 12h2" />
-              <path d="M16.2 12h2" />
-              <path d="M8.6 12h1" />
-              <path d="M14.4 12h1" />
-              <path d="M12 16.8v1.4" />
-              <path d="M8.9 18.2a3.1 2.6 0 0 0 6.2 0" />
-              <path d="M7.5 19.1a5.3 5.3 0 0 0 4.5 2.7" />
-              <path d="M6.2 18.3a7.6 7.6 0 0 0 5.4 4" />
+            {/* The mark is asymmetric, so the rotation alone leaves its ink off
+                centre; the shift recentres it in the 16 px box. */}
+            <g transform="translate(-1.15 1.1) rotate(45 12 12)">
+              <rect x="10.2" y="5.3" width="2.9" height="1.7" rx="0.7" />
+              <rect x="9.95" y="6.9" width="4.1" height="6" rx="1.2" />
+              <rect x="3.4" y="8.45" width="5.5" height="3.65" rx="0.9" />
+              <rect x="15.1" y="8.45" width="5.5" height="3.65" rx="0.9" />
+              <path d="M6.15 9.4v1.75" />
+              <path d="M17.85 9.4v1.75" />
+              <path d="M8.9 10.28h1.05" />
+              <path d="M14.05 10.28h1.05" />
+              <path d="M12 12.9v0.6" />
+              <path d="M9.3 15.25C9.7 14.2 10.7 13.5 12 13.5C13.3 13.5 14.3 14.2 14.7 15.25Z" />
+              <path d="M12 15.25v1.2" />
+              <path d="M10.4 16.9A2.6 2.6 0 0 1 13.6 16.9" />
+              <path d="M9.7 17.8A3.2 3.2 0 0 1 13.9 17.8" />
             </g>
           </svg>
           <span className="compare-label">
