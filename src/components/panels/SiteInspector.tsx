@@ -188,7 +188,17 @@ export function SiteInspector({
           onClick={onCompare}
           title="NASA satellite imagery next to the ground photograph"
         >
-          Satellite-Ground Comparison
+          {/* The same 16 px line weight as the photograph glyph above: a bus with
+              two solar panels and a mast, sized to the same footprint so the two
+              icons carry the same weight. */}
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="compare-icon">
+            <rect x="2.5" y="11.2" width="4.4" height="4.6" rx="0.7" />
+            <rect x="17.1" y="11.2" width="4.4" height="4.6" rx="0.7" />
+            <path d="M12 9.2 16.2 13.4 12 17.6 7.8 13.4Z" />
+            <path d="M12 9.2V5.7" />
+            <path d="M10.1 5.7h3.8" />
+          </svg>
+          <span className="compare-label">Satellite ↔ Ground Comparison</span>
         </button>
       </div>
 

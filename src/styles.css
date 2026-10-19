@@ -1808,12 +1808,16 @@ body::before {
   text-align: left;
 }
 
-/* Matches the See Site label, and keeps the row the same height as the icon
-   button beside it. */
+/* Laid out like the See Site row beside it: icon first, label after it, same
+   height and same label size. */
 .site-actions .compare-open {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   min-height: 2.25rem;
   padding: 9px 12px;
   font-size: 0.78rem;
+  text-align: left;
 }
 
 .btn.see-site:hover,
@@ -1829,7 +1833,10 @@ body::before {
   cursor: not-allowed;
 }
 
-.see-site-icon {
+/* Both action cards carry a 16 px line icon drawn in the current colour, so they
+   wear one rule rather than two that can drift. */
+.see-site-icon,
+.compare-icon {
   flex: none;
   width: 16px;
   height: 16px;

@@ -173,7 +173,7 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
 
   return (
     <Modal
-      kicker="Satellite-Ground Comparison"
+      kicker="Satellite ↔ Ground Comparison"
       title={site.siteName}
       subtitle={
         <>
