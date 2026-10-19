@@ -188,15 +188,25 @@ export function SiteInspector({
           onClick={onCompare}
           title="NASA satellite imagery next to the ground photograph"
         >
-          {/* The same 16 px line weight as the photograph glyph above: a bus with
-              two solar panels and a mast, sized to the same footprint so the two
-              icons carry the same weight. */}
+          {/* The same 16 px line weight as the photograph glyph above: the tilted
+              satellite of the reference mark — body with a cap, gridded solar
+              panels across two corners, a dish and two signal arcs. Drawn upright
+              and rotated, so the two panels stay symmetrical. */}
           <svg viewBox="0 0 24 24" aria-hidden="true" className="compare-icon">
-            <rect x="2.5" y="11.2" width="4.4" height="4.6" rx="0.7" />
-            <rect x="17.1" y="11.2" width="4.4" height="4.6" rx="0.7" />
-            <path d="M12 9.2 16.2 13.4 12 17.6 7.8 13.4Z" />
-            <path d="M12 9.2V5.7" />
-            <path d="M10.1 5.7h3.8" />
+            <g transform="rotate(45 12 12)">
+              <rect x="9.6" y="7.4" width="4.8" height="9.4" rx="1.4" />
+              <rect x="10.6" y="4.6" width="2.8" height="2.8" rx="1" />
+              <rect x="5" y="8.6" width="3.6" height="7" rx="0.9" />
+              <rect x="15.4" y="8.6" width="3.6" height="7" rx="0.9" />
+              <path d="M5.8 12h2" />
+              <path d="M16.2 12h2" />
+              <path d="M8.6 12h1" />
+              <path d="M14.4 12h1" />
+              <path d="M12 16.8v1.4" />
+              <path d="M8.9 18.2a3.1 2.6 0 0 0 6.2 0" />
+              <path d="M7.5 19.1a5.3 5.3 0 0 0 4.5 2.7" />
+              <path d="M6.2 18.3a7.6 7.6 0 0 0 5.4 4" />
+            </g>
           </svg>
           <span className="compare-label">
             Satellite{' '}
