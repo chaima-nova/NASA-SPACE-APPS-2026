@@ -85,10 +85,10 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
 
     const stamps: Stamp[] = [];
     /** How long a stroke survives before the ice is back. */
-    const LIFE = 1200;
+    const LIFE = 1320;
     /** How often the mask is rebuilt — 33 fps is plenty for a drying trail. */
     const TICK = 30;
-    const MAX_STAMPS = 110;
+    const MAX_STAMPS = 120;
 
     const composite = () => {
       frame = 0;
@@ -202,7 +202,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
 
     const stroke = (x: number, y: number) => {
       const now = performance.now();
-      const base = Math.min(width, height) * 0.16;
+      const base = Math.min(width, height) * 0.176;
       if (!last) {
         stampAt(x, y, now, base);
         last = { x, y };
