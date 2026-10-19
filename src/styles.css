@@ -3910,7 +3910,7 @@ html[data-a11y-motion='reduced'] *::after {
 .home-photo-ice {
   object-position: 50% 46%;
   transform-origin: 62% 50%;
-  filter: brightness(0.7) contrast(1.08) saturate(0.92);
+  filter: brightness(0.8) contrast(1.04) saturate(0.95);
   animation: home-photo-pan 64s ease-in-out infinite alternate;
 }
 

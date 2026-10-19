@@ -34,12 +34,13 @@ interface HomePageProps {
  * that claims 13 sites while the app has 12 is the kind of detail that makes a
  * reader distrust the rest of the numbers.
  *
- * The backdrop is a photograph rather than a drawn sky. Moving the pointer over
- * the hero paints the desert on top of the ice in soft brush dabs: the canvas
- * below keeps a mask that the dabs accumulate into, so a sweep leaves a trail
- * rather than dragging a fixed disc around. The trail fades and clears when the
- * pointer leaves. Touch, reduced motion and blind mode leave the still ice
- * frame alone, which is why the effect is decoration and not content.
+ * The backdrop is a photograph rather than a drawn sky. Dragging the pointer
+ * across the hero paints the desert on top of the ice in soft brush dabs: the
+ * canvas keeps a mask that the dabs build up, so a sweep leaves a stroke rather
+ * than dragging a fixed disc around. That stroke dries out behind the brush, so
+ * the ice returns a second or two after you stop moving. Touch, reduced motion
+ * and blind mode leave the still ice frame alone, which is why the effect is
+ * decoration and not content.
  */
 export function HomePage({ sites, datasets, still }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
@@ -72,6 +73,9 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     let last: { x: number; y: number } | null = null;
     let frame = 0;
     let dirty = false;
+    let painted = false;
+    let fadeTimer = 0;
+    let lastStrokeAt = 0;
 
     const composite = () => {
       frame = 0;
@@ -114,6 +118,32 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       schedule();
     };
 
+    // Each stroke dries out: every 75 ms the mask is erased by a small slice,
+    // so the trail dissolves behind the brush instead of staining the frame.
+    // The loop stops on its own once nothing has been painted for a beat.
+    const fade = () => {
+      fadeTimer = 0;
+      if (!painted) return;
+      maskCtx.globalCompositeOperation = 'destination-out';
+      maskCtx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+      maskCtx.fillRect(0, 0, width, height);
+      maskCtx.globalCompositeOperation = 'source-over';
+      schedule();
+      if (performance.now() - lastStrokeAt > 1600) {
+        maskCtx.clearRect(0, 0, width, height);
+        painted = false;
+        schedule();
+        return;
+      }
+      fadeTimer = window.setTimeout(fade, 75);
+    };
+
+    const keepDrying = () => {
+      painted = true;
+      lastStrokeAt = performance.now();
+      if (!fadeTimer) fadeTimer = window.setTimeout(fade, 75);
+    };
+
     const dab = (x: number, y: number) => {
       // Wide enough to read as a brush, soft enough that dabs blend into a stroke.
       const radius = Math.min(width, height) * 0.115;
@@ -133,6 +163,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       if (!last) {
         dab(px, py);
         last = { x, y };
+        keepDrying();
         schedule();
         return;
       }
@@ -147,6 +178,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
         dab((last.x + (dx * i) / steps) * dpr, (last.y + (dy * i) / steps) * dpr);
       }
       last = { x, y };
+      keepDrying();
       schedule();
     };
 
@@ -157,6 +189,9 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     const clear = () => {
       maskCtx.clearRect(0, 0, width, height);
       last = null;
+      painted = false;
+      window.clearTimeout(fadeTimer);
+      fadeTimer = 0;
       schedule();
     };
 
@@ -192,6 +227,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(clearTimer.current);
+      window.clearTimeout(fadeTimer);
       observer.disconnect();
       delete (canvas as HTMLCanvasElement & { __painter?: typeof painter }).__painter;
     };
@@ -260,7 +296,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           />
           <canvas ref={sandRef} className="home-photo-sand" aria-hidden="true" />
         </div>
-        <span className="home-photo-credit">Arctic: NASA IceBridge · Desert: team-supplied</span>
+        <span className="home-photo-credit">Cover photographs: team-supplied</span>
 
         <div className="home-hero-inner">
           <span className="kicker">NASA Space Apps Challenge 2026</span>
