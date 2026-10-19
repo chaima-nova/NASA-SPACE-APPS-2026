@@ -526,7 +526,7 @@ export default function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
-          <h1>TeraaNexus</h1>
+          <h1>TerraNexus</h1>
         </div>
 
         <nav className="tabs" aria-label="Sections">
