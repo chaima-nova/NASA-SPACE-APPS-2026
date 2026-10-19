@@ -3324,8 +3324,8 @@ body::before {
 }
 
 .a11y-fab svg {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
