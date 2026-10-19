@@ -3270,51 +3270,57 @@ body::before {
 /* =============================================================================
    Accessibility — one floating dock, every preference nested inside it
 
-   The settings live behind a single control in the bottom-left corner so the
+   The settings live behind a single control in the bottom-right corner so the
    workbench keeps its space; the panel opens upward, over the page rather than
-   in it. The preferences themselves are applied as root attributes by
+   in it. The button is a solid, round accent disc rather than another hairline
+   panel: it is the one control on the surface that a first-time visitor has to
+   be able to find, so it carries the accent colour instead of chrome. The
+   preferences themselves are applied as root attributes by
    `lib/accessibility.ts`, which is why the rules below sit at the bottom of the
    sheet: nothing else in here should have to know they exist.
    ========================================================================== */
 
 .a11y-dock {
   position: fixed;
-  left: 18px;
+  right: 18px;
   bottom: 18px;
   z-index: 50; /* above the workbench, below the dialog layers (60/70) */
 }
 
 .a11y-fab {
+  position: relative; /* the active dot anchors to the disc, not to the dock */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
   padding: 0;
-  color: var(--ink-2);
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
+  /* Dark mark on the accent: ~11:1 against the disc, and the disc itself is
+     ~9:1 against the page, so the button reads at a glance either way. */
+  color: #04141a;
+  background: var(--signal);
+  border: 1px solid var(--signal);
+  border-radius: 50%;
   box-shadow: 0 14px 34px -14px #000;
   cursor: pointer;
   transition:
-    color 0.15s var(--ease),
+    background 0.15s var(--ease),
     border-color 0.15s var(--ease),
-    background 0.15s var(--ease);
+    box-shadow 0.15s var(--ease);
 }
 
 .a11y-fab:hover,
 .a11y-fab[aria-expanded='true'] {
-  color: var(--ink);
-  background: var(--surface-3);
-  border-color: var(--line-3);
+  background: var(--moon);
+  border-color: var(--moon);
 }
 
 /* A dot on the button whenever something is switched on, so a reader who opened
    the panel once can see at a glance that a setting is still active. */
 .a11y-fab.has-active {
-  color: var(--signal);
-  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow:
+    0 0 0 3px rgba(34, 211, 238, 0.3),
+    0 14px 34px -14px #000;
 }
 
 .a11y-fab svg {
@@ -3332,16 +3338,16 @@ body::before {
   position: absolute;
   top: 5px;
   right: 5px;
-  width: 6px;
-  height: 6px;
-  background: var(--signal);
+  width: 7px;
+  height: 7px;
+  background: #04141a;
   border-radius: 999px;
 }
 
 .a11y-panel {
   position: absolute;
   bottom: calc(100% + 10px);
-  left: 0;
+  right: 0; /* opens upward from the corner it is anchored to */
   display: flex;
   flex-direction: column;
   width: min(324px, calc(100vw - 36px));
@@ -3673,7 +3679,7 @@ html[data-a11y-motion='reduced'] *::after {
   /* Above the sticky action bar in the dossier card, which parks on the viewport
      bottom and would otherwise sit under the button. */
   .a11y-dock {
-    left: 12px;
+    right: 12px;
     bottom: 76px;
   }
   .a11y-panel {
@@ -3682,8 +3688,8 @@ html[data-a11y-motion='reduced'] *::after {
   }
 }
 
-/* The dock is fixed to the viewport's bottom-left corner, so the footer keeps
-   clear of it instead of letting the button sit on its first line. */
+/* The dock is fixed to the viewport's bottom-right corner, so the footer keeps
+   clear of it instead of letting the button sit on its last line. */
 .app-foot {
   padding-bottom: 72px;
 }

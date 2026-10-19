@@ -59,7 +59,9 @@ function Switch({
 
 /**
  * The site's accessibility settings, all of them behind one floating control in
- * the bottom-left corner so the workbench itself keeps its space.
+ * the bottom-right corner so the workbench itself keeps its space. The control
+ * is a round accent-coloured button carrying the universal access mark — the
+ * one piece of chrome on this surface that has to be findable at a glance.
  *
  * The groups are `<details>`: they nest the settings without a custom accordion,
  * come with keyboard handling for free, and the panel stays one screen tall.
