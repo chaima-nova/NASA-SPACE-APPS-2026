@@ -3,6 +3,8 @@ import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { FilterBar } from './components/layout/FilterBar';
+import { HomePage } from './components/layout/HomePage';
+import { TeamPage } from './components/layout/TeamPage';
 import { Panel } from './components/layout/Panel';
 import { SiteBackdrop } from './components/layout/SiteBackdrop';
 import { DataSourceList } from './components/panels/DataSourceList';
@@ -36,6 +38,7 @@ import type {
 } from './data-contracts/types';
 import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
+import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
 import { scoreColor } from './lib/colors';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
@@ -121,6 +124,8 @@ export default function App() {
   const [backdrop, setBackdrop] = useState(true);
   /** Reading preferences, applied to the document root by the dock. */
   const { settings: a11y, choose: chooseMode, update: updateA11y } = useAccessibility();
+  /** The cover, or the workbench. Everything interactive lives behind `solution`. */
+  const [route] = useRoute();
   /**
    * Opacity of the panel wash. Driven separately from the URL so switching
    * sites (or the switch itself) fades out and back in instead of popping the
@@ -222,7 +227,7 @@ export default function App() {
    * sentence — and with both targets, because the score on screen shows one.
    */
   const blindAnnouncement =
-    a11y.mode !== 'blind'
+    a11y.mode !== 'blind' || route !== 'solution'
       ? ''
       : selected
         ? `Site ${selectedRank ?? '?'} of ${ranked.length}: ${selected.siteName}. ${terrainLabel(
@@ -359,6 +364,9 @@ export default function App() {
   // Keyboard: `/` search, arrows walk the ranking, Esc returns to the top site.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      // The ranking only exists on the workbench: arrows on the cover must not
+      // move an invisible selection behind it.
+      if (route !== 'solution') return;
       // The terrain view and the photo gallery own the keyboard while open.
       if (terrainOpen || gallerySite) return;
       const tag = (event.target as HTMLElement | null)?.tagName;
@@ -397,17 +405,33 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [ranked, selected, terrainOpen, gallerySite]);
+  }, [ranked, selected, terrainOpen, gallerySite, route]);
 
-  // Keep the URL shareable without polluting browser history.
+  // A dialog opened on the workbench must not hang over the cover after a tab
+  // switch, so leaving the solution closes whatever was floating on it.
+  useEffect(() => {
+    if (route === 'solution') return;
+    setGallerySite(null);
+    setReportDraft(null);
+    setManageOpen(false);
+    setCompare(null);
+    setTerrainOpen(false);
+  }, [route]);
+
+  // Keep the URL shareable without polluting browser history. The route rides
+  // in the hash, so a link keeps both the view and the state inside it.
   useEffect(() => {
     const params = new URLSearchParams();
     if (target !== 'moon') params.set('target', target);
     if (terrain !== 'all') params.set('terrain', terrain);
     if (selectedId) params.set('site', selectedId);
     const search = params.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}`);
-  }, [target, terrain, selectedId]);
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${search ? `?${search}` : ''}#/${route}`,
+    );
+  }, [target, terrain, selectedId, route]);
 
   /** Adds a report, or saves an edited one, then opens it. */
   function saveReport(site: ReportedSite) {
@@ -483,18 +507,21 @@ export default function App() {
         } as React.CSSProperties
       }
     >
-      {/* First two tab stops on the page, invisible until focused. A reader who
-          cannot use the globe should never have to tab past it to reach text. */}
-      <nav className="skip-links" aria-label="Skip links">
-        <a className="skip-link" href="#ranked-sites">
-          Skip to ranked sites
-        </a>
-        <a className="skip-link" href="#site-dossier">
-          Skip to site dossier
-        </a>
-      </nav>
+      {/* First two tab stops on the workbench, invisible until focused. A reader
+          who cannot use the globe should never have to tab past it to reach
+          text. The cover is short enough not to need them. */}
+      {route === 'solution' ? (
+        <nav className="skip-links" aria-label="Skip links">
+          <a className="skip-link" href="#ranked-sites">
+            Skip to ranked sites
+          </a>
+          <a className="skip-link" href="#site-dossier">
+            Skip to site dossier
+          </a>
+        </nav>
+      ) : null}
 
-      <SiteBackdrop url={backdropUrl} enabled={backdrop} />
+      {route === 'solution' ? <SiteBackdrop url={backdropUrl} enabled={backdrop} /> : null}
 
       <header className="topbar">
         <div className="brand">
@@ -507,21 +534,49 @@ export default function App() {
           </div>
         </div>
 
-        <div className="topbar-right">
-          <button
-            type="button"
-            className={backdrop ? 'topbar-toggle is-on' : 'topbar-toggle'}
-            aria-pressed={backdrop}
-            onClick={() => setBackdrop((on) => !on)}
-            title="Fade the selected site's photograph into the page background"
+        <nav className="tabs" aria-label="Sections">
+          <a
+            className={route === 'home' ? 'tab is-current' : 'tab'}
+            href={routeHref('home')}
+            aria-current={route === 'home' ? 'page' : undefined}
           >
-            <span className="backdrop-dot" aria-hidden="true" />
-            Site backdrop
-          </button>
-          <span className={usingMockData ? 'status status-mock' : 'status status-live'}>
-            <span className="status-dot" />
-            {usingMockData ? 'Sample data' : 'Live API'}
-          </span>
+            Home
+          </a>
+          <a
+            className={route === 'solution' ? 'tab is-current' : 'tab'}
+            href={routeHref('solution')}
+            aria-current={route === 'solution' ? 'page' : undefined}
+          >
+            Solution
+          </a>
+          <a
+            className={route === 'team' ? 'tab is-current' : 'tab'}
+            href={routeHref('team')}
+            aria-current={route === 'team' ? 'page' : undefined}
+          >
+            Our team
+          </a>
+        </nav>
+
+        <div className="topbar-right">
+          {route === 'solution' ? (
+            <>
+              <button
+                type="button"
+                className={backdrop ? 'topbar-toggle is-on' : 'topbar-toggle'}
+                aria-pressed={backdrop}
+                onClick={() => setBackdrop((on) => !on)}
+                title="Fade the selected site's photograph into the page background"
+              >
+                <span className="backdrop-dot" aria-hidden="true" />
+                Site backdrop
+              </button>
+              <span className={usingMockData ? 'status status-mock' : 'status status-live'}>
+                <span className="status-dot" />
+                {usingMockData ? 'Sample data' : 'Live API'}
+              </span>
+            </>
+          ) : null}
           <a
             className="topbar-link"
             href="https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/"
@@ -533,6 +588,16 @@ export default function App() {
         </div>
       </header>
 
+      {route === 'home' ? (
+        <HomePage
+          sites={predictions.length}
+          datasets={datasets.length}
+          still={a11y.reduceMotion}
+        />
+      ) : route === 'team' ? (
+        <TeamPage still={a11y.reduceMotion} />
+      ) : (
+        <>
       <FilterBar
         target={target}
         onTarget={setTarget}
@@ -862,6 +927,8 @@ export default function App() {
           </div>
         ) : null}
       </section>
+        </>
+      )}
 
       {gallerySite ? (
         <SiteGallery
