@@ -1,17 +1,20 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import {
+  MODE_BUNDLES,
+  MODES,
   TEXT_SCALES,
   type AccessibilitySettings,
+  type Mode,
   type TextScale,
 } from '../../lib/accessibility';
 
 interface AccessibilityDockProps {
   settings: AccessibilitySettings;
+  onMode: (mode: Mode) => void;
   onChange: <K extends keyof AccessibilitySettings>(
     key: K,
     value: AccessibilitySettings[K],
   ) => void;
-  onReset: () => void;
 }
 
 const SCALE_LABEL: Record<TextScale, string> = {
@@ -24,6 +27,25 @@ const SCALE_SAMPLE: Record<TextScale, string> = {
   normal: '0.82rem',
   large: '0.95rem',
   larger: '1.08rem',
+};
+
+/**
+ * The modes, described by what the reader gets rather than by what is wrong
+ * with them. Order matters: the two real modes first, "usual view" last.
+ */
+const MODE_COPY: Record<Mode, { title: string; hint: string }> = {
+  blind: {
+    title: 'Blind mode',
+    hint: 'Every site read out as you move through the list, the globe described in words, biggest text, strongest contrast, nothing moving.',
+  },
+  dyslexia: {
+    title: 'Dyslexia-friendly',
+    hint: 'Lexend type, wider letter and word spacing, taller lines, larger text, links underlined.',
+  },
+  none: {
+    title: 'Usual view',
+    hint: 'No adjustments.',
+  },
 };
 
 /** One switch row: the whole row is the control, so the target is never tiny. */
@@ -63,26 +85,33 @@ function Switch({
  * is a round accent-coloured button carrying the universal access mark — the
  * one piece of chrome on this surface that has to be findable at a glance.
  *
- * The groups are `<details>`: they nest the settings without a custom accordion,
- * come with keyboard handling for free, and the panel stays one screen tall.
+ * The first thing in the panel is a mode, not a switchboard: one click sets a
+ * whole bundle, so nobody has to translate "I am blind" into a list of
+ * preferences. Fine-tuning is folded shut underneath, where it helps the people
+ * who go looking for it and is invisible to everybody else.
+ *
  * The panel is a non-modal dialog — it never blocks the page underneath — and
  * closes on Escape or a click outside, returning focus to the button.
  */
-export function AccessibilityDock({ settings, onChange, onReset }: AccessibilityDockProps) {
+export function AccessibilityDock({ settings, onMode, onChange }: AccessibilityDockProps) {
   const [open, setOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const dockRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
+  const modeLabelId = `${panelId}-mode`;
 
-  // Land on the first setting, not on the close button: opening the panel is a
+  // Land on the current mode, not on the close button: opening the panel is a
   // request to change something.
   useEffect(() => {
     if (!open) return;
     const panel = panelRef.current;
-    (panel?.querySelector<HTMLElement>('.a11y-body button') ??
-      panel?.querySelector<HTMLElement>('.a11y-close'))?.focus();
+    (
+      panel?.querySelector<HTMLElement>('.a11y-mode[aria-checked="true"]') ??
+      panel?.querySelector<HTMLElement>('.a11y-mode') ??
+      panel?.querySelector<HTMLElement>('.a11y-close')
+    )?.focus();
   }, [open]);
 
   useEffect(() => {
@@ -107,7 +136,7 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
     };
   }, [open]);
 
-  /** Announces the new state, so a change is confirmed without sight of the switch. */
+  /** Announces the new state, so a change is confirmed without sight of it. */
   const set = <K extends keyof AccessibilitySettings>(
     key: K,
     value: AccessibilitySettings[K],
@@ -117,7 +146,21 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
     setAnnouncement(message);
   };
 
-  const on = settings.dyslexia || settings.highContrast || settings.reduceMotion;
+  const on =
+    settings.mode !== 'none' ||
+    settings.dyslexia ||
+    settings.highContrast ||
+    settings.reduceMotion ||
+    settings.underlineLinks ||
+    settings.textScale !== 'normal';
+
+  // A fine-tune edit wins over the bundle, so the mode stays selected while the
+  // look no longer matches it. Saying so is cheaper than the alternative, which
+  // is a radio claiming one thing and the page showing another.
+  const bundle = MODE_BUNDLES[settings.mode];
+  const adjusted = (
+    ['dyslexia', 'textScale', 'underlineLinks', 'highContrast', 'reduceMotion'] as const
+  ).some((setting) => settings[setting] !== bundle[setting]);
 
   return (
     <div className="a11y-dock" ref={dockRef}>
@@ -128,7 +171,7 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((current) => !current)}
-        title="Accessibility settings"
+        title="Accessibility modes"
       >
         {/* The universal access mark, drawn to the same 1.5 px line recipe as
             the other icons on the surface. */}
@@ -139,7 +182,7 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
           <path d="M12 14.35 9.1 20.4" />
           <path d="M12 14.35l2.9 6.05" />
         </svg>
-        <span className="sr-only">Accessibility settings</span>
+        <span className="sr-only">Accessibility modes</span>
       </button>
 
       {open ? (
@@ -149,12 +192,12 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
           className="a11y-panel"
           role="dialog"
           aria-modal="false"
-          aria-label="Accessibility settings"
+          aria-label="Accessibility"
         >
           <header className="a11y-head">
             <div>
               <span className="kicker">Accessibility</span>
-              <h2>Reading &amp; display</h2>
+              <h2>What do you need?</h2>
             </div>
             <button
               type="button"
@@ -172,8 +215,76 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
           </header>
 
           <div className="a11y-body">
-            <details className="a11y-group" open>
-              <summary>Reading</summary>
+            <div className="a11y-modes" role="radiogroup" aria-labelledby={modeLabelId}>
+              <span className="sr-only" id={modeLabelId}>
+                Accessibility mode
+              </span>
+              {MODES.map((mode) => {
+                const checked = settings.mode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    role="radio"
+                    aria-checked={checked}
+                    className={checked ? 'a11y-mode is-on' : 'a11y-mode'}
+                    onClick={() => {
+                      onMode(mode);
+                      setAnnouncement(
+                        mode === 'none'
+                          ? 'Usual view restored'
+                          : `${MODE_COPY[mode].title} on`,
+                      );
+                    }}
+                  >
+                    <span className="a11y-mode-mark" aria-hidden="true" />
+                    <span className="a11y-mode-body">
+                      <span className="a11y-mode-title">
+                        {MODE_COPY[mode].title}
+                        {checked && adjusted ? (
+                          <span className="a11y-mode-edited"> · adjusted</span>
+                        ) : null}
+                      </span>
+                      <span className="a11y-mode-hint">{MODE_COPY[mode].hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* The honest answer instead of a third mode that would do nothing. */}
+            <p className="a11y-note">
+              This app has no sound — no audio, no video — so there is nothing to mute or
+              caption.
+            </p>
+
+            <details className="a11y-group">
+              <summary>Fine-tune</summary>
+
+              <div className="a11y-row">
+                <span className="a11y-row-label" id={`${panelId}-size`}>
+                  Text size
+                </span>
+                <div className="a11y-seg" role="radiogroup" aria-labelledby={`${panelId}-size`}>
+                  {TEXT_SCALES.map((scale) => (
+                    <button
+                      key={scale}
+                      type="button"
+                      role="radio"
+                      aria-checked={settings.textScale === scale}
+                      className={
+                        settings.textScale === scale ? 'a11y-seg-btn is-on' : 'a11y-seg-btn'
+                      }
+                      style={{ fontSize: SCALE_SAMPLE[scale] }}
+                      onClick={() =>
+                        set('textScale', scale, `Text size ${SCALE_LABEL[scale]}`)
+                      }
+                    >
+                      {SCALE_LABEL[scale]}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <Switch
                 label="Dyslexia-friendly text"
@@ -188,33 +299,6 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
                 }
               />
 
-              <div className="a11y-row">
-                <span className="a11y-row-label" id={`${panelId}-size`}>
-                  Text size
-                </span>
-                <div
-                  className="a11y-seg"
-                  role="radiogroup"
-                  aria-labelledby={`${panelId}-size`}
-                >
-                  {TEXT_SCALES.map((scale) => (
-                    <button
-                      key={scale}
-                      type="button"
-                      role="radio"
-                      aria-checked={settings.textScale === scale}
-                      className={
-                        settings.textScale === scale ? 'a11y-seg-btn is-on' : 'a11y-seg-btn'
-                      }
-                      style={{ fontSize: SCALE_SAMPLE[scale] }}
-                      onClick={() => set('textScale', scale, `Text size ${SCALE_LABEL[scale]}`)}
-                    >
-                      {SCALE_LABEL[scale]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <Switch
                 label="Underline links"
                 hint="Links stay distinct from the text around them"
@@ -223,10 +307,7 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
                   set('underlineLinks', next, next ? 'Links underlined' : 'Underlines removed')
                 }
               />
-            </details>
 
-            <details className="a11y-group">
-              <summary>Contrast</summary>
               <Switch
                 label="High contrast"
                 hint="Brighter text, stronger rules, no photograph behind the panels"
@@ -235,10 +316,7 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
                   set('highContrast', next, next ? 'High contrast on' : 'High contrast off')
                 }
               />
-            </details>
 
-            <details className="a11y-group">
-              <summary>Motion</summary>
               <Switch
                 label="Reduce motion"
                 hint="Stops the globe's spin, the panel tilt and every transition"
@@ -251,13 +329,10 @@ export function AccessibilityDock({ settings, onChange, onReset }: Accessibility
           </div>
 
           <footer className="a11y-foot">
-            <button type="button" className="a11y-reset" onClick={onReset}>
-              Reset all
-            </button>
             <span className="a11y-saved">Saved on this device</span>
           </footer>
 
-          <p className="sr-only" aria-live="polite">
+          <p className="sr-only" aria-live="polite" aria-atomic="true">
             {announcement}
           </p>
         </div>

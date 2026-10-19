@@ -3411,6 +3411,95 @@ body::before {
   padding: 4px 8px 8px;
 }
 
+/* The modes are the whole point of the panel: one full-width target per mode,
+   each with a sentence saying what it actually does, so the choice is made by
+   reading rather than by decoding a switch name. */
+.a11y-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0 6px;
+}
+
+.a11y-mode {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.a11y-mode:hover {
+  border-color: var(--line-3);
+}
+
+.a11y-mode.is-on {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: var(--signal);
+}
+
+/* A radio, drawn as one: filled when this is the mode in force. */
+.a11y-mode-mark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border: 1px solid var(--line-3);
+  border-radius: 50%;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.a11y-mode.is-on .a11y-mode-mark {
+  background: var(--signal);
+  border-color: var(--signal);
+}
+
+.a11y-mode-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.a11y-mode-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.a11y-mode.is-on .a11y-mode-title {
+  color: var(--signal);
+}
+
+/* Marks a mode whose bundle has been fine-tuned away from under it. */
+.a11y-mode-edited {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.a11y-mode-hint {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+/* Where a deaf mode would sit, the panel says the true thing instead. */
+.a11y-note {
+  margin: 0 4px 6px;
+  padding: 7px 0 7px 9px;
+  border-left: 2px solid var(--line-2);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
 /* Groups: native disclosure, so the panel stays short and the keyboard works. */
 .a11y-group {
   border-bottom: 1px solid var(--line);
@@ -3585,22 +3674,6 @@ body::before {
   border-top: 1px solid var(--line);
 }
 
-.a11y-reset {
-  padding: 5px 9px;
-  color: var(--ink-2);
-  background: transparent;
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-  font-size: 0.68rem;
-  cursor: pointer;
-  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
-}
-
-.a11y-reset:hover {
-  color: var(--ink);
-  border-color: var(--line-3);
-}
-
 .a11y-saved {
   font-size: 0.62rem;
   color: var(--ink-3);
@@ -3692,4 +3765,47 @@ html[data-a11y-motion='reduced'] *::after {
    clear of it instead of letting the button sit on its last line. */
 .app-foot {
   padding-bottom: 72px;
+}
+
+/* ---- Skip links ---------------------------------------------------------- */
+
+/* Present on every visit, parked above the viewport until the keyboard reaches
+   them: a reader who cannot use the globe should not have to tab through it to
+   find the text. */
+.skip-links {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 80; /* above the dock and the dialogs */
+  display: flex;
+  gap: 6px;
+  transform: translateY(calc(-100% - 16px));
+  transition: transform 0.15s var(--ease);
+}
+
+.skip-links:focus-within {
+  transform: none;
+}
+
+.skip-link {
+  padding: 8px 12px;
+  color: #04141a;
+  background: var(--signal);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Where a skip link lands, so the jump is visible and not just a scroll. */
+#ranked-sites:focus-visible,
+#site-dossier:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
 }

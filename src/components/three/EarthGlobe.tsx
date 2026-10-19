@@ -902,7 +902,10 @@ export function EarthGlobe({
 
   return (
     <div className="globe">
-      <div ref={mountRef} className="globe-canvas" />
+      {/* Decoration: every beacon on it is also a row in the ranked list, so the
+          canvas is kept out of the accessibility tree rather than read as an
+          unlabelled graphic. */}
+      <div ref={mountRef} className="globe-canvas" aria-hidden="true" />
       <div ref={tipRef} className="globe-tip" />
       <div className="globe-actions">
         <button

@@ -120,7 +120,7 @@ export default function App() {
   /** Ambient site photograph behind the surface; on until switched off. */
   const [backdrop, setBackdrop] = useState(true);
   /** Reading preferences, applied to the document root by the dock. */
-  const { settings: a11y, update: updateA11y, reset: resetA11y } = useAccessibility();
+  const { settings: a11y, choose: chooseMode, update: updateA11y } = useAccessibility();
   /**
    * Opacity of the panel wash. Driven separately from the URL so switching
    * sites (or the switch itself) fades out and back in instead of popping the
@@ -215,6 +215,24 @@ export default function App() {
   const selectedRank = selected
     ? ranked.findIndex((item) => item.prediction.id === selected.id) + 1
     : null;
+
+  /**
+   * What blind mode says when the selection moves. For a reader who cannot see
+   * the globe, the list *is* the interface, so every row has to arrive as a
+   * sentence — and with both targets, because the score on screen shows one.
+   */
+  const blindAnnouncement =
+    a11y.mode !== 'blind'
+      ? ''
+      : selected
+        ? `Site ${selectedRank ?? '?'} of ${ranked.length}: ${selected.siteName}. ${terrainLabel(
+            selected,
+          )}. Moon fit ${formatScore(fitFor(selected, 'moon'))} of 1. Mars fit ${formatScore(
+            fitFor(selected, 'mars'),
+          )} of 1.`
+        : selectedReported
+          ? `Reported site ${selectedReported.name}, unscored.`
+          : 'No site selected.';
 
   // Reports respect the terrain chip and the search box, but never the ranking
   // sort: an unscored site has nothing to sort by.
@@ -465,6 +483,17 @@ export default function App() {
         } as React.CSSProperties
       }
     >
+      {/* First two tab stops on the page, invisible until focused. A reader who
+          cannot use the globe should never have to tab past it to reach text. */}
+      <nav className="skip-links" aria-label="Skip links">
+        <a className="skip-link" href="#ranked-sites">
+          Skip to ranked sites
+        </a>
+        <a className="skip-link" href="#site-dossier">
+          Skip to site dossier
+        </a>
+      </nav>
+
       <SiteBackdrop url={backdropUrl} enabled={backdrop} />
 
       <header className="topbar">
@@ -520,7 +549,7 @@ export default function App() {
       {error ? <p className="error">⚠ {error}</p> : null}
 
       <main className="workbench">
-        <section className="card list-card">
+        <section className="card list-card" id="ranked-sites" tabIndex={-1}>
           <header className="card-head">
             <div className="card-head-text">
               <h2>Ranked sites</h2>
@@ -646,7 +675,15 @@ export default function App() {
           </footer>
         </section>
 
-        <section className="card globe-card">
+        <section className="card globe-card" aria-label="Site globe">
+          {/* Blind mode: to a listener the globe is decoration, so say what it
+              carries and where the same information lives in text. */}
+          <p className="sr-only">
+            A 3D globe marks the {visiblePredictions.length} matching sites as beacons
+            sized and coloured by {target} analog fit. It holds nothing the ranked list does
+            not: the same sites appear there in the same order, each with its terrain, its
+            Moon fit and its Mars fit.
+          </p>
           <div className="globe-stage">
             {/* Remounted when the motion preference changes: the scene reads the
                 setting once, when it builds its animation loop. */}
@@ -758,7 +795,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="card dossier-card">
+        <section className="card dossier-card" id="site-dossier" tabIndex={-1}>
           {selectedReported ? (
             <ReportedDossier
               site={selectedReported}
@@ -870,7 +907,14 @@ export default function App() {
         />
       ) : null}
 
-      <AccessibilityDock settings={a11y} onChange={updateA11y} onReset={resetA11y} />
+      {/* Stays mounted so the region is live before the first move: a reader who
+          switches blind mode on hears the site already on screen and every one
+          they walk to after it. */}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {blindAnnouncement}
+      </p>
+
+      <AccessibilityDock settings={a11y} onMode={chooseMode} onChange={updateA11y} />
 
       <footer className="app-foot">
         <span>
