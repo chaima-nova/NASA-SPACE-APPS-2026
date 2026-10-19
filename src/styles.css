@@ -1786,6 +1786,17 @@ body::before {
 
 /* ---- See Site action ---------------------------------------------------- */
 
+/* Both actions in the inspector open the same site's evidence, so they share
+   one treatment: the comparison button used to read as a dull secondary
+   control sitting under the vivid one. */
+.btn.see-site,
+.site-actions .compare-open {
+  color: var(--ink);
+  font-weight: 600;
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.16), rgba(34, 211, 238, 0.05));
+  border: 1px solid rgba(34, 211, 238, 0.35);
+}
+
 .btn.see-site {
   flex: none;
   width: 100%;
@@ -1794,14 +1805,19 @@ body::before {
   gap: 9px;
   margin: 2px 0 0;
   padding: 9px 12px;
-  color: var(--ink);
-  font-weight: 600;
   text-align: left;
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.16), rgba(34, 211, 238, 0.05));
-  border: 1px solid rgba(34, 211, 238, 0.35);
 }
 
-.btn.see-site:hover {
+/* Matches the See Site label, and keeps the row the same height as the icon
+   button beside it. */
+.site-actions .compare-open {
+  min-height: 2.25rem;
+  padding: 9px 12px;
+  font-size: 0.78rem;
+}
+
+.btn.see-site:hover,
+.site-actions .compare-open:hover {
   color: #fff;
   border-color: var(--signal);
   background: linear-gradient(180deg, rgba(34, 211, 238, 0.26), rgba(34, 211, 238, 0.08));
