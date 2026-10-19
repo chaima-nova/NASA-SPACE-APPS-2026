@@ -1,5 +1,5 @@
 /* =============================================================================
-   Earth Analogs — mission-control surface.
+   Earth Analogue Site Finder — mission-control surface.
 
    Flat, solid panels with hairline rules. No backdrop blur, no glow gradients,
    no tilt: the only light in the interface comes from the data (the globe, the
@@ -1167,10 +1167,15 @@ body::before {
 
 .dossier-actions {
   display: flex;
+  /* "Fly in to terrain" plus "Satellite-Ground Comparison" does not fit one
+     row in this column, so the longer label takes a row of its own rather
+     than squeezing both. */
+  flex-wrap: wrap;
   gap: 7px;
   margin-top: auto;
   padding-top: 8px;
 }
+
 
 .btn {
   flex: 1;
@@ -1819,7 +1824,10 @@ body::before {
   stroke-linejoin: round;
 }
 
+/* The label is one idea — "See Site" — so it never breaks across lines. */
 .see-site-label {
+  flex: none;
+  white-space: nowrap;
   font-size: 0.78rem;
 }
 
@@ -2963,11 +2971,19 @@ body::before {
 
 .site-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 7px;
 }
 
 .site-actions .see-site {
-  flex: 1;
+  flex: 1 1 auto;
+}
+
+/* The comparison label is long enough that sharing a row would wrap it, so it
+   takes a row of its own at full width. */
+.site-actions .compare-open,
+.dossier-actions .compare-open {
+  flex: 1 1 100%;
 }
 
 .compare-open {
@@ -3090,6 +3106,11 @@ body::before {
 
 .compare-caption a {
   color: var(--signal);
+}
+
+/* Says the composite was skipped, rather than letting the single pass pass as one. */
+.compare-note {
+  color: var(--amber);
 }
 
 .compare-thumbs {

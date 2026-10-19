@@ -188,7 +188,7 @@ export function SiteInspector({
           onClick={onCompare}
           title="NASA satellite imagery next to the ground photograph"
         >
-          Orbit vs ground
+          Satellite-Ground Comparison
         </button>
       </div>
 

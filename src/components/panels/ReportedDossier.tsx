@@ -85,8 +85,8 @@ export function ReportedDossier({
         <button type="button" className="btn btn-primary" onClick={() => onFlyIn(site)}>
           Fly in to terrain
         </button>
-        <button type="button" className="btn" onClick={() => onCompare(site)}>
-          Orbit vs ground
+        <button type="button" className="btn compare-open" onClick={() => onCompare(site)}>
+          Satellite-Ground Comparison
         </button>
       </div>
 

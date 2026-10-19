@@ -467,7 +467,7 @@ export default function App() {
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
           <div>
-            <h1>Earth Analogs</h1>
+            <h1>Earth Analogue Site Finder</h1>
             <p className="brand-sub">Which Earth sites behave like the Moon or Mars — and why</p>
           </div>
         </div>
