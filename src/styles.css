@@ -97,30 +97,45 @@ body::before {
   z-index: 1;
   max-width: 1680px;
   margin: 0 auto;
-  padding: 14px 22px 32px;
+  padding: 0 22px 32px;
 }
 
 /* =============================================================================
    Top bar
+
+   A slim, sticky band: wordmark on the left, the three sections centred, the
+   status on the right. It stays translucent so the page and the site backdrop
+   pass underneath it, and the single hairline is the only chrome it carries —
+   a switchboard of pills above a dashboard is one control too many.
    ========================================================================== */
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 10px 0 12px;
+  height: 64px;
+  margin: 0 -22px 16px;
+  padding: 0 22px;
+  background: rgba(5, 8, 12, 0.78);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   min-width: 0;
 }
 
 .brand-mark {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
   background: radial-gradient(circle at 32% 28%, #e4f4ff 0%, #7dd3fc 30%, #2f6f9f 64%, #081521 100%);
@@ -131,17 +146,10 @@ body::before {
 
 .brand h1 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.005em;
   color: #fff;
-}
-
-.brand-sub {
-  margin: 2px 0 0;
-  font-size: 0.7rem;
-  font-weight: 400;
-  color: var(--ink-3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -233,10 +241,11 @@ body::before {
 }
 
 .topbar-right {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 14px;
+  margin-left: auto;
+  flex: none;
 }
 
 .status {
@@ -269,20 +278,18 @@ body::before {
 .status-live .status-dot {
   background: var(--signal);
   box-shadow: 0 0 8px rgba(34, 211, 238, 0.75);
-}
-
-.topbar-link {
-  font-size: 0.66rem;
+}.topbar-link {
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   color: var(--ink-3);
   text-decoration: none;
-  border-bottom: 1px solid var(--line-2);
-  padding-bottom: 1px;
   white-space: nowrap;
   transition: color 0.15s var(--ease);
 }
 
 .topbar-link:hover {
-  color: var(--ink-2);
+  color: var(--ink);
 }
 
 /* =============================================================================
@@ -1486,27 +1493,6 @@ body::before {
 }
 
 @media (max-width: 760px) {
-  .app {
-    padding: 10px 12px 24px;
-  }
-  .topbar {
-    flex-wrap: wrap;
-    gap: 8px 12px;
-  }
-  .brand {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-  .brand-sub {
-    white-space: normal;
-    font-size: 0.65rem;
-  }
-  .topbar-right {
-    gap: 10px;
-  }
-  .topbar-link {
-    display: none;
-  }
   .filterbar {
     gap: 10px 12px;
   }
@@ -3797,6 +3783,11 @@ html[data-a11y-motion='reduced'] *::after {
   transform: none;
 }
 
+/* Targets jump under a sticky bar, so their tops stay clear of it. */
+:where(#ranked-sites, #site-dossier) {
+  scroll-margin-top: 80px;
+}
+
 .skip-link {
   padding: 8px 12px;
   color: #04141a;
@@ -3821,41 +3812,56 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 /* =============================================================================
-   Home / Solution tabs
+   Home / Solution / Our team tabs
 
-   Two views, one bar. The pill reads as a switch rather than a link list, which
-   is the honest model: there is no third page and nothing nests.
+   Centred, unfilled, and marked by a short rule under the current section rather
+   than a filled pill. They are links to three views, so they read as navigation
+   rather than as a widget sitting in the header.
    ========================================================================== */
 
 .tabs {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin-left: auto; /* shares the spare width with .topbar-right */
-  padding: 3px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
+  gap: 4px;
+  background: none;
+  border: 0;
 }
 
 .tab {
-  padding: 6px 14px;
+  position: relative;
+  padding: 10px 16px;
   color: var(--ink-2);
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   text-decoration: none;
+  white-space: nowrap;
   transition: color 0.15s var(--ease), background 0.15s var(--ease);
 }
 
 .tab:hover {
-  color: var(--ink);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab.is-current {
-  color: #04141a;
+  color: #fff;
+}
+
+.tab.is-current::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 2px;
   background: var(--signal);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.55);
 }
 
 /* =============================================================================
@@ -4118,7 +4124,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .home-steps {
   padding: clamp(38px, 5.5vw, 68px) 4px 0;
-  scroll-margin-top: 16px;
+  scroll-margin-top: 84px;
 }
 
 .home-steps h3 {
@@ -4220,21 +4226,10 @@ html[data-a11y-motion='reduced'] *::after {
 /* The bar cannot hold a brand, a tab switch and the dataset badge on a phone, so
    the tabs take their own row underneath. */
 @media (max-width: 640px) {
-  .topbar {
-    flex-wrap: wrap;
-    row-gap: 10px;
-  }
-  .tabs {
-    order: 3;
-    width: 100%;
-    margin-left: 0;
-    padding: 2px;
-    justify-content: center;
-  }
   .tab {
     flex: 1;
-    padding: 6px 10px;
-    font-size: 0.68rem;
+    padding: 8px 10px;
+    font-size: 0.75rem;
     text-align: center;
   }
   .home-hero {
@@ -4506,5 +4501,64 @@ html[data-a11y-motion='reduced'] *::after {
   }
   .team-flow ol {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =============================================================================
+   Header on narrow screens
+
+   Kept last on purpose: the base `.tabs` rule (centred absolutely) is declared
+   further down the file than the layout media queries, so the overrides that
+   turn the tabs into their own row only win from here.
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    margin-bottom: 14px;
+    padding: 9px 22px 0;
+  }
+  .tabs {
+    position: static;
+    transform: none;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin: 4px 0 0;
+    padding: 4px 0 6px;
+    border-top: 1px solid var(--line);
+  }
+  .tab {
+    padding: 8px 12px;
+  }
+  .tab.is-current::after {
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 0 12px 24px;
+  }
+  .topbar {
+    margin: 0 -12px 12px;
+    padding: 9px 12px 0;
+    gap: 10px;
+  }
+  .brand {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .brand h1 {
+    font-size: 0.8rem;
+  }
+  .topbar-right {
+    gap: 10px;
+  }
+  .topbar-link {
+    display: none;
   }
 }
