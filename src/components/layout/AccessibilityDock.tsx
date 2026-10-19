@@ -252,6 +252,31 @@ export function AccessibilityDock({ settings, onMode, onChange }: AccessibilityD
               })}
             </div>
 
+            {/* Text size belongs in the menu, not behind Fine-tune: it is the one
+                adjustment people reach for without knowing any of the vocabulary. */}
+            <div className="a11y-size">
+              <span className="a11y-row-label" id={`${panelId}-size`}>
+                Text size
+              </span>
+              <div className="a11y-seg" role="radiogroup" aria-labelledby={`${panelId}-size`}>
+                {TEXT_SCALES.map((scale) => (
+                  <button
+                    key={scale}
+                    type="button"
+                    role="radio"
+                    aria-checked={settings.textScale === scale}
+                    className={
+                      settings.textScale === scale ? 'a11y-seg-btn is-on' : 'a11y-seg-btn'
+                    }
+                    style={{ fontSize: SCALE_SAMPLE[scale] }}
+                    onClick={() => set('textScale', scale, `Text size ${SCALE_LABEL[scale]}`)}
+                  >
+                    {SCALE_LABEL[scale]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* The honest answer instead of a third mode that would do nothing. */}
             <p className="a11y-note">
               This app has no sound — no audio, no video — so there is nothing to mute or
@@ -260,44 +285,6 @@ export function AccessibilityDock({ settings, onMode, onChange }: AccessibilityD
 
             <details className="a11y-group">
               <summary>Fine-tune</summary>
-
-              <div className="a11y-row">
-                <span className="a11y-row-label" id={`${panelId}-size`}>
-                  Text size
-                </span>
-                <div className="a11y-seg" role="radiogroup" aria-labelledby={`${panelId}-size`}>
-                  {TEXT_SCALES.map((scale) => (
-                    <button
-                      key={scale}
-                      type="button"
-                      role="radio"
-                      aria-checked={settings.textScale === scale}
-                      className={
-                        settings.textScale === scale ? 'a11y-seg-btn is-on' : 'a11y-seg-btn'
-                      }
-                      style={{ fontSize: SCALE_SAMPLE[scale] }}
-                      onClick={() =>
-                        set('textScale', scale, `Text size ${SCALE_LABEL[scale]}`)
-                      }
-                    >
-                      {SCALE_LABEL[scale]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Switch
-                label="Dyslexia-friendly text"
-                hint="Lexend type, wider letter and word spacing, taller lines"
-                checked={settings.dyslexia}
-                onChange={(next) =>
-                  set(
-                    'dyslexia',
-                    next,
-                    next ? 'Dyslexia-friendly text on' : 'Dyslexia-friendly text off',
-                  )
-                }
-              />
 
               <Switch
                 label="Underline links"

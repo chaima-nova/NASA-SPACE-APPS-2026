@@ -3622,12 +3622,22 @@ body::before {
   transform: translateX(14px);
 }
 
-.a11y-row {
+/* Text size sits in the menu beside the modes rather than behind Fine-tune, so
+   it is drawn like a menu row: same card, same border as a mode. */
+.a11y-size {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 8px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+}
+
+.a11y-size .a11y-seg {
+  background: var(--surface);
 }
 
 .a11y-row-label {
