@@ -3871,12 +3871,96 @@ html[data-a11y-motion='reduced'] *::after {
   position: relative;
   overflow: hidden;
   padding: clamp(38px, 6.5vw, 84px) clamp(20px, 5vw, 64px) clamp(32px, 5vw, 56px);
+  /* Fallback while the photograph decodes, and what a failed request leaves. */
   background:
     radial-gradient(900px 420px at 78% 10%, rgba(34, 211, 238, 0.14), transparent 66%),
     radial-gradient(700px 380px at 10% 96%, rgba(251, 146, 60, 0.09), transparent 62%),
     linear-gradient(180deg, #070c12, #05080c);
   border: 1px solid var(--line-2);
   border-radius: 14px;
+  isolation: isolate;
+}
+
+/* The photograph lives in the right-hand part of the frame, faded in from the
+   dark where the words sit. Decorative, so the whole block is inert and has no
+   accessible name. */
+.home-photo {
+  position: absolute;
+  inset: 0 0 0 32%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 14%, #000 36%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 14%, #000 36%);
+}
+
+.home-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Earth sits just above the middle of the source frame; the lunar horizon
+     below it fills the lower edge. */
+  object-position: 50% 56%;
+  transform-origin: 62% 50%;
+  /* The frame is a night side of the Moon: lift it enough to read as a place on
+     a dark page without turning the sky grey. */
+  filter: brightness(1.42) contrast(1.06) saturate(1.05);
+  animation: home-photo-pan 64s ease-in-out infinite alternate;
+}
+
+/* A scrim rather than a flat overlay: the left, where the words sit, stays dark
+   and the right keeps enough of the photograph to read as a place. */
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(
+      92deg,
+      rgba(5, 8, 12, 0.96) 0%,
+      rgba(5, 8, 12, 0.82) 30%,
+      rgba(5, 8, 12, 0.4) 52%,
+      rgba(5, 8, 12, 0.06) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 8, 12, 0.55), transparent 30%, rgba(5, 8, 12, 0.78));
+  pointer-events: none;
+}
+
+@keyframes home-photo-pan {
+  from {
+    transform: scale(1.04) translate3d(-1%, 0.6%, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(1.2%, -1%, 0);
+  }
+}
+
+/* Reduced motion, or blind mode: the same frame, held. */
+.home[data-still='true'] .home-photo img,
+.home[data-still='true'] .home-orbit svg {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-photo img,
+  .home-orbit svg {
+    animation: none;
+  }
+}
+
+.home-photo-credit {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  z-index: 1;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: rgba(219, 233, 251, 0.5);
+  pointer-events: none;
 }
 
 /* The sky. Absolute and inert: it never intercepts a click or a tab stop. */
@@ -3893,11 +3977,12 @@ html[data-a11y-motion='reduced'] *::after {
    hundred bytes and freezes under reduced motion. */
 .home-orbit {
   position: absolute;
+  z-index: 1;
   top: 50%;
   right: -10%;
   width: min(640px, 56vw);
   transform: translateY(-50%);
-  opacity: 0.5;
+  opacity: 0.38;
   pointer-events: none;
 }
 
@@ -3938,7 +4023,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .home-hero-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 660px;
 }
 
@@ -4098,6 +4183,31 @@ html[data-a11y-motion='reduced'] *::after {
   color: #fff;
 }
 
+@media (max-width: 1100px) {
+  /* The copy is 660 px wide at every size, so once the hero is this narrow the
+     words cover most of the frame. The photograph goes full-bleed and the scrim
+     carries the text instead of pretending the two do not overlap. */
+  .home-photo {
+    inset: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .home-photo img {
+    object-position: 50% 54%;
+  }
+  .home-hero::after {
+    background:
+      linear-gradient(
+        92deg,
+        rgba(5, 8, 12, 0.95) 0%,
+        rgba(5, 8, 12, 0.9) 42%,
+        rgba(5, 8, 12, 0.78) 72%,
+        rgba(5, 8, 12, 0.62) 100%
+      ),
+      linear-gradient(180deg, rgba(5, 8, 12, 0.55), transparent 30%, rgba(5, 8, 12, 0.72));
+  }
+}
+
 @media (max-width: 900px) {
   .home-orbit {
     display: none;
@@ -4131,6 +4241,26 @@ html[data-a11y-motion='reduced'] *::after {
     padding: 30px 18px 26px;
     border-radius: 10px;
   }
+  /* On a phone the copy spans the full width, so the scrim has to carry the
+     whole frame rather than only the left. */
+  .home-hero::after {
+    background:
+      linear-gradient(180deg, rgba(5, 8, 12, 0.9) 0%, rgba(5, 8, 12, 0.76) 58%, rgba(5, 8, 12, 0.92)),
+      linear-gradient(92deg, rgba(5, 8, 12, 0.55), transparent);
+  }
+  .home-photo {
+    inset: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .home-photo img {
+    object-position: 50% 52%;
+  }
+  .home-photo-credit {
+    right: 12px;
+    bottom: 8px;
+    font-size: 0.54rem;
+  }
   .home-stats {
     gap: 22px;
   }
@@ -4142,15 +4272,16 @@ html[data-a11y-motion='reduced'] *::after {
 /* =============================================================================
    Our team
 
-   A card per person and what they built. No skill lists pretending to be a
-   portfolio: the honest question a judge asks is "did this team build the thing
-   they are showing".
+   The team's work plan, not a credits strip: three focus areas, one card per
+   person with the tasks they own, then the order the work flows through. The
+   honest question a judge asks is "did this team build the thing they are
+   showing", so each card lists work rather than frameworks.
    ========================================================================== */
 
 .team-hero {
   position: relative;
   overflow: hidden;
-  padding: clamp(38px, 6.5vw, 78px) clamp(20px, 5vw, 64px);
+  padding: clamp(38px, 6.5vw, 78px) clamp(20px, 5vw, 64px) clamp(26px, 4vw, 40px);
   background:
     radial-gradient(760px 360px at 82% 8%, rgba(125, 211, 252, 0.13), transparent 66%),
     radial-gradient(620px 340px at 6% 96%, rgba(251, 146, 60, 0.07), transparent 62%),
@@ -4174,11 +4305,49 @@ html[data-a11y-motion='reduced'] *::after {
   text-wrap: balance;
 }
 
+/* Three focus areas, side by side under the hero copy. */
+.team-focus {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: clamp(26px, 4vw, 40px) 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--line-2);
+  list-style: none;
+}
+
+.team-focus li {
+  padding: 0 clamp(14px, 2vw, 26px);
+  border-left: 1px solid var(--line-2);
+}
+
+.team-focus li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.team-focus h3 {
+  margin: 0 0 5px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.team-focus p {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
 .team-list {
   padding: clamp(36px, 5vw, 64px) 4px 0;
 }
 
-.team-list h3 {
+.team-list h3,
+.team-flow h3 {
   margin: 0;
   font-size: 0.72rem;
   font-weight: 600;
@@ -4189,7 +4358,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 16px;
   margin: 20px 0 0;
   padding: 0;
@@ -4197,18 +4366,28 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 .team-card {
+  display: flex;
+  flex-direction: column;
   padding: 20px 20px 18px;
   background: var(--surface-2);
   border: 1px solid var(--line-2);
   border-radius: 10px;
 }
 
+.team-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-2);
+}
+
 .team-initial {
   display: grid;
+  flex: none;
   place-items: center;
   width: 34px;
   height: 34px;
-  margin-bottom: 14px;
   color: #04141a;
   background: var(--signal);
   border-radius: 50%;
@@ -4218,39 +4397,103 @@ html[data-a11y-motion='reduced'] *::after {
 
 .team-card h4 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: #fff;
 }
 
 .team-role {
-  margin: 3px 0 10px;
-  font-size: 0.72rem;
+  margin: 2px 0 0;
+  font-size: 0.7rem;
   color: var(--signal);
 }
 
-.team-detail {
-  margin: 0;
+.team-tasks {
+  margin: 14px 0 0;
+  padding: 0 0 0 16px;
+  list-style: disc;
+}
+
+.team-tasks li {
+  margin-top: 7px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.team-tasks li::marker {
+  color: var(--ink-4, var(--ink-3));
+  font-size: 0.7rem;
+}
+
+/* The pipeline: numbered, in reading order, one line per hand-off. */
+.team-flow {
+  padding: clamp(36px, 5vw, 64px) 4px 0;
+}
+
+.team-flow ol {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  margin: 20px 0 0;
+  padding: 0;
+  background: var(--line-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  list-style: none;
+  overflow: hidden;
+}
+
+.team-flow li {
+  padding: 16px 16px 18px;
+  background: var(--surface-2);
+}
+
+.team-flow-n {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--signal);
+}
+
+.team-flow h4 {
+  margin: 8px 0 6px;
   font-size: 0.82rem;
-  line-height: 1.6;
+  font-weight: 600;
+  color: #fff;
+}
+
+.team-flow p {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
   color: var(--ink-3);
 }
 
-.team-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
+/* The closing statement is a paragraph of copy, not a headline: keep it at
+   reading size so the goal is read rather than skimmed. */
+.team .home-close h3 {
+  max-width: 68ch;
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0;
+  color: var(--ink-2);
 }
 
-.team-tags li {
-  padding: 3px 8px;
-  color: var(--ink-2);
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  font-size: 0.62rem;
+@media (max-width: 900px) {
+  .team-focus {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .team-focus li,
+  .team-focus li:first-child {
+    padding: 0 0 0 12px;
+    border-left: 2px solid var(--line-2);
+  }
+  .team-flow ol {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -4259,6 +4502,9 @@ html[data-a11y-motion='reduced'] *::after {
     border-radius: 10px;
   }
   .team-grid {
+    grid-template-columns: 1fr;
+  }
+  .team-flow ol {
     grid-template-columns: 1fr;
   }
 }

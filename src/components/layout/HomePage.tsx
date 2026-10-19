@@ -1,6 +1,12 @@
 import { useRef } from 'react';
 import { routeHref } from '../../lib/route';
-import { Starfield } from './Starfield';
+
+/**
+ * The hero backdrop: NASA's Earthset from Orion, photographed on the Artemis II
+ * lunar flyby. Resolved through `BASE_URL` so the file is found both from the
+ * dev server root and from the relative base a GitHub Pages build uses.
+ */
+const HERO_PHOTO = `${import.meta.env.BASE_URL}home/earthset.jpg`;
 
 interface HomePageProps {
   /** Live counts, so the page never advertises numbers the app does not have. */
@@ -22,14 +28,22 @@ interface HomePageProps {
  * The counts are passed in from the live data rather than typed here: a cover
  * that claims 13 sites while the app has 12 is the kind of detail that makes a
  * reader distrust the rest of the numbers.
+ *
+ * The backdrop is a photograph rather than a drawn sky: a real view of Earth
+ * from the Moon says the premise of the tool faster than any decoration. It is
+ * decorative (`alt=""`, inert), and its slow pan is switched off for reduced
+ * motion, leaving a still frame that is identical in every other way.
  */
 export function HomePage({ sites, datasets, still }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
 
   return (
-    <main className="home">
+    <main className="home" data-still={still ? 'true' : undefined}>
       <section className="home-hero" aria-labelledby="home-title">
-        <Starfield still={still} />
+        <div className="home-photo" aria-hidden="true">
+          <img src={HERO_PHOTO} alt="" decoding="async" draggable={false} />
+        </div>
+        <span className="home-photo-credit">NASA · Artemis II, Earthset from Orion</span>
         <div className="home-orbit" aria-hidden="true">
           <svg viewBox="0 0 400 400">
             <ellipse cx="200" cy="200" rx="186" ry="120" transform="rotate(-18 200 200)" />

@@ -35,6 +35,12 @@ Full walkthrough: **`HOW-TO-USE.txt`** (plain text, every control and shortcut).
 
 ## What's built
 
+The shell has three tabs, all hash routes (`#/home`, `#/solution`, `#/team`) so a
+static host needs no rewrite: **Home** is the cover — a NASA photograph behind
+one headline and one button, with the counts read from the loaded data;
+**Solution** is the workbench described below; **Our team** is the team's work
+plan, read from `src/data/team.ts`.
+
 Three-zone discovery surface, one screen, one job: *which Earth sites are the
 best analogs, for which target, and why.*
 
@@ -269,6 +275,13 @@ is flipped and offset by Greenwich sidereal time, so it is anchored to the
 Earth's rotation axis and the real sky rather than being decorative; it also
 advances at the real sidereal rate. Verified against 20 bright stars
 (20/20 land on bright pixels).
+
+**Cover.** `public/home/earthset.jpg` is NASA's *Earthset from Orion*, taken on
+the Artemis II lunar flyby (April 2026) and downloaded from [NASA's Image and
+Video Library](https://images.nasa.gov/). It is the Home backdrop at 1920×1280
+and 145 KB, credited in the corner of the hero. NASA imagery is in the public
+domain, so the file is committed and the page has no runtime dependency on an
+external host.
 
 **Moon.** `public/moon/lroc-color-4k.jpg` and `public/moon/ldem-4k.png` are
 derived from the [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) (LRO LROC
