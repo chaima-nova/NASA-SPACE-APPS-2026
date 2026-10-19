@@ -276,14 +276,14 @@ Earth's rotation axis and the real sky rather than being decorative; it also
 advances at the real sidereal rate. Verified against 20 bright stars
 (20/20 land on bright pixels).
 
-**Cover.** `public/home/arctic.jpg` (900×506) is the Home backdrop, and
-`public/home/desert.jpg` (1024×576) is painted on top by the pointer: a soft
-brush stamps into a canvas mask, so a drag leaves a stroke that dries out behind
-the brush and is gone a couple of seconds after you stop. Both are the team's own
-photographs, committed, so the page has no runtime dependency on an external
-host; swapping in others is a file replacement, no code change. The brush
-follows a fine pointer only — touch, reduced motion and blind mode keep the ice
-frame.
+**Cover.** `public/home/arctic.jpg` (1800×1012) is the Home backdrop, and
+`public/home/desert.jpg` (2048×1152) is painted on top by the pointer: a bristled
+brush lays streaks into a canvas mask, tapering and drying out behind the cursor
+so the ice is back a second or two after you stop. Both files are 2× upscales
+with an unsharp pass over the originals, committed, so the page has no runtime
+dependency on an external host; swapping in others is a file replacement, no
+code change. The brush follows a fine pointer only — touch, reduced motion and
+blind mode keep the ice frame.
 
 **Moon.** `public/moon/lroc-color-4k.jpg` and `public/moon/ldem-4k.png` are
 derived from the [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) (LRO LROC

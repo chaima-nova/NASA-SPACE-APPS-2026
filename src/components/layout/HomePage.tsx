@@ -35,12 +35,12 @@ interface HomePageProps {
  * reader distrust the rest of the numbers.
  *
  * The backdrop is a photograph rather than a drawn sky. Dragging the pointer
- * across the hero paints the desert on top of the ice in soft brush dabs: the
- * canvas keeps a mask that the dabs build up, so a sweep leaves a stroke rather
- * than dragging a fixed disc around. That stroke dries out behind the brush, so
- * the ice returns a second or two after you stop moving. Touch, reduced motion
- * and blind mode leave the still ice frame alone, which is why the effect is
- * decoration and not content.
+ * across the hero paints the desert on top of the ice with a bristled brush:
+ * every point on the stroke is redrawn each tick as a handful of thin streaks
+ * whose width falls off faster than their strength, so the trail tapers to a
+ * point and dries out behind the cursor. Touch, reduced motion and blind mode
+ * leave the still ice frame alone, which is why the effect is decoration and
+ * not content.
  */
 export function HomePage({ sites, datasets, still }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
@@ -73,9 +73,22 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     let last: { x: number; y: number } | null = null;
     let frame = 0;
     let dirty = false;
-    let painted = false;
-    let fadeTimer = 0;
-    let lastStrokeAt = 0;
+    let ticker = 0;
+
+    /** One point along a stroke, with its brush width and when it was laid down. */
+    interface Stamp {
+      x: number;
+      y: number;
+      w: number;
+      born: number;
+    }
+
+    const stamps: Stamp[] = [];
+    /** How long a stroke survives before the ice is back. */
+    const LIFE = 1200;
+    /** How often the mask is rebuilt — 33 fps is plenty for a drying trail. */
+    const TICK = 30;
+    const MAX_STAMPS = 110;
 
     const composite = () => {
       frame = 0;
@@ -113,73 +126,99 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
         target.width = width;
         target.height = height;
       }
+      stamps.length = 0;
+      last = null;
       maskCtx.clearRect(0, 0, width, height);
       drawFlat();
       schedule();
     };
 
-    // Each stroke dries out: every 75 ms the mask is erased by a small slice,
-    // so the trail dissolves behind the brush instead of staining the frame.
-    // The loop stops on its own once nothing has been painted for a beat.
-    const fade = () => {
-      fadeTimer = 0;
-      if (!painted) return;
-      maskCtx.globalCompositeOperation = 'destination-out';
-      maskCtx.fillStyle = 'rgba(0, 0, 0, 0.12)';
-      maskCtx.fillRect(0, 0, width, height);
-      maskCtx.globalCompositeOperation = 'source-over';
-      schedule();
-      if (performance.now() - lastStrokeAt > 1600) {
-        maskCtx.clearRect(0, 0, width, height);
-        painted = false;
-        schedule();
-        return;
+    // Stable per-bristle jitter: the same streak keeps its wobble while it
+    // lives, instead of shimmering on every repaint.
+    const noise = (i: number, k: number) => {
+      const s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
+      return s - Math.floor(s) - 0.5;
+    };
+
+    /**
+     * Rebuild the mask from the live stamps. Each segment is drawn as a handful
+     * of bristle lines whose width and alpha both fall off with age — width
+     * faster than alpha, so the tail thins to a point as it dries rather than
+     * fading as a uniform band.
+     */
+    const render = () => {
+      ticker = 0;
+      const now = performance.now();
+      while (stamps.length && now - stamps[0].born > LIFE) stamps.shift();
+      maskCtx.clearRect(0, 0, width, height);
+
+      maskCtx.lineCap = 'round';
+      maskCtx.lineJoin = 'round';
+      const bristles = 6;
+
+      for (let i = 0; i < stamps.length - 1; i += 1) {
+        const a = stamps[i];
+        const b = stamps[i + 1];
+        const life = 1 - (now - a.born) / LIFE;
+        if (life <= 0) continue;
+        const taper = Math.pow(life, 0.8);
+        const alpha = Math.pow(life, 1.4);
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const length = Math.hypot(dx, dy) || 1;
+        const nx = -dy / length;
+        const ny = dx / length;
+        const w = Math.min(a.w, b.w) * taper;
+
+        for (let k = 0; k < bristles; k += 1) {
+          const pos = (k / (bristles - 1)) * 2 - 1;
+          const jitter = noise(i, k);
+          const offset = pos * w * 0.5 + jitter * w * 0.08;
+          const edge = 1 - Math.abs(pos);
+          const strength = alpha * (0.2 + 0.58 * edge) * (0.72 + 0.56 * Math.abs(jitter));
+          maskCtx.strokeStyle = `rgba(255, 255, 255, ${Math.min(1, strength)})`;
+          maskCtx.lineWidth = Math.max(1, w * (0.09 + 0.07 * Math.abs(jitter)));
+          maskCtx.beginPath();
+          maskCtx.moveTo(a.x + nx * offset, a.y + ny * offset);
+          maskCtx.lineTo(b.x + nx * offset, b.y + ny * offset);
+          maskCtx.stroke();
+        }
       }
-      fadeTimer = window.setTimeout(fade, 75);
+
+      schedule();
+      if (stamps.length) ticker = window.setTimeout(render, TICK);
     };
 
-    const keepDrying = () => {
-      painted = true;
-      lastStrokeAt = performance.now();
-      if (!fadeTimer) fadeTimer = window.setTimeout(fade, 75);
+    const ensureTicker = () => {
+      if (!ticker) ticker = window.setTimeout(render, TICK);
     };
 
-    const dab = (x: number, y: number) => {
-      // Wide enough to read as a brush, soft enough that dabs blend into a stroke.
-      const radius = Math.min(width, height) * 0.115;
-      const gradient = maskCtx.createRadialGradient(x, y, 0, x, y, radius);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.45, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      maskCtx.fillStyle = gradient;
-      maskCtx.beginPath();
-      maskCtx.arc(x, y, radius, 0, Math.PI * 2);
-      maskCtx.fill();
+    const stampAt = (x: number, y: number, born: number, w: number) => {
+      stamps.push({ x: x * dpr, y: y * dpr, w: w * dpr, born });
+      if (stamps.length > MAX_STAMPS) stamps.shift();
     };
 
     const stroke = (x: number, y: number) => {
-      const px = x * dpr;
-      const py = y * dpr;
+      const now = performance.now();
+      const base = Math.min(width, height) * 0.16;
       if (!last) {
-        dab(px, py);
+        stampAt(x, y, now, base);
         last = { x, y };
-        keepDrying();
-        schedule();
+        ensureTicker();
         return;
       }
       const dx = x - last.x;
       const dy = y - last.y;
       const distance = Math.hypot(dx, dy);
-      if (distance < 2) return;
-      // Space dabs along the segment so a fast sweep is still a continuous
-      // stroke rather than a dotted line.
-      const steps = Math.max(1, Math.ceil(distance / 7));
+      if (distance < 1.5) return;
+      // A fast sweep lays down a thinner line: paint that cannot keep up.
+      const widthHere = base * Math.max(0.45, Math.min(1, 1 - distance / 320));
+      const steps = Math.max(1, Math.ceil(distance / 6));
       for (let i = 1; i <= steps; i += 1) {
-        dab((last.x + (dx * i) / steps) * dpr, (last.y + (dy * i) / steps) * dpr);
+        stampAt(last.x + (dx * i) / steps, last.y + (dy * i) / steps, now, widthHere);
       }
       last = { x, y };
-      keepDrying();
-      schedule();
+      ensureTicker();
     };
 
     const reset = () => {
@@ -187,11 +226,11 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     };
 
     const clear = () => {
-      maskCtx.clearRect(0, 0, width, height);
+      stamps.length = 0;
       last = null;
-      painted = false;
-      window.clearTimeout(fadeTimer);
-      fadeTimer = 0;
+      window.clearTimeout(ticker);
+      ticker = 0;
+      maskCtx.clearRect(0, 0, width, height);
       schedule();
     };
 
@@ -227,7 +266,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(clearTimer.current);
-      window.clearTimeout(fadeTimer);
+      window.clearTimeout(ticker);
       observer.disconnect();
       delete (canvas as HTMLCanvasElement & { __painter?: typeof painter }).__painter;
     };
