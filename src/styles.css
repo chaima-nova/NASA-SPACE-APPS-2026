@@ -1809,13 +1809,15 @@ body::before {
 }
 
 /* Laid out like the See Site row beside it: icon first, label after it, same
-   height and same label size. */
+   height and same label size. The vertical padding is one pixel tighter than
+   the See Site card's, which is what pays for the satellite's 18 px box and
+   keeps both rows the same 36 px tall. */
 .site-actions .compare-open {
   display: flex;
   align-items: center;
   gap: 9px;
   min-height: 2.25rem;
-  padding: 9px 12px;
+  padding: 8px 12px;
   font-size: 0.78rem;
   text-align: left;
 }
@@ -1847,6 +1849,13 @@ body::before {
   stroke-linejoin: round;
 }
 
+/* The satellite is a lighter mark than the photograph glyph beside it, so it
+   takes two more pixels of box and reads at the same size. */
+.compare-icon {
+  width: 18px;
+  height: 18px;
+}
+
 /* The label is one idea — "See Site" — so it never breaks across lines. */
 .see-site-label {
   flex: none;
@@ -1856,9 +1865,10 @@ body::before {
 
 /* The arrow carries the "comparison" in the comparison button, so it reads a
    little larger than the words either side of it. Line-height 1 keeps the
-   bigger glyph from making the button taller than the card above it. */
+   bigger glyph from making the button taller than the card above it: at 1.38em
+   the glyph box is 17.2 px inside a button whose padding leaves 18 px. */
 .compare-arrow {
-  font-size: 1.2em;
+  font-size: 1.38em;
   line-height: 1;
   vertical-align: -0.06em;
 }
