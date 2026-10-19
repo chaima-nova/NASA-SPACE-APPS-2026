@@ -1,12 +1,17 @@
-import { useRef } from 'react';
+import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { routeHref } from '../../lib/route';
 
 /**
- * The hero backdrop: NASA's Earthset from Orion, photographed on the Artemis II
- * lunar flyby. Resolved through `BASE_URL` so the file is found both from the
- * dev server root and from the relative base a GitHub Pages build uses.
+ * The two halves of the cover: the cold place you land on, and the hot one its
+ * ground actually resembles. Resolved through `BASE_URL` so the files are found
+ * both from the dev server root and from the relative base a GitHub Pages build
+ * uses.
+ *
+ * Both are committed under `public/home/`, so swapping in different photographs
+ * is a file replacement — no code change.
  */
-const HERO_PHOTO = `${import.meta.env.BASE_URL}home/earthset.jpg`;
+const ARCTIC_PHOTO = `${import.meta.env.BASE_URL}home/arctic.jpg`;
+const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
 
 interface HomePageProps {
   /** Live counts, so the page never advertises numbers the app does not have. */
@@ -33,17 +38,55 @@ interface HomePageProps {
  * from the Moon says the premise of the tool faster than any decoration. It is
  * decorative (`alt=""`, inert), and its slow pan is switched off for reduced
  * motion, leaving a still frame that is identical in every other way.
+ *
+ * Moving the pointer over the hero opens a soft-edged patch of desert over the
+ * ice — the point of the tool in one gesture. The patch follows the pointer on
+ * a CSS custom property rather than React state, so nothing re-renders while
+ * the mouse moves. Touch, reduced motion and blind mode leave the still frame
+ * alone, which is why the effect is decoration and not content.
  */
 export function HomePage({ sites, datasets, still }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+
+  const reveal = (event: ReactPointerEvent<HTMLElement>) => {
+    if (still || event.pointerType === 'touch') return;
+    const hero = heroRef.current;
+    if (!hero) return;
+    const box = hero.getBoundingClientRect();
+    hero.style.setProperty('--reveal-x', `${event.clientX - box.left}px`);
+    hero.style.setProperty('--reveal-y', `${event.clientY - box.top}px`);
+    hero.dataset.revealed = 'true';
+  };
+
+  const conceal = () => {
+    delete heroRef.current?.dataset.revealed;
+  };
 
   return (
     <main className="home" data-still={still ? 'true' : undefined}>
-      <section className="home-hero" aria-labelledby="home-title">
+      <section
+        className="home-hero"
+        aria-labelledby="home-title"
+        ref={heroRef}
+        onPointerMove={reveal}
+        onPointerDown={reveal}
+        onPointerLeave={conceal}
+        onPointerCancel={conceal}
+      >
         <div className="home-photo" aria-hidden="true">
-          <img src={HERO_PHOTO} alt="" decoding="async" draggable={false} />
+          <img
+            className="home-photo-ice"
+            src={ARCTIC_PHOTO}
+            alt=""
+            decoding="async"
+            draggable={false}
+          />
+          <div className="home-photo-sand">
+            <img src={DESERT_PHOTO} alt="" decoding="async" draggable={false} />
+          </div>
         </div>
-        <span className="home-photo-credit">NASA · Artemis II, Earthset from Orion</span>
+        <span className="home-photo-credit">NASA · Operation IceBridge / JPL-Caltech</span>
         <div className="home-orbit" aria-hidden="true">
           <svg viewBox="0 0 400 400">
             <ellipse cx="200" cy="200" rx="186" ry="120" transform="rotate(-18 200 200)" />

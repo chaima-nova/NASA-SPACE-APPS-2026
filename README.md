@@ -276,12 +276,16 @@ Earth's rotation axis and the real sky rather than being decorative; it also
 advances at the real sidereal rate. Verified against 20 bright stars
 (20/20 land on bright pixels).
 
-**Cover.** `public/home/earthset.jpg` is NASA's *Earthset from Orion*, taken on
-the Artemis II lunar flyby (April 2026) and downloaded from [NASA's Image and
-Video Library](https://images.nasa.gov/). It is the Home backdrop at 1920×1280
-and 145 KB, credited in the corner of the hero. NASA imagery is in the public
-domain, so the file is committed and the page has no runtime dependency on an
-external host.
+**Cover.** Two photographs, both from [NASA's Image and Video
+Library](https://images.nasa.gov/) and both cropped to 1920×1080:
+`public/home/arctic.jpg` (Operation IceBridge over the Geikie Plateau,
+Greenland) is the Home backdrop, and `public/home/desert.jpg` (NASA/JPL-Caltech,
+star dunes in the Algerian Sahara) is the patch that opens under the pointer.
+The hero credit names both. NASA imagery is in the public domain, so the files
+are committed and the page has no runtime dependency on an external host;
+swapping in other photographs is a file replacement, no code change. The patch
+follows a fine pointer only — touch, reduced motion and blind mode keep the ice
+frame.
 
 **Moon.** `public/moon/lroc-color-4k.jpg` and `public/moon/ldem-4k.png` are
 derived from the [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) (LRO LROC

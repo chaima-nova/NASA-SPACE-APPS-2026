@@ -3887,33 +3887,78 @@ html[data-a11y-motion='reduced'] *::after {
   isolation: isolate;
 }
 
-/* The photograph lives in the right-hand part of the frame, faded in from the
-   dark where the words sit. Decorative, so the whole block is inert and has no
-   accessible name. */
+/* Two photographs, one frame: ice underneath, sand revealed by the pointer.
+   Decorative throughout, so the block is inert and has no accessible name. */
 .home-photo {
   position: absolute;
-  inset: 0 0 0 32%;
+  inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 14%, #000 36%);
-  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.6) 14%, #000 36%);
 }
 
-.home-photo img {
+.home-photo-ice,
+.home-photo-sand img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Earth sits just above the middle of the source frame; the lunar horizon
-     below it fills the lower edge. */
-  object-position: 50% 56%;
+}
+
+/* The arctic frame is a bright snowfield; pull it down so the page stays a dark
+   cover and the type keeps its contrast. */
+.home-photo-ice {
+  object-position: 50% 46%;
   transform-origin: 62% 50%;
-  /* The frame is a night side of the Moon: lift it enough to read as a place on
-     a dark page without turning the sky grey. */
-  filter: brightness(1.42) contrast(1.06) saturate(1.05);
+  filter: brightness(0.7) contrast(1.08) saturate(0.92);
   animation: home-photo-pan 64s ease-in-out infinite alternate;
+}
+
+/* The patch of desert. Its radius is an animatable custom property, so opening
+   it is a CSS transition rather than a frame loop in JavaScript. */
+@property --reveal-r {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.home-photo-sand {
+  position: absolute;
+  inset: 0;
+  --reveal-r: 0px;
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--reveal-x, 50%) var(--reveal-y, 50%),
+    #000 0,
+    #000 calc(var(--reveal-r) * 0.52),
+    transparent var(--reveal-r)
+  );
+  mask-image: radial-gradient(
+    circle at var(--reveal-x, 50%) var(--reveal-y, 50%),
+    #000 0,
+    #000 calc(var(--reveal-r) * 0.52),
+    transparent var(--reveal-r)
+  );
+  transition:
+    opacity 0.3s var(--ease),
+    --reveal-r 0.42s var(--ease);
+}
+
+.home-photo-sand img {
+  filter: saturate(1.08);
+}
+
+.home-hero[data-revealed='true'] .home-photo-sand {
+  --reveal-r: clamp(170px, 17vw, 260px);
+  opacity: 1;
+}
+
+/* No pointer, no patch: the poster frame stays whole on touch screens. */
+@media (hover: none) {
+  .home-photo-sand {
+    display: none;
+  }
 }
 
 /* A scrim rather than a flat overlay: the left, where the words sit, stays dark
@@ -3945,13 +3990,13 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 /* Reduced motion, or blind mode: the same frame, held. */
-.home[data-still='true'] .home-photo img,
+.home[data-still='true'] .home-photo-ice,
 .home[data-still='true'] .home-orbit svg {
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-photo img,
+  .home-photo-ice,
   .home-orbit svg {
     animation: none;
   }
@@ -4193,14 +4238,6 @@ html[data-a11y-motion='reduced'] *::after {
   /* The copy is 660 px wide at every size, so once the hero is this narrow the
      words cover most of the frame. The photograph goes full-bleed and the scrim
      carries the text instead of pretending the two do not overlap. */
-  .home-photo {
-    inset: 0;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .home-photo img {
-    object-position: 50% 54%;
-  }
   .home-hero::after {
     background:
       linear-gradient(
@@ -4240,16 +4277,8 @@ html[data-a11y-motion='reduced'] *::after {
      whole frame rather than only the left. */
   .home-hero::after {
     background:
-      linear-gradient(180deg, rgba(5, 8, 12, 0.9) 0%, rgba(5, 8, 12, 0.76) 58%, rgba(5, 8, 12, 0.92)),
+      linear-gradient(180deg, rgba(5, 8, 12, 0.88) 0%, rgba(5, 8, 12, 0.68) 58%, rgba(5, 8, 12, 0.9)),
       linear-gradient(92deg, rgba(5, 8, 12, 0.55), transparent);
-  }
-  .home-photo {
-    inset: 0;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .home-photo img {
-    object-position: 50% 52%;
   }
   .home-photo-credit {
     right: 12px;
