@@ -35,8 +35,8 @@ interface HomePageProps {
  * reader distrust the rest of the numbers.
  *
  * The backdrop is a photograph rather than a drawn sky. Dragging the pointer
- * across the hero paints the desert on top of the ice with a bristled brush:
- * every point on the stroke is redrawn each tick as a handful of thin streaks
+ * across the hero paints the desert on top of the ice with one broad brush:
+ * every point on the stroke is redrawn each tick as three concentric passes
  * whose width falls off faster than their strength, so the trail tapers to a
  * point and dries out behind the cursor. Touch, reduced motion and blind mode
  * leave the still ice frame alone, which is why the effect is decoration and
@@ -133,19 +133,24 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       schedule();
     };
 
-    // Stable per-bristle jitter: the same streak keeps its wobble while it
-    // lives, instead of shimmering on every repaint.
+    // Stable jitter: the same wobble keeps its shape while it lives, instead of
+    // shimmering on every repaint.
     const noise = (i: number, k: number) => {
       const s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
       return s - Math.floor(s) - 0.5;
     };
 
-    /**
-     * Rebuild the mask from the live stamps. Each segment is drawn as a handful
-     * of bristle lines whose width and alpha both fall off with age — width
-     * faster than alpha, so the tail thins to a point as it dries rather than
-     * fading as a uniform band.
-     */
+    // One broad stroke, drawn in three concentric passes: the widest is the
+    // feathered edge, the narrowest carries the body. Width and alpha both fall
+    // off with age — width faster than alpha, so the tail thins to a point as it
+    // dries instead of fading as a uniform band.
+    const PASSES = [
+      { width: 1, alpha: 0.26 },
+      { width: 0.74, alpha: 0.3 },
+      { width: 0.46, alpha: 0.34 },
+    ];
+
+    /** Rebuild the mask from the live stamps. */
     const render = () => {
       ticker = 0;
       const now = performance.now();
@@ -154,7 +159,6 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
 
       maskCtx.lineCap = 'round';
       maskCtx.lineJoin = 'round';
-      const bristles = 6;
 
       for (let i = 0; i < stamps.length - 1; i += 1) {
         const a = stamps[i];
@@ -168,19 +172,17 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
         const length = Math.hypot(dx, dy) || 1;
         const nx = -dy / length;
         const ny = dx / length;
+        // A little drift of the centreline keeps the edge organic; it is a
+        // shape wobble, not separate strands.
+        const wobble = noise(i, 0) * Math.min(a.w, b.w) * 0.05;
         const w = Math.min(a.w, b.w) * taper;
 
-        for (let k = 0; k < bristles; k += 1) {
-          const pos = (k / (bristles - 1)) * 2 - 1;
-          const jitter = noise(i, k);
-          const offset = pos * w * 0.5 + jitter * w * 0.08;
-          const edge = 1 - Math.abs(pos);
-          const strength = alpha * (0.2 + 0.58 * edge) * (0.72 + 0.56 * Math.abs(jitter));
-          maskCtx.strokeStyle = `rgba(255, 255, 255, ${Math.min(1, strength)})`;
-          maskCtx.lineWidth = Math.max(1, w * (0.09 + 0.07 * Math.abs(jitter)));
+        for (const pass of PASSES) {
+          maskCtx.strokeStyle = `rgba(255, 255, 255, ${alpha * pass.alpha})`;
+          maskCtx.lineWidth = Math.max(2, w * pass.width);
           maskCtx.beginPath();
-          maskCtx.moveTo(a.x + nx * offset, a.y + ny * offset);
-          maskCtx.lineTo(b.x + nx * offset, b.y + ny * offset);
+          maskCtx.moveTo(a.x + nx * wobble, a.y + ny * wobble);
+          maskCtx.lineTo(b.x + nx * wobble, b.y + ny * wobble);
           maskCtx.stroke();
         }
       }

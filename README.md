@@ -277,9 +277,9 @@ advances at the real sidereal rate. Verified against 20 bright stars
 (20/20 land on bright pixels).
 
 **Cover.** `public/home/arctic.jpg` (1800×1012) is the Home backdrop, and
-`public/home/desert.jpg` (2048×1152) is painted on top by the pointer: a bristled
-brush lays streaks into a canvas mask, tapering and drying out behind the cursor
-so the ice is back a second or two after you stop. Both files are 2× upscales
+`public/home/desert.jpg` (2048×1152) is painted on top by the pointer: one broad
+soft-edged brush lays a single stroke into a canvas mask, tapering and drying out
+behind the cursor so the ice is back a second or two after you stop. Both files are 2× upscales
 with an unsharp pass over the originals, committed, so the page has no runtime
 dependency on an external host; swapping in others is a file replacement, no
 code change. The brush follows a fine pointer only — touch, reduced motion and
