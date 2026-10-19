@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { reducedMotion } from './accessibility';
 
 /**
  * Reveals elements as they scroll into view, and gives panels a subtle
@@ -16,7 +17,7 @@ export function useScrollReveal<T extends HTMLElement = HTMLElement>(
     const el = ref.current;
     if (!el) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = reducedMotion();
     if (reduceMotion) {
       setRevealed(true);
       return;
@@ -76,7 +77,7 @@ export function useTilt<T extends HTMLElement = HTMLElement>(maxDeg = 6) {
     const el = ref.current;
     if (!el) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = reducedMotion();
     const finePointer = window.matchMedia('(pointer: fine)').matches;
     if (reduceMotion || !finePointer) return;
 
@@ -123,7 +124,7 @@ export function useCountUp(value: number, active: boolean, durationMs = 900): nu
   useEffect(() => {
     if (!active) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = reducedMotion();
     if (reduceMotion || value === 0) {
       setDisplay(value);
       return;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
+import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { FilterBar } from './components/layout/FilterBar';
 import { Panel } from './components/layout/Panel';
 import { SiteBackdrop } from './components/layout/SiteBackdrop';
@@ -34,6 +35,7 @@ import type {
   TerrainType,
 } from './data-contracts/types';
 import type { CommunityActions } from './components/panels/SiteCommunity';
+import { useAccessibility } from './lib/accessibility';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
 import { scoreColor } from './lib/colors';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
@@ -117,6 +119,8 @@ export default function App() {
   const [compare, setCompare] = useState<CompareRequest | null>(null);
   /** Ambient site photograph behind the surface; on until switched off. */
   const [backdrop, setBackdrop] = useState(true);
+  /** Reading preferences, applied to the document root by the dock. */
+  const { settings: a11y, update: updateA11y, reset: resetA11y } = useAccessibility();
   /**
    * Opacity of the panel wash. Driven separately from the URL so switching
    * sites (or the switch itself) fades out and back in instead of popping the
@@ -642,7 +646,10 @@ export default function App() {
 
         <section className="card globe-card">
           <div className="globe-stage">
+            {/* Remounted when the motion preference changes: the scene reads the
+                setting once, when it builds its animation loop. */}
             <EarthGlobe
+              key={a11y.reduceMotion ? 'globe-reduced-motion' : 'globe-free'}
               predictions={visiblePredictions}
               selectedId={selectedId}
               target={target}
@@ -860,6 +867,8 @@ export default function App() {
           onClose={() => setCompare(null)}
         />
       ) : null}
+
+      <AccessibilityDock settings={a11y} onChange={updateA11y} onReset={resetA11y} />
 
       <footer className="app-foot">
         <span>

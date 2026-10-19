@@ -3256,3 +3256,424 @@ body::before {
     text-align: left;
   }
 }
+
+/* =============================================================================
+   Accessibility — one floating dock, every preference nested inside it
+
+   The settings live behind a single control in the bottom-left corner so the
+   workbench keeps its space; the panel opens upward, over the page rather than
+   in it. The preferences themselves are applied as root attributes by
+   `lib/accessibility.ts`, which is why the rules below sit at the bottom of the
+   sheet: nothing else in here should have to know they exist.
+   ========================================================================== */
+
+.a11y-dock {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 50; /* above the workbench, below the dialog layers (60/70) */
+}
+
+.a11y-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  box-shadow: 0 14px 34px -14px #000;
+  cursor: pointer;
+  transition:
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease);
+}
+
+.a11y-fab:hover,
+.a11y-fab[aria-expanded='true'] {
+  color: var(--ink);
+  background: var(--surface-3);
+  border-color: var(--line-3);
+}
+
+/* A dot on the button whenever something is switched on, so a reader who opened
+   the panel once can see at a glance that a setting is still active. */
+.a11y-fab.has-active {
+  color: var(--signal);
+  border-color: rgba(34, 211, 238, 0.55);
+}
+
+.a11y-fab svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.a11y-fab.has-active::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  background: var(--signal);
+  border-radius: 999px;
+}
+
+.a11y-panel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(324px, calc(100vw - 36px));
+  max-height: min(74vh, 580px);
+  overflow: hidden;
+  background: #070b12;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  box-shadow: 0 30px 70px -22px #000;
+  animation: dialog-in 180ms var(--ease) both;
+}
+
+.a11y-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.a11y-head h2 {
+  margin: 3px 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.a11y-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.a11y-close:hover {
+  color: var(--ink);
+  border-color: var(--line-3);
+}
+
+.a11y-close svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.a11y-body {
+  overflow-y: auto;
+  padding: 4px 8px 8px;
+}
+
+/* Groups: native disclosure, so the panel stays short and the keyboard works. */
+.a11y-group {
+  border-bottom: 1px solid var(--line);
+  padding: 2px 0;
+}
+
+.a11y-group:last-child {
+  border-bottom: 0;
+}
+
+.a11y-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 4px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  list-style: none;
+  cursor: pointer;
+}
+
+.a11y-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.a11y-group > summary::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s var(--ease);
+}
+
+.a11y-group[open] > summary::before {
+  transform: rotate(225deg);
+}
+
+.a11y-group > summary:hover {
+  color: var(--ink-2);
+}
+
+.a11y-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 8px;
+  margin: 1px 0;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.a11y-switch:hover {
+  background: var(--surface-2);
+  border-color: var(--line-2);
+}
+
+.a11y-switch-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.a11y-switch-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.a11y-switch.is-on .a11y-switch-label {
+  color: var(--signal);
+}
+
+.a11y-switch-hint {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.a11y-switch-track {
+  flex: none;
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-3);
+  border-radius: 999px;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.a11y-switch.is-on .a11y-switch-track {
+  background: rgba(34, 211, 238, 0.24);
+  border-color: var(--signal);
+}
+
+.a11y-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--ink-2);
+  border-radius: 999px;
+  transition: transform 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.a11y-switch.is-on .a11y-switch-knob {
+  background: var(--signal);
+  transform: translateX(14px);
+}
+
+.a11y-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 8px;
+}
+
+.a11y-row-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.a11y-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+}
+
+.a11y-seg-btn {
+  padding: 3px 7px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.a11y-seg-btn:hover {
+  color: var(--ink);
+}
+
+.a11y-seg-btn.is-on {
+  color: #05070a;
+  background: var(--signal);
+  font-weight: 600;
+}
+
+.a11y-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.a11y-reset {
+  padding: 5px 9px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.a11y-reset:hover {
+  color: var(--ink);
+  border-color: var(--line-3);
+}
+
+.a11y-saved {
+  font-size: 0.62rem;
+  color: var(--ink-3);
+}
+
+/* ---- The preferences ---------------------------------------------------- */
+
+/* Text size: the interface is rem-based, so the root size carries the scale. */
+html[data-a11y-text='large'] {
+  font-size: 17.5px;
+}
+
+html[data-a11y-text='larger'] {
+  font-size: 19px;
+}
+
+/* Dyslexia-friendly text: Lexend, which is drawn for reading proficiency, with
+   the wider letter and word spacing and taller lines that reduce crowding.
+   Only prose is opened up — buttons and single-line labels keep their metrics,
+   so the workbench does not reflow into itself. */
+html[data-a11y-dyslexia='on'] {
+  font-family: 'Lexend', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html[data-a11y-dyslexia='on'] body {
+  letter-spacing: 0.03em;
+  word-spacing: 0.14em;
+  line-height: 1.75;
+}
+
+html[data-a11y-dyslexia='on'] :where(p, li, dd, dt, blockquote, .site-name, .site-meta) {
+  letter-spacing: 0.03em;
+  word-spacing: 0.14em;
+  line-height: 1.7;
+}
+
+/* High contrast: lift the ink and the rules, and drop the photograph wash that
+   dims the panels underneath it. */
+html[data-a11y-contrast='on'] {
+  --bg: #000;
+  --surface: #05080d;
+  --surface-2: #0a1018;
+  --surface-3: #111a26;
+  --line: #33455e;
+  --line-2: #4a6485;
+  --line-3: #6a88ab;
+  --ink: #ffffff;
+  --ink-2: #d3ddec;
+  --ink-3: #b3c1d3;
+}
+
+
+html[data-a11y-contrast='on'] .site-backdrop,
+html[data-a11y-contrast='on'] .card::before {
+  display: none;
+}
+
+html[data-a11y-links='underline'] a[href] {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* Reduce motion: the same rule the OS setting applies, now also reachable from
+   the dock. The WebGL scenes read this attribute through `reducedMotion()`. */
+html[data-a11y-motion='reduced'] *,
+html[data-a11y-motion='reduced'] *::before,
+html[data-a11y-motion='reduced'] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+@media (max-width: 760px) {
+  /* Above the sticky action bar in the dossier card, which parks on the viewport
+     bottom and would otherwise sit under the button. */
+  .a11y-dock {
+    left: 12px;
+    bottom: 76px;
+  }
+  .a11y-panel {
+    width: min(300px, calc(100vw - 24px));
+    max-height: min(68vh, 520px);
+  }
+}
+
+/* The dock is fixed to the viewport's bottom-left corner, so the footer keeps
+   clear of it instead of letting the button sit on its first line. */
+.app-foot {
+  padding-bottom: 72px;
+}

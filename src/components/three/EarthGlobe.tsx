@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Prediction } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
+import { reducedMotion } from '../../lib/accessibility';
 import { createStarfield } from '../../lib/starfield';
 import { latLonToVec } from '../../lib/globe';
 import { trueColorUrl } from '../../lib/earthImagery';
@@ -212,7 +213,7 @@ export function EarthGlobe({
     const tip = tipRef.current;
     if (!mount || !tip) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = reducedMotion();
     const width = Math.max(1, mount.clientWidth);
     const height = Math.max(1, mount.clientHeight);
 

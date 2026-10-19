@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadTerrainPatch, TERRAIN_PALETTE, type TerrainPatch, type TerrainSite } from '../../lib/terrain';
 import { formatCoords, formatElevation, terrainLabel } from '../../lib/site';
+import { reducedMotion } from '../../lib/accessibility';
 
 interface SiteTerrainProps {
   /** A model prediction or a researcher's reported site — both are placeable. */
@@ -140,7 +141,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
     const mount = mountRef.current;
     if (!mount || !patch) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = reducedMotion();
     const width = Math.max(1, mount.clientWidth);
     const height = Math.max(1, mount.clientHeight);
     const SIZE = patch.widthMeters;
