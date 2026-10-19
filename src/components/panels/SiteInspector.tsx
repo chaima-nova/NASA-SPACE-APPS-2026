@@ -198,7 +198,11 @@ export function SiteInspector({
             <path d="M12 9.2V5.7" />
             <path d="M10.1 5.7h3.8" />
           </svg>
-          <span className="compare-label">Satellite ↔ Ground Comparison</span>
+          <span className="compare-label">
+            Satellite{' '}
+            <span className="compare-arrow">↔</span>{' '}
+            Ground Comparison
+          </span>
         </button>
       </div>
 

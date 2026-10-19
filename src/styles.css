@@ -1854,6 +1854,15 @@ body::before {
   font-size: 0.78rem;
 }
 
+/* The arrow carries the "comparison" in the comparison button, so it reads a
+   little larger than the words either side of it. Line-height 1 keeps the
+   bigger glyph from making the button taller than the card above it. */
+.compare-arrow {
+  font-size: 1.2em;
+  line-height: 1;
+  vertical-align: -0.06em;
+}
+
 .see-site-meta {
   margin-left: auto;
   font-family: var(--mono);
