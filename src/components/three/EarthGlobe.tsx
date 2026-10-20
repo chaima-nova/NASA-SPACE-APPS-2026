@@ -262,6 +262,26 @@ export function EarthGlobe({
     };
     controls.addEventListener('start', stopSpin);
 
+    /**
+     * Hands the wheel back to the page once the globe hits a zoom limit.
+     *
+     * OrbitControls cancels the wheel on every event it accepts, so hovering the
+     * globe would otherwise wall the page off: a reader who pulls all the way
+     * out could never reach the evidence strip below. At the far limit the wheel
+     * is swallowed here in the capture phase, before OrbitControls sees it, and
+     * the browser's own scrolling takes over. The limits themselves still clamp
+     * the dolly, so releasing the wheel changes nothing about the framing.
+     */
+    const chainWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return; // pinching to zoom the page, not the globe
+      const distance = camera.position.distanceTo(controls.target);
+      const pullingOut = event.deltaY > 0 && distance >= controls.maxDistance - 0.02;
+      const pushingIn = event.deltaY < 0 && distance <= controls.minDistance + 0.02;
+      if (!pullingOut && !pushingIn) return;
+      event.stopPropagation();
+    };
+    mount.addEventListener('wheel', chainWheel, { capture: true, passive: true });
+
     // ---- Earth -------------------------------------------------------------
     // Unlit day/night shader with real data:
     //   - Blue Marble albedo (day) — the cloud-free base
@@ -837,6 +857,7 @@ export function EarthGlobe({
       cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
       controls.removeEventListener('start', stopSpin);
+      mount.removeEventListener('wheel', chainWheel, { capture: true });
       mount.removeEventListener('pointerdown', onPointerDown, true);
       renderer.domElement.removeEventListener('pointermove', onPointerMove);
       renderer.domElement.removeEventListener('pointerup', onPointerUp);

@@ -605,7 +605,10 @@ body::before {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* Chain to the page at the ends of the ranking, the same way the dossier
+     does: once the last row is reached, the wheel continues down the page
+     instead of hitting a dead stop. The list still scrolls itself first. */
+  overscroll-behavior: auto;
 }
 
 .ranked-list {
