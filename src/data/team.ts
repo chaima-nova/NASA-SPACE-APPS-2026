@@ -11,6 +11,8 @@ export interface TeamMember {
   name: string;
   /** The remit, as the board names it. */
   role: string;
+  /** Marks the team owner; the page badges the name rather than restating it. */
+  owner?: boolean;
   /** What they own, in the order they would do it. */
   tasks: string[];
 }
@@ -38,6 +40,19 @@ export const FOCUS_AREAS: readonly FocusArea[] = [
 ];
 
 export const TEAM: readonly TeamMember[] = [
+  {
+    name: 'Chaima',
+    role: 'Systems / Backend / Integration',
+    owner: true,
+    tasks: [
+      'Continue building and organising the shared GitHub repository.',
+      "Set up the backend and API structure and define the data contracts between everyone's modules.",
+      "Connect Abid and Farwa's data → Harshil's ML outputs → backend → Jasmine's visualisations.",
+      "Integrate Zehra's space-systems outputs where relevant.",
+      'Keep the architecture, documentation and decision log updated.',
+      "Make sure everyone's work plugs into the same system rather than becoming separate projects.",
+    ],
+  },
   {
     name: 'Abid',
     role: 'NASA Data / Platform',
@@ -88,18 +103,6 @@ export const TEAM: readonly TeamMember[] = [
       'Prepare the map, charts and 3D visualisation structure.',
       'Use mock or sample data initially so building can start before the final datasets and ML outputs are ready.',
       "Make the components ready to receive the actual outputs from Harshil and the rest of the team.",
-    ],
-  },
-  {
-    name: 'Chaima',
-    role: 'Systems / Backend / Integration',
-    tasks: [
-      'Continue building and organising the shared GitHub repository.',
-      "Set up the backend and API structure and define the data contracts between everyone's modules.",
-      "Connect Abid and Farwa's data → Harshil's ML outputs → backend → Jasmine's visualisations.",
-      "Integrate Zehra's space-systems outputs where relevant.",
-      'Keep the architecture, documentation and decision log updated.',
-      "Make sure everyone's work plugs into the same system rather than becoming separate projects.",
     ],
   },
 ];

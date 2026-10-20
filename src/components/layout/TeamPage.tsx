@@ -53,7 +53,10 @@ export function TeamPage({ still }: TeamPageProps) {
                   {member.name.slice(0, 1).toUpperCase()}
                 </span>
                 <div>
-                  <h4>{member.name}</h4>
+                  <h4>
+                    {member.name}{' '}
+                    {member.owner ? <span className="team-owner">Team Owner</span> : null}
+                  </h4>
                   <p className="team-role">{member.role}</p>
                 </div>
               </div>

@@ -428,6 +428,17 @@ export function EarthGlobe({
         });
 
     /**
+     * Detail of the global mosaic. VIIRS itself resolves ~375 m, but one
+     * equirectangular texture is what the sphere can hold: 6144 px doubles the
+     * linear detail of the old 3072 request, while touch devices and GPUs with
+     * a 4096 texture limit stay at 4096 so the layer still fits in memory.
+     */
+    const imageryWidth = Math.min(
+      window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 720 ? 4096 : 6144,
+      renderer.capabilities.maxTextureSize,
+    );
+
+    /**
      * Pulls that day's clouds from NASA GIBS. One WMS request returns the whole
      * 2:1 mosaic, so this is a single texture download.
      */
@@ -438,7 +449,7 @@ export function EarthGlobe({
       }
       const token = ++imageryToken;
       loader
-        .loadAsync(trueColorUrl(date))
+        .loadAsync(trueColorUrl(date, imageryWidth))
         .then((texture) => {
           if (disposed) {
             texture.dispose();

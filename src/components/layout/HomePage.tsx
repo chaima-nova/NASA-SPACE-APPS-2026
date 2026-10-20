@@ -114,7 +114,11 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
       const dw = image.naturalWidth * scale;
       const dh = image.naturalHeight * scale;
-      flatCtx.drawImage(image, (width - dw) / 2, (height - dh) / 2, dw, dh);
+      // Same vertical anchor as `.home-photo-ice`'s object-position (50% 46%).
+      // Centring the desert instead left the two frames ~10 px apart once the
+      // hero was wider than 16:9, which put every peak and dune ripple just off
+      // the ice feature it is meant to replace.
+      flatCtx.drawImage(image, (width - dw) / 2, (height - dh) * 0.46, dw, dh);
     };
 
     const resize = () => {

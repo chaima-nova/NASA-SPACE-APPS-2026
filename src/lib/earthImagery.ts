@@ -131,8 +131,13 @@ export function compositeDates(date: string, days = COMPOSITE_DAYS): string[] {
 /**
  * One WMS GetMap request returns the whole world as a 2:1 equirectangular
  * JPEG — the same layout three.js sphere UVs expect.
+ *
+ * `width` is the detail ceiling of the globe, not the sensor's: VIIRS resolves
+ * about 375 m at nadir, while a single global texture has to fit in GPU memory.
+ * The globe asks for 6144 px (4.4 km per texel) on desktop; see EarthGlobe for
+ * the touch-device cap.
  */
-export function trueColorUrl(date: string, width = 3072): string {
+export function trueColorUrl(date: string, width = 6144): string {
   const params = new URLSearchParams({
     SERVICE: 'WMS',
     REQUEST: 'GetMap',

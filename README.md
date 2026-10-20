@@ -270,11 +270,14 @@ GLSL shader combines it with four more layers:
 - the **Live Cloud Layer** (off by default) — the VIIRS true-colour mosaic for a
   chosen UTC day, streamed live from [NASA
   GIBS](https://nasa-gibs.github.io/gibs-api-docs/)
-  (`VIIRS_SNPP_CorrectedReflectance_TrueColor`) as a single 3072×1536 WMS
-  image. GIBS is keyless and CORS-enabled, so the browser fetches it
-  directly. Near-black no-data texels (the polar caps and swath gaps) fall
-  back to Blue Marble, and the pass fades out between 62° and 72° latitude, so
-  its coverage edge never draws a hard circle at either pole.
+  (`VIIRS_SNPP_CorrectedReflectance_TrueColor`) as a single global WMS image:
+  6144×3072 on desktop, 4096×2048 on touch devices, clamped to the GPU's
+  maximum texture size. GIBS is keyless and CORS-enabled, so the browser
+  fetches it directly. VIIRS resolves ~375 m at nadir; a single sphere texture
+  is far coarser by construction, so the request width is the detail ceiling,
+  not the instrument. Near-black no-data texels (the polar caps and swath gaps)
+  fall back to Blue Marble, and the pass fades out between 62° and 72° latitude,
+  so its coverage edge never draws a hard circle at either pole.
 
 **Stars.** `public/moon/starmap-4k.jpg` is NASA's Deep Star Maps 2020. The map
 is flipped and offset by Greenwich sidereal time, so it is anchored to the
