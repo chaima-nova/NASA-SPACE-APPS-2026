@@ -916,7 +916,7 @@ export function EarthGlobe({
           title="Show NASA's live cloud cover for the chosen day"
         >
           <span className="cloud-dot" aria-hidden="true" />
-          Clouds
+          Live Cloud Layer
         </button>
         <button
           type="button"

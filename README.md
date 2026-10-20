@@ -50,9 +50,9 @@ best analogs, for which target, and why.*
   a score bar per row. Selection is shared with the globe and the dossier.
 - **Hero Earth globe** (centre) — NASA Blue Marble (cloud-free) with a real
   solar terminator, night-side city lights, normal-mapped terrain relief, and a
-  sidereal-anchored star background. A **Clouds** button fades in NASA GIBS's
-  VIIRS true-colour pass for any of the last 60 days; the base stays clear by
-  default so sites are never hidden. No glint and no atmosphere shell: the
+  sidereal-anchored star background. A **Live Cloud Layer** button fades in
+  NASA GIBS's VIIRS true-colour pass for any of the last 60 days; the base stays
+  clear by default so sites are never hidden. No glint and no atmosphere shell: the
   surface stays matte. One fit-coloured beacon per site; clicking a beacon
   flies the camera in from the global view to a real DEM terrain model of that
   site (see below). Press-and-drag is always an orbit: a beacon is picked only
@@ -261,7 +261,7 @@ GLSL shader combines it with four more layers:
   frame, so mountains catch the light at the limb.
 - a live sub-solar point for the terminator, with a readable night floor so
   sites on the dark hemisphere stay visible.
-- the **Clouds** layer (off by default) — the VIIRS true-colour mosaic for a
+- the **Live Cloud Layer** (off by default) — the VIIRS true-colour mosaic for a
   chosen UTC day, streamed live from [NASA
   GIBS](https://nasa-gibs.github.io/gibs-api-docs/)
   (`VIIRS_SNPP_CorrectedReflectance_TrueColor`) as a single 3072×1536 WMS
