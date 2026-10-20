@@ -14,6 +14,7 @@ rest of the team later.
 | Charts          | Recharts                                   |
 | 3D / Earth      | Three.js (OrbitControls, custom GLSL terminator) |
 | 3D / Moon       | Three.js (displacement, bloom, real phase) |
+| 3D / Mars       | Three.js (Viking mosaic, real sub-solar point) |
 
 ## Run
 
@@ -23,11 +24,11 @@ npm run dev        # http://localhost:5173
 npm run build      # typecheck + production build
 ```
 
-The Moon and Earth surface textures in `public/moon/` and `public/earth/` are
-committed, so nothing extra is needed to run. To regenerate the Moon maps from
-the original NASA TIFFs, download `lroc_color_poles_8k.tif` and
-`ldem_16_uint.tif` from the [CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) and
-run `node scripts/build-moon-textures.mjs <sourceDir>`.
+The Moon, Mars and Earth surface textures in `public/moon/`, `public/mars/` and
+`public/earth/` are committed, so nothing extra is needed to run. To regenerate
+the Moon maps from the original NASA TIFFs, download `lroc_color_poles_8k.tif`
+and `ldem_16_uint.tif` from the [CGI Moon Kit](https://svs.gsfc.nasa.gov/4720)
+and run `node scripts/build-moon-textures.mjs <sourceDir>`.
 
 > The shell currently runs entirely on **mock data** — no backend needed.
 
@@ -67,8 +68,9 @@ best analogs, for which target, and why.*
 - **Researcher reporting** (left panel) — **Report a site** adds a candidate
   from the field; reported sites are listed apart from the ranking as amber
   ring markers, with a manager for editing, deleting and exporting them.
-- **Evidence strip** — fit distribution, feature influence, a live-phase Moon
-  reference globe, and the full NASA dataset catalogue.
+- **Evidence strip** — fit distribution, feature influence, a reference globe
+  that follows the selected target (the Moon's real phase or Mars's real
+  sub-solar point and season), and the full NASA dataset catalogue.
 
 Candidate sites in the mock set are real, well-known analog locations (Atacama
 Desert, Haughton Crater, Death Valley, McMurdo Dry Valleys, Mauna Kea/Kilauea,
@@ -98,8 +100,12 @@ annotate the ones it has.
   elevation at the reported coordinates), the orbit-vs-ground view, field notes,
   reviews and upvotes.
 - **Field notes, reviews and upvotes** live in a "Researcher signal" block in
-  both dossier variants: dated observations with an optional photo link, short
-  assessments, and a one-per-browser upvote toggle.
+  both dossier variants: dated observations with an optional **photo upload**,
+  short assessments, and a one-per-browser upvote toggle. The chosen image is
+  decoded in the browser, downscaled to 1400 px and re-encoded as JPEG before it
+  reaches `localStorage`, so a phone photo does not exhaust the store; notes
+  render it as a thumbnail (uploaded images can not be opened as links, so they
+  are shown inline).
 - **Manager** — every report this browser holds, with edit, delete, **JSON**
   export (round-trip, `{ version, reportedSites }`) and **CSV** export.
 
@@ -292,6 +298,19 @@ domain; the files are committed so the app has no runtime dependency on an
 external host. `MoonMap` is used on the evidence strip as a comparison target
 with markers off — terrestrial sites do not belong on a lunar sphere.
 
+**Mars.** `public/mars/viking-color-2k.jpg` is a 2048×1024 crop of the
+[NASA/USGS Viking MDIM 2.1 colourized global mosaic](https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m)
+(public domain, ~232 m per pixel at the equator), committed so the panel needs
+no external host. `MarsMap` lights it with the real sub-solar point from
+`marsLighting` — NASA GISS's [Mars24
+algorithm](https://www.giss.nasa.gov/tools/mars24/help/algorithm.html) — so the
+terminator, the season (Ls) in the badge and the polar cap in daylight are the
+ones Mars actually has at load time. The camera opens 35° east of the sub-solar
+longitude so the panel shows the day side rather than whatever face happens to
+be toward the viewer; drag to orbit, scroll to zoom. The sky is the same real
+star map, but left unanchored: unlike the Moon there is no Earth-fixed sky to
+orient it by, so it is scene depth rather than a claim about Mars.
+
 ### Verifying the Moon
 
 `npm run verify:moon` samples both textures at the coordinates of known lunar
@@ -316,5 +335,5 @@ is decorative rather than an accurate view from a given place.
   `elevationM`, `datasetIds`, `verdict`) degrade to documented fallbacks in
   `src/lib/site.ts`, so an older backend payload still renders.
 - The terrain view takes one 7 km crop per site. A wider mosaic, a USGS TADP
-  satellite/field split view, and per-site ground-truth photo uploads are the
-  natural next steps.
+  satellite/field split view, and per-site ground-truth photo uploads (field
+  notes already take uploaded photos) are the natural next steps.

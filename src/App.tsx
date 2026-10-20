@@ -16,6 +16,7 @@ import { SiteGallery } from './components/panels/SiteGallery';
 import { SiteInspector } from './components/panels/SiteInspector';
 import { SiteList, type RankedItem } from './components/panels/SiteList';
 import { EarthGlobe, type ImageryState, type ReportedMarker } from './components/three/EarthGlobe';
+import { MarsMap } from './components/three/MarsMap';
 import { MoonMap } from './components/three/MoonMap';
 import { SiteTerrain } from './components/three/SiteTerrain';
 import {
@@ -909,8 +910,19 @@ export default function App() {
             <Panel title="Feature influence" subtitle="Mean absolute contribution">
               <FeatureImportance predictions={visiblePredictions} />
             </Panel>
-            <Panel title="Comparison target" subtitle="Moon · real phase right now">
-              <MoonMap predictions={NO_PREDICTIONS} showMarkers={false} />
+            {/* The reference globe follows the selected target: Moon phase on
+                one side, Mars's real sub-solar point and season on the other. */}
+            <Panel
+              title="Comparison target"
+              subtitle={
+                target === 'moon' ? 'Moon · real phase right now' : 'Mars · real sun angle right now'
+              }
+            >
+              {target === 'moon' ? (
+                <MoonMap predictions={NO_PREDICTIONS} showMarkers={false} />
+              ) : (
+                <MarsMap />
+              )}
             </Panel>
             <Panel
               title="Data sources"

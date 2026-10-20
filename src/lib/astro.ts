@@ -1,5 +1,7 @@
 /**
- * Low-precision lunar astronomy, after Meeus, "Astronomical Algorithms".
+ * Low-precision lunar and Martian astronomy.
+ *
+ * The Moon section follows Meeus, "Astronomical Algorithms".
  *
  * Gives the position of the Sun as seen from the Moon's surface, which is what
  * drives the terminator (day/night line) in the globe. The sub-solar longitude
@@ -158,5 +160,108 @@ export function moonLighting(date: Date): MoonLighting {
     illumination,
     ageDays,
     phaseName: phaseName(ageDays),
+  };
+}
+
+/* --------------------------------------------------------------------------
+ * Mars
+ * ------------------------------------------------------------------------ */
+
+export interface MarsLighting {
+  /** Areocentric (planetocentric) latitude of the sub-solar point, degrees. */
+  subSolarLat: number;
+  /** Areographic east longitude of the sub-solar point, degrees (-180..180). */
+  subSolarLon: number;
+  /** Areocentric solar longitude Ls, 0..360; 0 = northern spring equinox. */
+  solarLongitude: number;
+  /** Northern-hemisphere season name for that Ls. */
+  season: string;
+}
+
+/**
+ * Perturbers in Mars's orbit, from Allison & McEwen (2000) eq. 18: amplitude
+ * (deg), period (Julian years), phase (deg).
+ */
+const MARS_PERTURBERS: ReadonlyArray<readonly [number, number, number]> = [
+  [0.0071, 2.2353, 49.409],
+  [0.0057, 2.7543, 168.173],
+  [0.0039, 1.1177, 191.837],
+  [0.0037, 15.7866, 21.736],
+  [0.0021, 2.1354, 15.704],
+  [0.002, 2.4694, 95.528],
+  [0.0018, 32.8493, 49.095],
+];
+
+function marsSeason(ls: number): string {
+  if (ls < 90) return 'Northern spring';
+  if (ls < 180) return 'Northern summer';
+  if (ls < 270) return 'Northern autumn';
+  return 'Northern winter';
+}
+
+/**
+ * Where the Sun is overhead on Mars at `date`.
+ *
+ * Implements NASA GISS's Mars24 algorithm (Allison & McEwen 2000, with the
+ * revisions Mars24 documents): areocentric solar longitude from the mean
+ * anomaly plus the seven periodic perturbers, the equation of time and the
+ * mean solar time at the prime meridian, then the sub-solar point. Mars24
+ * quotes the sub-solar longitude as degrees *west*; this returns east, which is
+ * the convention of the areographic maps and of `latLonToVec`.
+ *
+ * Accuracy is a few arcminutes of Ls and a few seconds of Mars time — far
+ * inside what a 220 px globe shows. TT - UTC is taken as its post-2017 value
+ * (69.184 s); dates before 2017 are off by at most 5 s, i.e. ~0.02 deg of
+ * rotation.
+ */
+export function marsLighting(date: Date): MarsLighting {
+  const jdUT = date.getTime() / 86400000 + 2440587.5;
+  const jdTT = jdUT + 69.184 / 86400;
+  const dt = jdTT - 2451545.0;
+
+  // --- Orbit (Mars24 B-1..B-5) ---------------------------------------------
+  const meanAnomaly = 19.3871 + 0.52402073 * dt;
+  const fictionMeanSun = 270.3871 + 0.524038496 * dt;
+
+  let perturbers = 0;
+  for (const [amplitude, period, phase] of MARS_PERTURBERS) {
+    perturbers += amplitude * Math.cos(((0.985626 * dt) / period + phase) * RAD);
+  }
+
+  const M = meanAnomaly * RAD;
+  const centre =
+    (10.691 + 3.0e-7 * dt) * Math.sin(M) +
+    0.623 * Math.sin(2 * M) +
+    0.05 * Math.sin(3 * M) +
+    0.005 * Math.sin(4 * M) +
+    0.0005 * Math.sin(5 * M) +
+    perturbers;
+
+  const solarLongitude = norm360(fictionMeanSun + centre);
+
+  // --- Time on Mars (Mars24 C-1..C-5) --------------------------------------
+  const ls = solarLongitude * RAD;
+  const equationOfTime =
+    2.861 * Math.sin(2 * ls) - 0.071 * Math.sin(4 * ls) + 0.002 * Math.sin(6 * ls) - centre;
+
+  // Mean solar time at the prime meridian (Airy Mean Time), in hours.
+  const mst = (((24 * ((jdTT - 2451549.5) / 1.0274912517 + 44796.0 - 0.0009626)) % 24) + 24) % 24;
+
+  // Sub-solar longitude, Mars24 (west-positive), then flipped to east.
+  const subSolarWest = norm360(mst * 15 + equationOfTime + 180);
+  const subSolarLon = norm180(-subSolarWest);
+
+  // --- Solar declination (Mars24 D-1) --------------------------------------
+  // Planetographic latitude. Mars is flattened (1/169.8), and the surface map
+  // is planetocentric, so convert before handing this to the globe.
+  const declinationGraphic =
+    Math.asin(0.42565 * Math.sin(ls)) / RAD + 0.25 * Math.sin(ls);
+  const subSolarLat = Math.atan(0.98825 * Math.tan(declinationGraphic * RAD)) / RAD;
+
+  return {
+    subSolarLat,
+    subSolarLon,
+    solarLongitude,
+    season: marsSeason(solarLongitude),
   };
 }

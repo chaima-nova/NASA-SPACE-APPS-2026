@@ -1355,6 +1355,12 @@ body::before {
   background: var(--signal);
 }
 
+/* The Mars badge keeps the Moon badge's geometry and swaps in the planet's
+   own colour, so the strip reads as two states of one panel. */
+.mars-phase-dot {
+  background: #d9713c;
+}
+
 /* ---- Data sources ------------------------------------------------------- */
 
 .source-list {
@@ -2902,6 +2908,93 @@ body::before {
 .mini-field textarea:focus-visible {
   outline: 1px solid var(--signal);
   outline-offset: 1px;
+}
+
+/* Photo upload. The native file control is kept (it owns the picker and the
+   keyboard behaviour) but drawn as a button: "No file chosen" does not fit
+   the dossier column, and the file name belongs in the row beside it. */
+.photo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.photo-field-label {
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+}
+
+.photo-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
+
+.photo-pick {
+  position: relative;
+  flex: none;
+  cursor: pointer;
+}
+
+.photo-pick:focus-within {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.photo-pick.is-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.photo-field-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.6rem;
+  color: var(--ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photo-preview {
+  display: block;
+  width: 100%;
+  max-height: 124px;
+  object-fit: cover;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+}
+
+.community-photo {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin-top: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+}
+
+.community-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .community-add {

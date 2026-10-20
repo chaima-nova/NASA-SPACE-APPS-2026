@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CommunityState } from '../../data-contracts/types';
 import { hasVoted, notesFor, reviewsFor, votesFor } from '../../lib/community';
+import { readPhotoFile } from '../../lib/photoUpload';
 
 export interface NoteInput {
   author: string;
@@ -44,7 +45,8 @@ const shortDate = (value: string) => {
 
 /**
  * Researcher contributions for one site: an upvote anyone can cast once per
- * browser, dated field notes, and short reviews.
+ * browser, dated field notes (with an optional uploaded photo), and short
+ * reviews.
  *
  * Everything here is stored in this browser unless a shared backend is
  * configured, and the copy says so rather than implying a community of users
@@ -64,6 +66,9 @@ export function SiteCommunity({
   const [note, setNote] = useState({ author: '', observedAt: today(), text: '', photoUrl: '' });
   const [review, setReview] = useState({ author: '', text: '' });
   const [problem, setProblem] = useState<string | null>(null);
+  const [photoName, setPhotoName] = useState('');
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const notes = notesFor(community, siteId);
   const reviews = reviewsFor(community, siteId);
@@ -76,15 +81,6 @@ export function SiteCommunity({
       setProblem('Notes need a name and at least 10 characters of observation.');
       return;
     }
-    if (note.photoUrl.trim()) {
-      try {
-        const url = new URL(note.photoUrl.trim());
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('scheme');
-      } catch {
-        setProblem('The photo link must be a full http(s) URL.');
-        return;
-      }
-    }
     setProblem(null);
     onAddNote({
       author: note.author,
@@ -93,6 +89,36 @@ export function SiteCommunity({
       photoUrl: note.photoUrl || undefined,
     });
     setNote({ author: note.author, observedAt: today(), text: '', photoUrl: '' });
+    setPhotoName('');
+  }
+
+  /**
+   * The photo travels with the note as a data URL, so it is downscaled before
+   * it reaches the store. Reading is async: the form stays usable and says so.
+   */
+  async function pickPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Reset first, so choosing the same file again still fires a change event.
+    event.target.value = '';
+    if (!file) return;
+
+    setPhotoBusy(true);
+    try {
+      const dataUrl = await readPhotoFile(file);
+      setNote((current) => ({ ...current, photoUrl: dataUrl }));
+      setPhotoName(file.name);
+      setProblem(null);
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : 'That photo could not be read.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  function clearPhoto() {
+    setNote((current) => ({ ...current, photoUrl: '' }));
+    setPhotoName('');
+    photoInputRef.current?.focus();
   }
 
   function addReview(event: React.FormEvent) {
@@ -178,15 +204,36 @@ export function SiteCommunity({
                 aria-label="Field note"
               />
             </label>
-            <label className="mini-field">
-              <span>Photo link · optional</span>
-              <input
-                value={note.photoUrl}
-                onChange={(event) => setNote({ ...note, photoUrl: event.target.value })}
-                placeholder="https://…"
-                aria-label="Field note photo link"
-              />
-            </label>
+            <div className="photo-field">
+              <span className="photo-field-label">Photo · optional</span>
+              <div className="photo-field-row">
+                <label className={photoBusy ? 'btn btn-small photo-pick is-busy' : 'btn btn-small photo-pick'}>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="photo-input"
+                    onChange={pickPhoto}
+                    disabled={photoBusy}
+                    aria-label="Attach a photo to this field note"
+                  />
+                  {photoBusy ? 'Preparing…' : note.photoUrl ? 'Replace photo' : 'Choose photo'}
+                </label>
+                {photoName ? <span className="photo-field-name">{photoName}</span> : null}
+                {note.photoUrl ? (
+                  <button type="button" className="link-btn" onClick={clearPhoto}>
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              {note.photoUrl ? (
+                <img
+                  className="photo-preview"
+                  src={note.photoUrl}
+                  alt="Preview of the photo attached to this note"
+                />
+              ) : null}
+            </div>
             <div className="community-add">
               <button type="submit" className="btn btn-small btn-primary">
                 Add field note
@@ -205,13 +252,31 @@ export function SiteCommunity({
                     <span className="community-date">{shortDate(entry.observedAt)}</span>
                   </div>
                   <p>{entry.text}</p>
-                  <div className="community-item-foot">
-                    {entry.photoUrl ? (
-                      <a href={entry.photoUrl} target="_blank" rel="noreferrer">
-                        photo
+                  {entry.photoUrl ? (
+                    entry.photoUrl.startsWith('data:') ? (
+                      <img
+                        className="community-photo"
+                        src={entry.photoUrl}
+                        alt={`Photo attached to ${entry.author}'s field note`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <a
+                        className="community-photo"
+                        href={entry.photoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img
+                          src={entry.photoUrl}
+                          alt={`Photo attached to ${entry.author}'s field note`}
+                          loading="lazy"
+                        />
                       </a>
-                    ) : null}
-                    {entry.source === 'local' ? (
+                    )
+                  ) : null}
+                  {entry.source === 'local' ? (
+                    <div className="community-item-foot">
                       <button
                         type="button"
                         className="link-btn"
@@ -219,8 +284,8 @@ export function SiteCommunity({
                       >
                         Delete
                       </button>
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
