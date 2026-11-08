@@ -1,0 +1,108 @@
+{
+  "generated": "2026-11-08T10:19:37Z",
+  "samples_dir": "F:\\Sem5\\nasa\\data\\samples",
+  "results": [
+    {
+      "dataset_id": "lola_gdr",
+      "status": "success",
+      "files": {
+        "csv": "F:\\Sem5\\nasa\\data\\samples\\lola_moon_south_pole_sample.csv",
+        "npy": "F:\\Sem5\\nasa\\data\\samples\\lola_moon_south_pole_elevation.npy",
+        "stats": "F:\\Sem5\\nasa\\data\\samples\\lola_moon_stats.json",
+        "dictionary": "F:\\Sem5\\nasa\\data\\samples\\lola_moon_data_dictionary.csv",
+        "loading_example": "F:\\Sem5\\nasa\\data\\samples\\load_lola_moon.py"
+      },
+      "sample_rows": 25000,
+      "statistics": {
+        "dataset_id": "lola_gdr",
+        "planet": "moon",
+        "product_file": "ldem_4.img",
+        "region": "Lunar South Pole",
+        "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
+        "bbox": [
+          0.0,
+          -90.0,
+          360.0,
+          -80.0
+        ],
+        "grid_resolution_deg": 0.25,
+        "elevation_m": {
+          "min": -6439.0,
+          "max": 6846.0,
+          "mean": -1234.5,
+          "std": 1832.0
+        },
+        "slope_deg": {
+          "min": 0.02,
+          "max": 46.68,
+          "mean": 6.87
+        },
+        "roughness_tri_m": {
+          "min": 5.57,
+          "max": 6945.45,
+          "mean": 1482.93
+        },
+        "sample_rows": 25000,
+        "source_citation": "Smith et al. (2010). Initial observations from the Lunar Orbiter Laser Altimeter (LOLA). GRL."
+      }
+    },
+    {
+      "dataset_id": "mola_megdr",
+      "status": "success",
+      "files": {
+        "csv": "F:\\Sem5\\nasa\\data\\samples\\mola_mars_jezero_sample.csv",
+        "npy": "F:\\Sem5\\nasa\\data\\samples\\mola_mars_jezero_elevation.npy",
+        "stats": "F:\\Sem5\\nasa\\data\\samples\\mola_mars_stats.json",
+        "dictionary": "F:\\Sem5\\nasa\\data\\samples\\mola_mars_data_dictionary.csv",
+        "loading_example": "F:\\Sem5\\nasa\\data\\samples\\load_mola_mars.py"
+      },
+      "sample_rows": 144,
+      "statistics": {
+        "dataset_id": "mola_megdr",
+        "planet": "mars",
+        "product_file": "megt90n000cb.img",
+        "region": "Jezero Crater",
+        "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
+        "bbox": [
+          76.0,
+          17.0,
+          79.0,
+          20.0
+        ],
+        "grid_resolution_deg": 0.25,
+        "elevation_m": {
+          "min": -3723.0,
+          "max": -364.0,
+          "mean": -2147.1,
+          "std": 726.9
+        },
+        "slope_deg": {
+          "min": 0.23,
+          "max": 3.74,
+          "mean": 1.21
+        },
+        "roughness_tri_m": {
+          "min": 191.05,
+          "max": 2385.22,
+          "mean": 778.16
+        },
+        "sample_rows": 144,
+        "source_citation": "Smith et al. (2001). Mars Orbiter Laser Altimeter. JGR Planets."
+      }
+    },
+    {
+      "dataset_id": "earth_atacama_SYNTHETIC",
+      "status": "success_synthetic",
+      "warning": "THIS IS SYNTHETIC DATA \u2013 NOT REAL SCIENTIFIC MEASUREMENTS",
+      "files": {
+        "csv": "F:\\Sem5\\nasa\\data\\samples\\SYNTHETIC_earth_atacama_analogue_sample.csv",
+        "readme": "F:\\Sem5\\nasa\\data\\samples\\SYNTHETIC_earth_atacama_README.txt"
+      },
+      "sample_rows": 2000
+    },
+    {
+      "status": "success",
+      "file": "F:\\Sem5\\nasa\\data\\samples\\proposed_cross_planetary_schema.json"
+    }
+  ]
+}

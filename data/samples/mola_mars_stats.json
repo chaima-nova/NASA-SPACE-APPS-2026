@@ -1,0 +1,32 @@
+{
+  "dataset_id": "mola_megdr",
+  "planet": "mars",
+  "product_file": "megt90n000cb.img",
+  "region": "Jezero Crater",
+  "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
+  "bbox": [
+    76.0,
+    17.0,
+    79.0,
+    20.0
+  ],
+  "grid_resolution_deg": 0.25,
+  "elevation_m": {
+    "min": -3723.0,
+    "max": -364.0,
+    "mean": -2147.1,
+    "std": 726.9
+  },
+  "slope_deg": {
+    "min": 0.23,
+    "max": 3.74,
+    "mean": 1.21
+  },
+  "roughness_tri_m": {
+    "min": 191.05,
+    "max": 2385.22,
+    "mean": 778.16
+  },
+  "sample_rows": 144,
+  "source_citation": "Smith et al. (2001). Mars Orbiter Laser Altimeter. JGR Planets."
+}

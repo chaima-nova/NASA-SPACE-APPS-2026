@@ -1,0 +1,66 @@
+{
+  "_note": "PROPOSED SCHEMA ONLY \u2013 not a real combined dataset. Each planetary body uses different datums, measurement methods, and instruments. Direct numerical comparison without careful normalisation is not scientifically valid.",
+  "proposed_fields": [
+    {
+      "field": "planet",
+      "description": "earth / mars / moon",
+      "units": "text"
+    },
+    {
+      "field": "region_name",
+      "description": "Named region identifier",
+      "units": "text"
+    },
+    {
+      "field": "latitude",
+      "description": "Centre latitude in body-fixed coordinate",
+      "units": "degrees"
+    },
+    {
+      "field": "longitude",
+      "description": "Centre longitude in body-fixed coordinate",
+      "units": "degrees"
+    },
+    {
+      "field": "elevation_m",
+      "description": "Elevation above body datum",
+      "units": "meters",
+      "caution": "Different datums: WGS84 (Earth), areoid (Mars), lunar mean radius (Moon)"
+    },
+    {
+      "field": "slope_deg",
+      "description": "Terrain slope (comparable across bodies)",
+      "units": "degrees",
+      "caution": "Resolution differences affect measured slope values"
+    },
+    {
+      "field": "roughness_tri",
+      "description": "Terrain Ruggedness Index (TRI)",
+      "units": "meters",
+      "caution": "Window size and resolution affect comparability"
+    },
+    {
+      "field": "lst_kelvin",
+      "description": "Surface temperature",
+      "units": "Kelvin",
+      "caution": "Very different measurement methods: MODIS IR (Earth) vs TES/MCS (Mars) vs Diviner (Moon). NOT directly comparable."
+    },
+    {
+      "field": "source_dataset",
+      "description": "Source dataset ID",
+      "units": "text"
+    },
+    {
+      "field": "data_type",
+      "description": "measured / derived / synthetic",
+      "units": "text"
+    }
+  ],
+  "comparability_matrix": {
+    "elevation_m": "NOT directly comparable (different datums) \u2013 useful for relative terrain analysis only",
+    "slope_deg": "COMPARABLE if spatial resolution differences are accounted for",
+    "roughness_tri": "COMPARABLE within same resolution class",
+    "lst_kelvin": "NOT directly comparable \u2013 different sensor physics and atmospheric effects",
+    "land_cover": "Earth-only concept \u2013 no direct analogue on Mars/Moon"
+  }
+}
