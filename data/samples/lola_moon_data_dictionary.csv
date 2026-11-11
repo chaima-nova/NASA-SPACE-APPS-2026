@@ -1,0 +1,8 @@
+field_name,description,units,dtype,valid_range,nodata_value,source,notes
+latitude,Pixel centre latitude,degrees selenographic (north positive),float64,"[-90, -80]",NaN,LOLA GDR,
+longitude,Pixel centre longitude,degrees selenographic (east positive 0-360),float64,"[0, 360]",NaN,LOLA GDR,
+elevation_m,Surface elevation above LOLA mean lunar radius (1737.4 km),meters,float32,"[-9000, 10000]",NaN,LOLA GDR,
+slope_deg,Terrain slope computed by central difference of elevation,degrees,float32,"[0, 90]",NaN,Derived,
+roughness_tri_m,Terrain Ruggedness Index (Riley et al. 1999) 3x3 kernel,meters,float32,"[0, 5000]",NaN,Derived,
+planet,Planetary body identifier,text,str,,,,
+datum,Elevation vertical reference surface,text,str,,,,

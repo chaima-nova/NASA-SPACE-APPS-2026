@@ -1,0 +1,9 @@
+field_name,description,units,dtype,valid_range,nodata_value,source,notes
+latitude,Point latitude (WGS84),degrees north,float64,,,,
+longitude,Point longitude (WGS84),degrees east,float64,,,,
+elevation_m,[SYNTHETIC] Terrain elevation above WGS84 ellipsoid,meters,float64,"[-500, 9000]",,,"Real data: SRTM GL1, ~30m resolution"
+slope_deg,[SYNTHETIC] Terrain slope,degrees,float64,,,,
+lst_day_kelvin,[SYNTHETIC] Daytime land surface temperature,Kelvin,float64,,,,"Real data: MODIS MOD11A2, 8-day composite, 1 km resolution. Apply scale=0.02."
+lst_night_kelvin,[SYNTHETIC] Nighttime land surface temperature,Kelvin,float64,,,,
+land_cover_igbp,"[SYNTHETIC] IGBP land cover class (16=Barren, 17=Water Bodies)",integer class,int,,,,Real data: MODIS MCD12Q1. See IGBP legend in data_dictionary.md
+data_source,Origin of data – SYNTHETIC in this file,text,str,,,,
