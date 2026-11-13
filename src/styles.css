@@ -4491,7 +4491,9 @@ html[data-a11y-motion='reduced'] *::after {
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  /* Three across on purpose: with auto-fit the six cards fell four-then-two,
+     leaving the second row ragged. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin: 20px 0 0;
   padding: 0;
@@ -4642,6 +4644,9 @@ html[data-a11y-motion='reduced'] *::after {
   .team-focus li:first-child {
     padding: 0 0 0 12px;
     border-left: 2px solid var(--line-2);
+  }
+  .team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .team-flow ol {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
