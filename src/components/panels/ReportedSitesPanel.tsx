@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import type { ReportedSite } from '../../data-contracts/types';
 import { Modal } from '../layout/Modal';
-import { reportsCsv, reportsJson } from '../../lib/community';
+import { ExportDialog } from '../layout/ExportDialog';
+import { reportsJson, reportsTable } from '../../lib/community';
 import { downloadFile } from '../../lib/download';
 import { formatCoords, formatElevation, TERRAIN_LABELS } from '../../lib/site';
 
@@ -23,8 +25,8 @@ function submitted(site: ReportedSite): string {
 
 /**
  * Everything this browser has reported, in one place: review a report, fix a
- * coordinate, delete a duplicate, or take the whole set away as JSON/CSV for
- * the model pipeline.
+ * coordinate, delete a duplicate, or take the whole set away as a workbook, a
+ * sheet, an HTML table or the round-trip JSON the model pipeline reads.
  */
 export function ReportedSitesPanel({
   sites,
@@ -34,94 +36,123 @@ export function ReportedSitesPanel({
   onDelete,
   onClose,
 }: ReportedSitesPanelProps) {
+  const [exportOpen, setExportOpen] = useState(false);
+
   return (
-    <Modal
-      kicker="Researcher reports"
-      title={`Reported candidates (${sites.length})`}
-      subtitle="Unscored sites added from the field. They sit outside the model ranking until the pipeline scores them."
-      onClose={onClose}
-      size="lg"
-      className="reports-modal"
-      footer={
-        <>
-          <span className="modal-foot-note">
-            {syncFailed
-              ? 'Saved in this browser — the shared backend did not accept the last change.'
-              : 'Saved in this browser; synced to the shared backend when one is configured.'}
-          </span>
-          <div className="modal-foot-actions">
-            <button
-              type="button"
-              className="btn"
-              disabled={sites.length === 0}
-              onClick={() => downloadFile(`reported-sites-${stamp()}.json`, reportsJson(sites), 'application/json')}
-            >
-              Export JSON
-            </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={sites.length === 0}
-              onClick={() => downloadFile(`reported-sites-${stamp()}.csv`, reportsCsv(sites), 'text/csv')}
-            >
-              Export CSV
-            </button>
-            <button type="button" className="btn btn-primary" onClick={onNew}>
-              Report a site
-            </button>
+    <>
+      <Modal
+        kicker="Researcher reports"
+        title={`Reported candidates (${sites.length})`}
+        subtitle="Unscored sites added from the field. They sit outside the model ranking until the pipeline scores them."
+        onClose={onClose}
+        size="lg"
+        className="reports-modal"
+        footer={
+          <>
+            <span className="modal-foot-note">
+              {syncFailed
+                ? 'Saved in this browser — the shared backend did not accept the last change.'
+                : 'Saved in this browser; synced to the shared backend when one is configured.'}
+            </span>
+            <div className="modal-foot-actions">
+              <button
+                type="button"
+                className="btn"
+                disabled={sites.length === 0}
+                onClick={() =>
+                  downloadFile(
+                    `reported-sites-${stamp()}.json`,
+                    reportsJson(sites),
+                    'application/json',
+                  )
+                }
+              >
+                Export JSON
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={sites.length === 0}
+                onClick={() => setExportOpen(true)}
+              >
+                Export
+              </button>
+              <button type="button" className="btn btn-primary" onClick={onNew}>
+                Report a site
+              </button>
+            </div>
+          </>
+        }
+      >
+        {sites.length === 0 ? (
+          <div className="empty">
+            <p>No sites reported yet.</p>
+            <p className="empty-sub">
+              Use “Report a site” to add one: name, coordinates, terrain family and the field
+              evidence behind it.
+            </p>
           </div>
-        </>
-      }
-    >
-      {sites.length === 0 ? (
-        <div className="empty">
-          <p>No sites reported yet.</p>
-          <p className="empty-sub">
-            Use “Report a site” to add one: name, coordinates, terrain family and the field evidence
-            behind it.
-          </p>
-        </div>
-      ) : (
-        <ul className="report-list">
-          {sites.map((site) => (
-            <li key={site.id} className="report-row">
-              <div className="report-row-main">
-                <div className="report-row-head">
-                  <h3>{site.name}</h3>
-                  <span className="pill pill-report">Unreviewed</span>
+        ) : (
+          <ul className="report-list">
+            {sites.map((site) => (
+              <li key={site.id} className="report-row">
+                <div className="report-row-main">
+                  <div className="report-row-head">
+                    <h3>{site.name}</h3>
+                    <span className="pill pill-report">Unreviewed</span>
+                  </div>
+                  <p className="report-row-meta">
+                    {site.region ? `${site.region} · ` : ''}
+                    {formatCoords(site.lat, site.lon)} ·{' '}
+                    {site.terrainType ? TERRAIN_LABELS[site.terrainType] : 'Unclassified'} ·{' '}
+                    {formatElevation(site.elevationM)}
+                  </p>
+                  <p className="report-row-evidence">{site.evidence}</p>
+                  <p className="report-row-foot">
+                    {site.reporter} · submitted {submitted(site)} · for{' '}
+                    {site.targets.map((t) => (t === 'moon' ? 'Moon' : 'Mars')).join(' + ')}
+                    {site.photoUrl ? (
+                      <>
+                        {' · '}
+                        <a href={site.photoUrl} target="_blank" rel="noreferrer">
+                          ground photo
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
                 </div>
-                <p className="report-row-meta">
-                  {site.region ? `${site.region} · ` : ''}
-                  {formatCoords(site.lat, site.lon)} ·{' '}
-                  {site.terrainType ? TERRAIN_LABELS[site.terrainType] : 'Unclassified'} ·{' '}
-                  {formatElevation(site.elevationM)}
-                </p>
-                <p className="report-row-evidence">{site.evidence}</p>
-                <p className="report-row-foot">
-                  {site.reporter} · submitted {submitted(site)} · for{' '}
-                  {site.targets.map((t) => (t === 'moon' ? 'Moon' : 'Mars')).join(' + ')}
-                  {site.photoUrl ? (
-                    <>
-                      {' · '}
-                      <a href={site.photoUrl} target="_blank" rel="noreferrer">
-                        ground photo
-                      </a>
-                    </>
-                  ) : null}
-                </p>
-              </div>
-              <div className="report-row-actions">
-                <button type="button" className="btn btn-small" onClick={() => onEdit(site)}>
-                  Edit
-                </button>
-                <button type="button" className="btn btn-small btn-danger" onClick={() => onDelete(site)}>
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Modal>
+                <div className="report-row-actions">
+                  <button type="button" className="btn btn-small" onClick={() => onEdit(site)}>
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-small btn-danger"
+                    onClick={() => onDelete(site)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+
+      {/* Opened from the panel's own footer, so the picker stacks over the list
+          and closing it returns to the reports rather than dropping them. */}
+      {exportOpen ? (
+        <ExportDialog
+          title="Reported analog sites"
+          filename={`reported-sites-${stamp()}`}
+          sheet="Reports"
+          subtitle={`${sites.length} unreviewed ${
+            sites.length === 1 ? 'report' : 'reports'
+          } as entered, unscored.`}
+          table={reportsTable(sites)}
+          onClose={() => setExportOpen(false)}
+        />
+      ) : null}
+    </>
   );
 }

@@ -22,6 +22,7 @@ import type {
   SiteVote,
   TerrainType,
 } from '../data-contracts/types';
+import { tableCsv, type Table } from './export';
 import { TERRAIN_ORDER } from './site';
 
 /** Bumped only when the stored shape changes incompatibly. */
@@ -363,41 +364,45 @@ export function hasVoted(state: CommunityState, siteId: string, voter = LOCAL_VO
   return state.votes.some((vote) => vote.siteId === siteId && vote.voter === voter);
 }
 
-export function reportsCsv(sites: ReportedSite[]): string {
-  const cell = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
-  const header = [
-    'site',
-    'region',
-    'terrain',
-    'lat',
-    'lon',
-    'elevation_m',
-    'targets',
-    'focus_area',
-    'reporter',
-    'submitted_at',
-    'photo_url',
-    'evidence',
-  ];
-  const rows = sites.map((site) =>
-    [
+/**
+ * The reports as a table. One producer for every export format, so the CSV
+ * columns, the workbook and the HTML page cannot drift apart.
+ */
+export function reportsTable(sites: ReportedSite[]): Table {
+  return {
+    header: [
+      'site',
+      'region',
+      'terrain',
+      'lat',
+      'lon',
+      'elevation_m',
+      'targets',
+      'focus_area',
+      'reporter',
+      'submitted_at',
+      'photo_url',
+      'evidence',
+    ],
+    rows: sites.map((site) => [
       site.name,
       site.region ?? '',
       site.terrainType ?? '',
       site.lat.toFixed(4),
       site.lon.toFixed(4),
-      site.elevationM ?? '',
+      site.elevationM === undefined ? '' : String(site.elevationM),
       site.targets.join('+'),
       site.focusArea,
       site.reporter,
       site.submittedAt,
       site.photoUrl ?? '',
       site.evidence,
-    ]
-      .map(cell)
-      .join(','),
-  );
-  return [header.map(cell).join(','), ...rows].join('\r\n');
+    ]),
+  };
+}
+
+export function reportsCsv(sites: ReportedSite[]): string {
+  return tableCsv(reportsTable(sites));
 }
 
 /** Round-trip format for the "Manage" panel, so reports survive a reinstall. */

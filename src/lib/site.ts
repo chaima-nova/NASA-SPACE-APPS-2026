@@ -7,6 +7,7 @@
  */
 
 import type { DataSource, Prediction, ReportedSite, TerrainType } from '../data-contracts/types';
+import type { Table } from './export';
 
 /**
  * The positional minimum every site-like object satisfies: a model prediction
@@ -215,9 +216,11 @@ export function formatScore(score: number): string {
   return score.toFixed(2);
 }
 
-/** RFC-4180-ish CSV: quote every field, double any embedded quote. */
-export function toCsv(rows: Prediction[], target: Target): string {
-  const cell = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+/**
+ * The ranking as a table, best fit first. One producer for every export
+ * format, so CSV, the workbook and the HTML page cannot drift apart.
+ */
+export function siteTable(rows: Prediction[], target: Target): Table {
   const header = [
     'rank',
     'site',
@@ -236,25 +239,22 @@ export function toCsv(rows: Prediction[], target: Target): string {
 
   const ranked = [...rows].sort((a, b) => fitFor(b, target) - fitFor(a, target));
 
-  const lines = ranked.map((p, i) =>
-    [
-      i + 1,
+  return {
+    header,
+    rows: ranked.map((p, i) => [
+      String(i + 1),
       p.siteName,
       p.region ?? '',
       terrainOf(p) ?? '',
       p.lat.toFixed(4),
       p.lon.toFixed(4),
-      p.elevationM ?? '',
+      p.elevationM === undefined ? '' : String(p.elevationM),
       fitFor(p, 'moon').toFixed(3),
       fitFor(p, 'mars').toFixed(3),
       p.analogScore.toFixed(3),
       p.label,
       p.confidence.toFixed(2),
       target,
-    ]
-      .map(cell)
-      .join(','),
-  );
-
-  return [header.map(cell).join(','), ...lines].join('\r\n');
+    ]),
+  };
 }

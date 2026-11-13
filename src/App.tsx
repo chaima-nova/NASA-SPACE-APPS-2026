@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
+import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
 import { HomePage } from './components/layout/HomePage';
 import { TeamPage } from './components/layout/TeamPage';
@@ -49,10 +50,11 @@ import {
   formatCoords,
   formatScore,
   siteRefOf,
+  siteTable,
+  TARGET_LABELS,
   TERRAIN_LABELS,
   terrainLabel,
   terrainOf,
-  toCsv,
   type SiteRef,
   type Target,
 } from './lib/site';
@@ -120,6 +122,8 @@ export default function App() {
   const [syncFailed, setSyncFailed] = useState(false);
   const [reportDraft, setReportDraft] = useState<ReportDraft>(null);
   const [manageOpen, setManageOpen] = useState(false);
+  /** The export destination picker, opened from the dossier. */
+  const [exportOpen, setExportOpen] = useState(false);
   const [compare, setCompare] = useState<CompareRequest | null>(null);
   /** Ambient site photograph behind the surface; on until switched off. */
   const [backdrop, setBackdrop] = useState(true);
@@ -462,18 +466,6 @@ export default function App() {
     } else {
       setCompare({ target: siteRefOf(site), photos: [], reportPhotoUrl: site.photoUrl });
     }
-  }
-
-  function exportCsv() {
-    const blob = new Blob([toCsv(ranked.map((item) => item.prediction), target)], {
-      type: 'text/csv;charset=utf-8',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `analog-sites-${target}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
   }
 
   async function copyLink() {
@@ -878,7 +870,7 @@ export default function App() {
               datasets={datasets}
               community={community}
               actions={communityActionsFor(selected?.id ?? '')}
-              onExport={exportCsv}
+              onExport={() => setExportOpen(true)}
               onCopyLink={copyLink}
               onSeeSite={() => selected && setGallerySite(selected)}
               onCompare={() => selected && openCompare(selected)}
@@ -951,6 +943,21 @@ export default function App() {
           initial={reportDraft.mode === 'edit' ? reportDraft.site : undefined}
           onSave={saveReport}
           onClose={() => setReportDraft(null)}
+        />
+      ) : null}
+
+      {exportOpen ? (
+        <ExportDialog
+          title={`Analog sites · ${TARGET_LABELS[target]}`}
+          filename={`analog-sites-${target}`}
+          subtitle={`${ranked.length} site${ranked.length === 1 ? '' : 's'} as ranked now, best ${
+            TARGET_LABELS[target]
+          } fit first.`}
+          table={siteTable(
+            ranked.map((item) => item.prediction),
+            target,
+          )}
+          onClose={() => setExportOpen(false)}
         />
       ) : null}
 

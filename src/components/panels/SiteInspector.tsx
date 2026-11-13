@@ -273,7 +273,7 @@ export function SiteInspector({
 
       <div className="dossier-actions">
         <button type="button" className="btn btn-primary" onClick={onExport}>
-          Export CSV
+          Export
         </button>
         <button type="button" className="btn" onClick={onCopyLink}>
           {copied ? 'Link copied' : 'Copy link'}

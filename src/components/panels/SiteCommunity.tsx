@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { CommunityState } from '../../data-contracts/types';
 import { hasVoted, notesFor, reviewsFor, votesFor } from '../../lib/community';
 import { readPhotoFile } from '../../lib/photoUpload';
+import { PhotoButton } from './PhotoButton';
 
 export interface NoteInput {
   author: string;
@@ -206,26 +207,22 @@ export function SiteCommunity({
             </label>
             <div className="photo-field">
               <span className="photo-field-label">Photo · optional</span>
-              <div className="photo-field-row">
-                <label className={photoBusy ? 'btn btn-small photo-pick is-busy' : 'btn btn-small photo-pick'}>
-                  <input
-                    ref={photoInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="photo-input"
-                    onChange={pickPhoto}
-                    disabled={photoBusy}
-                    aria-label="Attach a photo to this field note"
-                  />
-                  {photoBusy ? 'Preparing…' : note.photoUrl ? 'Replace photo' : 'Choose photo'}
-                </label>
-                {photoName ? <span className="photo-field-name">{photoName}</span> : null}
-                {note.photoUrl ? (
-                  <button type="button" className="link-btn" onClick={clearPhoto}>
-                    Remove
-                  </button>
-                ) : null}
-              </div>
+              <PhotoButton
+                busy={photoBusy}
+                ariaLabel="Attach a photo to this field note"
+                onChange={pickPhoto}
+                inputRef={photoInputRef}
+              />
+              {photoName || note.photoUrl ? (
+                <div className="photo-field-row">
+                  {photoName ? <span className="photo-field-name">{photoName}</span> : null}
+                  {note.photoUrl ? (
+                    <button type="button" className="link-btn" onClick={clearPhoto}>
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
               {note.photoUrl ? (
                 <img
                   className="photo-preview"

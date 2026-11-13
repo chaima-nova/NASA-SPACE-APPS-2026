@@ -1,4 +1,11 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
+
+/**
+ * Dialogs can be opened from inside another one — the export picker sits over
+ * the reports panel. Only the most recent dialog answers Escape, so leaving a
+ * picker does not take the panel behind it down as well.
+ */
+const openDialogs: string[] = [];
 
 interface ModalProps {
   /** Small uppercase line above the title. */
@@ -31,14 +38,17 @@ export function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogId = useId();
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeRef.current?.focus();
+    openDialogs.push(dialogId);
 
     const onKey = (event: KeyboardEvent) => {
+      if (openDialogs[openDialogs.length - 1] !== dialogId) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
@@ -62,11 +72,13 @@ export function Modal({
     document.addEventListener('keydown', onKey);
 
     return () => {
+      const index = openDialogs.indexOf(dialogId);
+      if (index >= 0) openDialogs.splice(index, 1);
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
       previous?.focus?.();
     };
-  }, [onClose]);
+  }, [dialogId, onClose]);
 
   return (
     <div

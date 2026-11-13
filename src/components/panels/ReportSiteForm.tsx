@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import type { FocusArea, ReportedSite, TerrainType } from '../../data-contracts/types';
 import { Modal } from '../layout/Modal';
 import { createReportedSite, type ReportInput } from '../../lib/community';
+import { readPhotoFile } from '../../lib/photoUpload';
 import { TERRAIN_LABELS, TERRAIN_ORDER } from '../../lib/site';
+import { PhotoButton } from './PhotoButton';
 
 interface ReportSiteFormProps {
   /** Present when editing an existing report; absent when creating one. */
@@ -48,9 +50,14 @@ function fieldsFrom(site: ReportedSite | undefined): Fields {
   };
 }
 
-/** A valid http(s) URL, or empty (the field is optional). */
+/**
+ * A valid http(s) URL, an uploaded image, or empty (the field is optional).
+ * The https form is kept for reports that were stored before the field became
+ * an upload.
+ */
 function urlProblem(value: string): string | null {
   if (!value) return null;
+  if (value.startsWith('data:image/')) return null;
   try {
     const url = new URL(value);
     return url.protocol === 'http:' || url.protocol === 'https:' ? null : 'Must be an http(s) link';
@@ -120,9 +127,30 @@ export function validateReport(fields: {
 export function ReportSiteForm({ initial, onSave, onClose }: ReportSiteFormProps) {
   const [fields, setFields] = useState<Fields>(() => fieldsFrom(initial));
   const [attempted, setAttempted] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoName, setPhotoName] = useState('');
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const set = <K extends keyof Fields>(key: K, value: Fields[K]) =>
     setFields((current) => ({ ...current, [key]: value }));
+
+  /** Shrinks the chosen image and keeps it in the record as a data URL. */
+  async function pickPhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Clearing the value lets the same file be chosen again after a removal.
+    event.target.value = '';
+    if (!file) return;
+    setPhotoBusy(true);
+    setPhotoError(null);
+    try {
+      set('photoUrl', await readPhotoFile(file));
+      setPhotoName(file.name);
+    } catch (problem) {
+      setPhotoError(problem instanceof Error ? problem.message : 'That photo could not be read.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   const liveErrors = useMemo(() => validateReport(fields), [fields]);
   const shown = attempted ? liveErrors : {};
@@ -322,9 +350,48 @@ export function ReportSiteForm({ initial, onSave, onClose }: ReportSiteFormProps
             'Basaltic rubble with aeolian ripples; 3 cm of loose regolith over intact flow; no standing water in the last 40 years of record…',
         })}
 
-        {field('photoUrl', 'Ground photo link', 'optional · https link to an image', {
-          placeholder: 'https://…',
-        })}
+        <div className={`report-field${shown.photoUrl ? ' is-invalid' : ''}`}>
+          <span className="report-label">
+            Ground photo
+            <span className="report-hint">optional · image file from the field</span>
+          </span>
+          <PhotoButton
+            busy={photoBusy}
+            ariaLabel="Attach a ground photo to this report"
+            onChange={pickPhoto}
+          />
+          {photoName || fields.photoUrl ? (
+            <div className="photo-field-row">
+              <span className="photo-field-name">{photoName || 'Uploaded photo'}</span>
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => {
+                  set('photoUrl', '');
+                  setPhotoName('');
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ) : null}
+          {fields.photoUrl ? (
+            <img
+              className="photo-preview"
+              src={fields.photoUrl}
+              alt="Preview of the ground photo attached to this report"
+            />
+          ) : null}
+          {photoError ? (
+            <span className="report-error" role="alert">
+              {photoError}
+            </span>
+          ) : shown.photoUrl ? (
+            <span className="report-error" role="alert">
+              {shown.photoUrl}
+            </span>
+          ) : null}
+        </div>
 
         <p className="report-note">
           Coordinates place the site on the globe and drive the terrain fly-in. Reports stay labelled

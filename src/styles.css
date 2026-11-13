@@ -2449,6 +2449,82 @@ body::before {
   white-space: nowrap;
 }
 
+/* ---- Export dialog ------------------------------------------------------ */
+
+/* One destination per row, logo on the left: the column reads as a list of
+   places to send the table rather than a list of file extensions. */
+.export-modal {
+  width: min(460px, 100%);
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.export-option:hover {
+  background: var(--surface-3);
+  border-color: var(--line-3);
+}
+
+.export-option:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.export-option-logo {
+  flex: none;
+  width: 30px;
+  height: 30px;
+}
+
+.export-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.export-option-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.export-option-hint {
+  font-size: 0.64rem;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.export-status {
+  min-height: 1.2em;
+  margin: 10px 2px 0;
+  font-size: 0.64rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.export-status.is-on {
+  color: var(--ink-2);
+}
+
 /* ---- Report form -------------------------------------------------------- */
 
 .report-form {
@@ -2953,10 +3029,39 @@ body::before {
   clip-path: inset(50%);
 }
 
+/* Full width of the form column — the same measure as the Observation field
+   above it — with the label centred over the upload mark. */
 .photo-pick {
   position: relative;
+  display: flex;
   flex: none;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 9px 10px;
+  text-align: center;
   cursor: pointer;
+}
+
+.photo-pick:hover {
+  background: var(--surface-3);
+}
+
+.photo-pick-text {
+  text-align: center;
+}
+
+.photo-pick-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
 }
 
 .photo-pick:focus-within {

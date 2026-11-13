@@ -74,11 +74,22 @@ export function ReportedDossier({
       <h3 className="section-title">Field evidence</h3>
       <p className="verdict">{site.evidence}</p>
       {site.photoUrl ? (
-        <p className="report-photo">
-          <a href={site.photoUrl} target="_blank" rel="noreferrer">
-            Ground photo supplied with the report
-          </a>
-        </p>
+        site.photoUrl.startsWith('data:') ? (
+          <figure className="report-photo">
+            <img
+              className="photo-preview"
+              src={site.photoUrl}
+              alt={`Ground photo supplied with the report on ${site.name}`}
+            />
+            <figcaption>Ground photo supplied with the report</figcaption>
+          </figure>
+        ) : (
+          <p className="report-photo">
+            <a href={site.photoUrl} target="_blank" rel="noreferrer">
+              Ground photo supplied with the report
+            </a>
+          </p>
+        )
       ) : null}
 
       <div className="dossier-actions">
