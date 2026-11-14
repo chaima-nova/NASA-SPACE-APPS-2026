@@ -718,12 +718,21 @@ body::before {
   overscroll-behavior: auto;
 }
 
+/*
+ * The globe card is the column. It stretches to the row height so the globe
+ * ends level with the ranked list and the dossier beside it, instead of
+ * stopping short because something else was sharing the column.
+ */
 .globe-column .globe-card {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.globe-column .investigations {
-  margin-top: 0;
+/* The prompts that used to sit under the globe now span the page beneath it. */
+.investigations-band {
+  margin-top: 4px;
 }
 
 .globe-stage {
