@@ -21,7 +21,7 @@ interface FilterBarProps {
   onOpenDistance: () => void;
   /** True when the list is cut to sites that commercial travel can reach. */
   travelOnly: boolean;
-  onOpenTravel: () => void;
+  onTravelOnly: (travelOnly: boolean) => void;
 }
 
 /**
@@ -50,7 +50,7 @@ export function FilterBar({
   onRadius,
   onOpenDistance,
   travelOnly,
-  onOpenTravel,
+  onTravelOnly,
 }: FilterBarProps) {
   const [open, setOpen] = useState(false);
 
@@ -169,18 +169,22 @@ export function FilterBar({
                   </label>
                 ) : null}
 
-                <button
-                  type="button"
-                  className="logistics-row"
-                  aria-pressed={travelOnly}
-                  onClick={() => {
-                    setOpen(false);
-                    onOpenTravel();
-                  }}
+                {/* A checkbox, not a dialog: this row filters the list rather
+                    than inspecting one site's route. */}
+                <label
+                  className={
+                    travelOnly
+                      ? 'logistics-row logistics-check is-on'
+                      : 'logistics-row logistics-check'
+                  }
                 >
+                  <input
+                    type="checkbox"
+                    checked={travelOnly}
+                    onChange={(event) => onTravelOnly(event.target.checked)}
+                  />
                   <span className="logistics-name">Commercial Travel Available</span>
-                  <span className="logistics-value">{travelOnly ? 'Filtering' : 'Check routes'}</span>
-                </button>
+                </label>
               </div>
             </div>
           </>
