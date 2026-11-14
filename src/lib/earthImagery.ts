@@ -165,6 +165,30 @@ export function trueColorUrl(date: string, width = 6144): string {
   return `${GIBS_EPSG4326_WMS}?${params.toString()}`;
 }
 
+/**
+ * A colour shaded-relief composite of the whole planet: the "map" half of the
+ * terrain-versus-satellite comparison. It is a static product, so no TIME is
+ * sent — the layer has no time dimension and a dated request is meaningless.
+ */
+export const RELIEF_LAYER = 'ASTER_GDEM_Color_Shaded_Relief';
+
+/** One GetMap for a box of shaded relief. */
+export function reliefMapUrl(bbox: string, size: number): string {
+  const params = new URLSearchParams({
+    SERVICE: 'WMS',
+    REQUEST: 'GetMap',
+    VERSION: '1.1.1',
+    LAYERS: RELIEF_LAYER,
+    STYLES: '',
+    FORMAT: 'image/jpeg',
+    SRS: 'EPSG:4326',
+    BBOX: bbox,
+    WIDTH: String(size),
+    HEIGHT: String(size),
+  });
+  return GIBS_EPSG4326_WMS + '?' + params.toString();
+}
+
 /* ---------------------------------------------------- archive probing ---- */
 
 /** A thumbnail request, cheap enough to sample the archive with. */
