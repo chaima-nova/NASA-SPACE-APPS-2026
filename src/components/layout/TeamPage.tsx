@@ -1,5 +1,4 @@
-import { TEAM, TEAM_GOAL, WORKFLOW } from '../../data/team';
-import { routeHref } from '../../lib/route';
+import { TEAM, WORKFLOW } from '../../data/team';
 import { Starfield } from './Starfield';
 
 interface TeamPageProps {
@@ -74,13 +73,6 @@ export function TeamPage({ still }: TeamPageProps) {
             </li>
           ))}
         </ol>
-      </section>
-
-      <section className="home-close" aria-labelledby="team-close-title">
-        <h3 id="team-close-title">{TEAM_GOAL}</h3>
-        <a className="home-cta" href={routeHref('solution')}>
-          See what we built
-        </a>
       </section>
     </main>
   );

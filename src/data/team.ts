@@ -92,6 +92,3 @@ export const WORKFLOW: readonly { who: string; detail: string }[] = [
   },
 ];
 
-/** What the team wants in place before the official challenge is released. */
-export const TEAM_GOAL =
-  'The goal before October 28th is that we already have real data, working ML, reusable technical modules and a functioning integration structure — then, when the official challenges are released, we adapt what we have built to the actual problem.';
