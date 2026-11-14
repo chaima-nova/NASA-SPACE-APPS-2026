@@ -6,6 +6,7 @@ import { TripPlanner } from './components/layout/TripPlanner';
 import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
 import { HomePage } from './components/layout/HomePage';
+import { SummaryPage } from './components/layout/SummaryPage';
 import { TeamPage } from './components/layout/TeamPage';
 import { Panel } from './components/layout/Panel';
 import { SiteBackdrop } from './components/layout/SiteBackdrop';
@@ -610,6 +611,13 @@ export default function App() {
             Solution
           </a>
           <a
+            className={route === 'summary' ? 'tab is-current' : 'tab'}
+            href={routeHref('summary')}
+            aria-current={route === 'summary' ? 'page' : undefined}
+          >
+            Fit Summary
+          </a>
+          <a
             className={route === 'team' ? 'tab is-current' : 'tab'}
             href={routeHref('team')}
             aria-current={route === 'team' ? 'page' : undefined}
@@ -650,6 +658,8 @@ export default function App() {
           datasets={datasets.length}
           still={a11y.reduceMotion}
         />
+      ) : route === 'summary' ? (
+        <SummaryPage predictions={predictions} datasetCount={datasets.length} />
       ) : route === 'team' ? (
         <TeamPage still={a11y.reduceMotion} />
       ) : (

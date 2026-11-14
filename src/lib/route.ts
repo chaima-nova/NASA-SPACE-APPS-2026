@@ -15,13 +15,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = 'home' | 'solution' | 'team';
+export type Route = 'home' | 'solution' | 'summary' | 'team';
 
-export const ROUTES: readonly Route[] = ['home', 'solution', 'team'];
+export const ROUTES: readonly Route[] = ['home', 'solution', 'summary', 'team'];
 
 function parse(hash: string): Route | null {
   const value = hash.replace(/^#\/?/, '').replace(/\/+$/, '').toLowerCase();
-  const known: Route[] = ['home', 'solution', 'team'];
+  const known: Route[] = ['home', 'solution', 'summary', 'team'];
   return known.includes(value as Route) ? (value as Route) : null;
 }
 
