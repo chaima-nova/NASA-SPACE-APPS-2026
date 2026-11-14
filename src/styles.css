@@ -5787,3 +5787,105 @@ html[data-a11y-motion='reduced'] *::after {
   line-height: 1.5;
   color: var(--ink-3);
 }
+
+/* ---- Terrain map pane ---------------------------------------------------- */
+
+/* Panel letter, like the a/b of a figure in a paper. */
+.compare-tag {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 3px #000;
+}
+
+/* Where the site coordinate sits inside its own frame. */
+.compare-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.compare-crosshair::before,
+.compare-crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.compare-crosshair::before {
+  top: -6px;
+  bottom: -6px;
+  left: 50%;
+  width: 1px;
+  margin-left: -0.5px;
+}
+
+.compare-crosshair::after {
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+}
+
+/* 22% of the frame, so the label is the span the bar actually covers. */
+.compare-scale {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 22%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px #000;
+}
+
+.compare-scale-bar {
+  width: 100%;
+  height: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 0;
+}
+
+.compare-thumbs {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.compare-thumbs-label {
+  margin-right: 4px;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+
+a.compare-thumb {
+  display: block;
+}
+
+.compare-fields {
+  margin: 12px 0 0;
+  font-size: 0.64rem;
+  color: var(--ink-3);
+}
+
+.compare-fields a {
+  color: var(--signal);
+}

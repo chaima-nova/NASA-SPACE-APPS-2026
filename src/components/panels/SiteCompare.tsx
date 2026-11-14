@@ -4,11 +4,13 @@ import { photoPageUrl, photoUrl, type SitePhoto } from '../../data/sitePhotos';
 import {
   COMPOSITE_DAYS,
   IMAGERY_WINDOW_DAYS,
+  RELIEF_LAYER,
   TRUE_COLOR_LAYER,
   boxImageryUrl,
   compositeDates,
   imageryWindow,
   latestImageryDate,
+  reliefMapUrl,
   siteImagery,
 } from '../../lib/earthImagery';
 import { cloudFreeComposite } from '../../lib/cloudFree';
@@ -88,29 +90,28 @@ const day = (value: string) => {
 };
 
 /**
- * Satellite versus ground: the real satellite pass over the site next to a real
- * photograph taken on it.
+ * Terrain versus satellite: a shaded-relief map of the site's box beside the
+ * real satellite pass over the same ground.
  *
- * The satellite side is NASA GIBS true colour, the same keyless service the
- * globe uses, requested for one site's bounding box. The field side is the
- * curated Commons photo, or the reporter's own picture for a site that has no
- * curated set. Both captions state exactly what the frame is, because these two
- * images do not show the same thing at the same scale.
+ * Both panes cover one bounding box at one span, so they are directly
+ * comparable. The relief pane is a static global composite — ASTER GDEM, from
+ * the same keyless GIBS endpoint — and shows slope and ridge structure with no
+ * weather in the way; the satellite pane shows what that ground looked like on a
+ * given day. Neither is site detail, because the box is tens of kilometres wide,
+ * so every caption states its scale, its source and, for a pass, its date.
  *
  * The satellite half opens on a cloud-free composite: a single daily pass is
  * routinely hidden under cloud, and the mosaic's ~375 m resolution cannot be
  * improved by asking for more pixels, so stacking a few days is the one change
  * that reliably makes the pane readable. The stack is medianed in the browser
- * (see lib/cloudFree.ts) and the caption always names the days it covers; the
- * single-day pass is one click away for anyone who wants the pass itself.
+ * (see lib/cloudFree.ts) and the caption always names the days it covers.
  */
 export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompareProps) {
   const [date, setDate] = useState(() => latestImageryDate());
   const [span, setSpan] = useState(SPANS[0]);
   const [source, setSource] = useState<Source>('composite');
-  const [photoIndex, setPhotoIndex] = useState(0);
   const [satState, setSatState] = useState<'loading' | 'ready' | 'failed'>('loading');
-  const [groundState, setGroundState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [mapState, setMapState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [composite, setComposite] = useState<CompositeState>({ status: 'loading' });
   const [blankDay, setBlankDay] = useState(false);
 
@@ -167,13 +168,12 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
     ? `cloud-free median of ${compositedDays ?? COMPOSITE_DAYS} days to ${day(date)}`
     : `the ${day(date)} pass`;
 
-  const photo = photos[photoIndex];
-  const groundUrl = photo ? photoUrl(photo, 1600) : reportPhotoUrl;
+  const relief = reliefMapUrl(imagery.bbox, span.size);
   const satLoading = usingComposite ? composite.status !== 'ready' : satState === 'loading';
 
   return (
     <Modal
-      kicker="Satellite ↔ Ground Comparison"
+      kicker="Terrain ↔ Satellite Comparison"
       title={site.siteName}
       subtitle={
         <>
@@ -188,9 +188,9 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
       footer={
         <>
           <span className="modal-foot-note">
-            Satellite: NASA GIBS {TRUE_COLOR_LAYER} · {imagery.widthKm}×{imagery.heightKm} km ·
-            bbox {imagery.bbox} · {sourceNote}. Field: representative ground photograph, not the
-            same instant.
+            Terrain: NASA GIBS {RELIEF_LAYER} shaded relief, a static composite. Satellite: NASA
+            GIBS {TRUE_COLOR_LAYER} · {imagery.widthKm}×{imagery.heightKm} km · bbox {imagery.bbox}{' '}
+            · {sourceNote}.
           </span>
         </>
       }
@@ -319,6 +319,9 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                 ) : null}
               </>
             )}
+            <span className="compare-tag" aria-hidden="true">
+              b
+            </span>
             <span className="compare-corner" aria-hidden="true">
               N
             </span>
@@ -346,75 +349,78 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
 
         <figure className="compare-pane">
           <div className="compare-media">
-            {groundUrl && groundState !== 'failed' ? (
+            {mapState === 'failed' ? (
+              <div className="compare-missing">
+                <p>NASA GIBS did not return a relief map for this box.</p>
+                <a href={relief} target="_blank" rel="noreferrer">
+                  Open the WMS request
+                </a>
+              </div>
+            ) : (
               <>
-                {groundState === 'loading' ? <span className="gallery-shimmer" aria-hidden="true" /> : null}
+                {mapState === 'loading' ? (
+                  <span className="gallery-shimmer" aria-hidden="true" />
+                ) : null}
                 <img
-                  key={groundUrl}
-                  src={groundUrl}
-                  alt={photo ? photo.caption : `Ground photograph of ${site.siteName}`}
-                  onLoad={() => setGroundState('ready')}
-                  onError={() => setGroundState('failed')}
-                  className={groundState === 'ready' ? 'is-loaded' : ''}
+                  key={relief}
+                  src={relief}
+                  alt={'Shaded relief map of the ground around ' + site.siteName}
+                  onLoad={() => setMapState('ready')}
+                  onError={() => setMapState('failed')}
+                  className={mapState === 'ready' ? 'is-loaded' : ''}
                   draggable={false}
                 />
               </>
-            ) : (
-              <div className="compare-missing">
-                <p>
-                  {groundState === 'failed'
-                    ? 'The ground photograph could not be loaded.'
-                    : 'No ground photograph is catalogued for this site yet.'}
-                </p>
-                <p className="compare-missing-sub">
-                  Reported sites carry whatever photo the reporter supplied.
-                  {groundUrl ? (
-                    <>
-                      {' '}
-                      <a href={groundUrl} target="_blank" rel="noreferrer">
-                        Open the link
-                      </a>
-                    </>
-                  ) : null}
-                </p>
-              </div>
             )}
+            <span className="compare-tag" aria-hidden="true">
+              a
+            </span>
+            <span className="compare-crosshair" aria-hidden="true" />
+            <span className="compare-scale" aria-hidden="true">
+              <span className="compare-scale-bar" />
+              {Math.round(imagery.widthKm * 0.22).toLocaleString('en-US')} km
+            </span>
           </div>
           <figcaption className="compare-caption">
-            <span className="compare-caption-title">Ground · field photograph</span>
-            {photo ? (
-              <span>
-                {photo.caption} — {photo.credit} · {photo.license} ·{' '}
-                <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
-                  source
-                </a>
-              </span>
-            ) : (
-              <span>Supplied with the researcher's report.</span>
-            )}
+            <span className="compare-caption-title">Terrain · NASA ASTER GDEM shaded relief</span>
+            <span>
+              The same {imagery.widthKm}×{imagery.heightKm} km box as the satellite pane, drawn from
+              a global elevation composite rather than a daily pass, so ridge and slope structure
+              stay visible where cloud would hide them. The crosshair is the site coordinate; the
+              bar is 22% of the frame width.
+            </span>
+            <span>
+              {site.terrainType ? TERRAIN_LABELS[site.terrainType] : 'Unclassified terrain'} ·{' '}
+              {formatElevation(site.elevationM)} · {formatCoords(site.lat, site.lon)}
+            </span>
           </figcaption>
         </figure>
       </div>
 
-      {photos.length > 1 ? (
-        <div className="compare-thumbs">
-          {photos.map((entry, index) => (
-            <button
+      {photos.length > 0 ? (
+        <div className="compare-thumbs" aria-label="Field photographs of this site">
+          <span className="compare-thumbs-label">Field photos</span>
+          {photos.map((entry) => (
+            <a
               key={entry.file}
-              type="button"
-              className={index === photoIndex ? 'compare-thumb is-active' : 'compare-thumb'}
-              aria-pressed={index === photoIndex}
-              onClick={() => {
-                if (index === photoIndex) return;
-                setGroundState('loading');
-                setPhotoIndex(index);
-              }}
+              className="compare-thumb"
+              href={photoPageUrl(entry)}
+              target="_blank"
+              rel="noreferrer"
               title={entry.caption}
             >
-              <img src={photoUrl(entry, 240)} alt="" loading="lazy" draggable={false} />
-            </button>
+              <img src={photoUrl(entry, 240)} alt={entry.caption} loading="lazy" draggable={false} />
+            </a>
           ))}
         </div>
+      ) : reportPhotoUrl ? (
+        <p className="compare-fields">
+          Field evidence from the reporter:{' '}
+          <a href={reportPhotoUrl} target="_blank" rel="noreferrer">
+            open the supplied photograph
+          </a>
+          .
+        </p>
       ) : null}
     </Modal>
   );
