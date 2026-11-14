@@ -5193,7 +5193,9 @@ html[data-a11y-motion='reduced'] *::after {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   flex: 1;
-  gap: 6px;
+  /* The same 7px the row above uses, so the two gaps in this stack read as
+     one rhythm: trip strip, export pair, comparison question. */
+  gap: 7px;
 }
 
 .dossier-compare {
