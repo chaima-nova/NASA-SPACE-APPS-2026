@@ -5210,7 +5210,10 @@ html[data-a11y-motion='reduced'] *::after {
 
 .cmp-head {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* [current site] [picker] [compared with] — the picker takes its own column
+     at the right end of the free space rather than sitting centred, so it stays
+     clear of the diagonal in the site photograph behind the dialog. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 12px;
   align-items: center;
   padding-bottom: 12px;
@@ -5343,6 +5346,10 @@ html[data-a11y-motion='reduced'] *::after {
 @media (max-width: 640px) {
   .cmp-head {
     grid-template-columns: 1fr;
+  }
+
+  .cmp-pick {
+    justify-self: start;
   }
 
   .cmp-site-right {
