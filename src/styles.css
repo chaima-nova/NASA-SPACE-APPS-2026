@@ -6402,3 +6402,221 @@ a.compare-thumb {
   text-transform: uppercase;
   color: var(--ink-3);
 }
+
+/* ---- Boot overlay -------------------------------------------------------- */
+
+/* Covers the window, above the dialogs (60/70) and the dock (80): while the
+   dataset is in flight there is nothing behind this worth reading, so it
+   covers rather than dims. */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(780px 440px at 50% 24%, rgba(34, 211, 238, 0.15), transparent 62%),
+    var(--bg);
+  opacity: 1;
+  transition: opacity 0.42s var(--ease);
+}
+
+.boot.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-inner {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  width: min(430px, 100%);
+  text-align: center;
+}
+
+.boot-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 176px;
+  height: 176px;
+  margin-bottom: 4px;
+}
+
+/* Two launch rings, expanding outward from the pad. */
+.boot-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 50%;
+  animation: boot-ring 2.8s var(--ease) infinite;
+}
+
+.boot-ring.is-late {
+  animation-delay: 1.4s;
+}
+
+.boot-trail {
+  position: absolute;
+  bottom: 20px;
+  width: 2px;
+  height: 64px;
+  background: linear-gradient(to top, transparent, rgba(34, 211, 238, 0.8));
+  animation: boot-trail 1.7s linear infinite;
+}
+
+.boot-ship {
+  width: 72px;
+  height: 96px;
+  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.35));
+  animation: boot-climb 2.4s var(--ease) infinite;
+}
+
+.boot-hull {
+  fill: #dbe6f5;
+}
+
+.boot-stripe {
+  fill: var(--signal);
+}
+
+.boot-fin {
+  fill: #8ea3bd;
+}
+
+.boot-window {
+  fill: #0a1119;
+  stroke: var(--signal);
+  stroke-width: 2;
+}
+
+.boot-flame {
+  fill: var(--amber);
+  transform-origin: 60px 116px;
+  animation: boot-flame 0.24s steps(2, end) infinite alternate;
+}
+
+.boot-brand {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.boot-sub {
+  margin: 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.boot-rail {
+  width: 100%;
+  height: 2px;
+  margin-top: 7px;
+  overflow: hidden;
+  background: var(--line-2);
+  border-radius: 2px;
+}
+
+.boot-rail-fill {
+  display: block;
+  width: 38%;
+  height: 100%;
+  background: var(--signal);
+  animation: boot-sweep 1.6s var(--ease) infinite;
+}
+
+.boot-line {
+  margin: 5px 0 0;
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  color: var(--signal);
+}
+
+.boot-meta {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.57rem;
+  color: var(--ink-3);
+}
+
+@keyframes boot-climb {
+  0%,
+  100% {
+    transform: translateY(4px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes boot-flame {
+  from {
+    transform: scaleY(0.7);
+    opacity: 0.75;
+  }
+  to {
+    transform: scaleY(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes boot-ring {
+  0% {
+    transform: scale(0.42);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-trail {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-sweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(330%);
+  }
+}
+
+/* Motion off: the same screen, held. The line still says what is happening,
+   so the wait is described rather than merely decorated. */
+@media (prefers-reduced-motion: reduce) {
+  .boot-ship,
+  .boot-flame,
+  .boot-ring,
+  .boot-trail,
+  .boot-rail-fill {
+    animation: none;
+  }
+
+  .boot-ring {
+    opacity: 0.35;
+  }
+
+  .boot-rail-fill {
+    width: 100%;
+  }
+}
