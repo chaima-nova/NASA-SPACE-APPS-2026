@@ -1,19 +1,20 @@
 import { engineComparisons, measuredTerrain } from '../../services/pipeline';
 
 /**
- * Evidence-based investigation prompts.
+ * What an analogue site could be used for.
  *
- * Finding an analogue is only half the challenge: an analogue is worth
- * publishing because somebody could go and test something there. This section
- * turns the three practical applications the proposal names — rover mobility
- * testing, dust and erosion studies, and instrument validation — into questions
- * a field campaign could answer, and names the measurement each one needs.
+ * Finding an analogue is only half the challenge: a site is worth publishing
+ * because somebody could go and test something there. These five lines of
+ * investigation — terrain and mobility, geology and materials, environmental
+ * processes, resources and the subsurface, human and robotic preparation — turn
+ * each candidate into questions a field campaign could answer, and name the
+ * measurement each one needs.
  *
- * Every number and verdict below is read from the pipeline at build time: the
- * measured terrain statistics in `data/samples/*_stats.json` and the engine's
- * comparison reports in `reports/*.json`. Nothing here is a result. These are
- * prompts, deliberately paired with the evidence that makes them answerable and
- * the gap that makes them worth doing.
+ * Every number, verdict and dataset count below is read from the pipeline at
+ * build time: the measured terrain statistics in `data/samples/*_stats.json` and
+ * the engine's comparison reports in `reports/*.json`. Nothing here is a result.
+ * These are prompts, deliberately paired with the evidence that makes them
+ * answerable and the gap that makes them worth doing.
  */
 
 const sampleOf = (planet: 'earth' | 'mars' | 'moon') =>
@@ -67,9 +68,9 @@ const candidateResolution = engineComparisons[0]
   : 'the candidate grid';
 
 /**
- * The measured baselines, each formatted once. These are real statistics from
- * SRTM, MOLA and LOLA — quoted so a reader can see how thin the evidence is
- * next to the confidence a single score invites.
+ * The measured baselines, each formatted once. Real statistics from SRTM and
+ * MOLA, quoted so a reader can see how thin the evidence is next to the
+ * confidence a single score invites.
  */
 const atacama = earth
   ? `${earth.slopeMeanDeg.toFixed(2)}° mean slope, ${earth.slopeMaxDeg.toFixed(
@@ -83,7 +84,7 @@ const jezero = mars
     )} m TRI roughness at ${targetResolution('mars')}`
   : 'slope and roughness the pipeline has not published for Jezero';
 
-/** Every dimension check that the reports still call INSUFFICIENT_EVIDENCE. */
+/** Every dimension check the reports still call INSUFFICIENT_EVIDENCE. */
 const thin = engineComparisons
   .flatMap((comparison) => comparison.dimensions)
   .filter((dimension) => dimension.status === 'INSUFFICIENT_EVIDENCE');
@@ -102,7 +103,7 @@ interface Prompt {
 
 interface Track {
   id: string;
-  /** Application area, shown above the title. */
+  /** Which of the five lines of investigation this is. */
   kind: string;
   title: string;
   aim: string;
@@ -112,71 +113,107 @@ interface Track {
 const TRACKS: Track[] = [
   {
     id: 'mobility',
-    kind: 'Application 01',
-    title: 'Rover mobility testing',
-    aim: 'Ground that reads as walkable at the resolution we hold it is not the same as ground a wheel can cross. These prompts separate the two.',
+    kind: 'Line 01',
+    title: 'Terrain & Mobility',
+    aim: 'Could this terrain help researchers investigate rover mobility on comparable landforms? Slope, roughness and elevation are what a navigation study would actually test.',
     prompts: [
       {
-        question: 'Does the site stay inside the drive envelope cell by cell, or only on average?',
-        evidence: `The Atacama sample reports ${atacama}. Jezero reads ${jezero}. The pixel sizes differ by more than an order of magnitude, so part of the gap between those numbers is terrain and part is resolution — the comparison has to be made on one baseline before either can be read as "drivable".`,
+        question: 'Does the terrain stay inside a drive envelope cell by cell, or only on average?',
+        evidence: `The Atacama sample reports ${atacama}. Jezero reads ${jezero}. The pixel sizes differ by more than an order of magnitude, so part of the gap between those numbers is terrain and part is resolution — the comparison needs one baseline before either can be read as "drivable".`,
       },
       {
         question: 'How much of the ground is rough enough to cost wheel slip, and can a route avoid it?',
-        evidence: `TRI roughness is the closest mobility proxy the pipeline carries: ${earth ? `${earth.roughnessMeanM.toFixed(1)} m mean over ${earth.rows.toLocaleString('en-US')} cells` : 'no value for this build'} on Earth against ${mars ? `${mars.roughnessMeanM.toFixed(1)} m` : 'an unpublished figure'} on Mars. At ${targetResolution('mars')} the Mars figure measures the pixel as much as the ground, so a resampled test — or a metre-scale traverse at the analogue — is what would settle it.`,
+        evidence: `TRI roughness is the closest mobility proxy the pipeline carries: ${earth ? `${earth.roughnessMeanM.toFixed(1)} m mean over ${earth.rows.toLocaleString('en-US')} cells` : 'no value for this build'} on Earth against ${mars ? `${mars.roughnessMeanM.toFixed(1)} m` : 'an unpublished figure'} on Mars. At ${targetResolution('mars')} the Mars figure measures the pixel as much as the ground.`,
       },
       {
-        question: 'What can only be learned on the ground: bearing strength, embedded rock, slope at wheel scale?',
-        evidence: `Nothing in the dataset catalogue measures bearing strength, and the native 30 m SRTM product is already averaged to ${candidateResolution} here. A penetrometer transect and close-range photogrammetry at the analogue close that gap at a fraction of the cost of the same experiment on Mars — which is the argument for going to the analogue first.`,
+        question: 'What can only be measured on foot: bearing strength, embedded rock, slope at wheel scale?',
+        evidence: `Nothing in the dataset catalogue measures bearing strength, and the native 30 m SRTM product is already averaged to ${candidateResolution} here. A penetrometer transect and close-range photogrammetry at the analogue close that gap at a fraction of the cost of the same work on Mars.`,
       },
     ],
   },
   {
-    id: 'dust',
-    kind: 'Application 02',
-    title: 'Dust & erosion studies',
-    aim: 'Dust is the failure mode that decides how long an instrument lasts. An analogue earns its keep when its wind and dust cycle can be watched for the price of a few sensors.',
+    id: 'geology',
+    kind: 'Line 02',
+    title: 'Geology & Materials',
+    aim: 'Do the available geological maps or spectral observations indicate comparable surface materials? That question sets the follow-up observations any claim would need.',
     prompts: [
       {
-        question: "Is the site's dust cycle regular enough to time an experiment against it?",
-        evidence: `The Earth side holds MODIS Terra land-surface temperature at 1 km on 8-day composites and MODIS land cover at 500 m; the Mars side holds TES thermal inertia at about 3 km with 60% real coverage between 80°S and 80°N. The engine's thermal verdict is ${verdictPair(
+        question: 'Does the geological crosswalk survive contact with the ground?',
+        evidence: `Surface geology is ${verdictPair(
+          'surface_geology',
+        )} — and the engine's own uncertainty list says the crosswalk was drafted from map-group names, with unit descriptions unverified. Field mapping at the analogue is what turns those names into units.`,
+      },
+      {
+        question: 'Which spectral observations would settle the material match?',
+        evidence: `The catalogue holds no spectrometer or mineralogy product: MODIS land cover is a 500 m class map, and Diviner measures rock abundance rather than composition. Visible–near-infrared spectra from the site are the missing measurement, not another map layer.`,
+      },
+      {
+        question: 'Would a mineralogy claim rest on a sample or on a score?',
+        evidence: `Mineralogy in this app is derived from the model's feature contributions, so it is an inference about the site, not a measurement of it. A material claim should cite a sample and its spectrum; until one exists, the pillar is a prioritisation aid.`,
+      },
+    ],
+  },
+  {
+    id: 'environment',
+    kind: 'Line 03',
+    title: 'Environmental Processes',
+    aim: 'Could this location support studies of dust, wind, erosion, volcanic activity or sedimentation under Earth-comparable processes?',
+    prompts: [
+      {
+        question: 'Is the site’s dust cycle regular enough to time an experiment against?',
+        evidence: `MODIS Terra land-surface temperature arrives at 1 km on 8-day composites, and TES thermal inertia at about 3 km with 60% real coverage between 80°S and 80°N. The engine's thermal verdict is ${verdictPair(
           'temperature_thermal',
-        )} — it is reporting that the thermal evidence is not there yet, not that the sites differ.`,
+        )} — the evidence is missing, not the similarity.`,
       },
       {
         question: 'Does the site record erosion over seasons, or only over megayears?',
-        evidence: `Every terrain figure here comes from a single epoch per body — SRTM in February 2000, MOLA across 1997–2001, LOLA from 2009 — so slope and roughness are states, not rates. A repeat survey, by drone photogrammetry or a second DEM epoch, is the missing measurement, and the analogue is the cheapest place on the list to take it.`,
+        evidence: `Every terrain figure here is a single epoch — SRTM in February 2000, MOLA across 1997–2001, LOLA from 2009 — so slope and roughness are states, not rates. A repeat survey, by drone photogrammetry or a second DEM epoch, is the measurement that turns them into one.`,
       },
       {
-        question: 'Is the abrasion regime the same, or is the site merely dry?',
-        evidence: `Aridity is the easy match and the least useful one: grain size and saltation flux are what wear a lens or a seal. The catalogue's closest proxies are thermal inertia and rock abundance, and Diviner's rock-abundance product stops at 60°S–60°N — which excludes the polar ground a south-pole base would actually stand on.`,
+        question: 'Which process does this site stand in for — wind, water or volcanism?',
+        evidence: `The terrain family is a model label, not a process measurement: nothing in the catalogue records sediment flux, wind speed or eruption history. Field mapping and a sediment trap are what establish which process the analogue can actually test.`,
       },
     ],
   },
   {
-    id: 'instruments',
-    kind: 'Application 03',
-    title: 'Instrument validation',
-    aim: 'An instrument is trusted once it has been run against ground whose true value is known. The question is which parameter at this site is known well enough to be that reference.',
+    id: 'resources',
+    kind: 'Line 04',
+    title: 'Resources & Subsurface',
+    aim: 'Are there measurable indicators relevant to water, ice, permafrost, caves or lava tubes? This is where the evidence boundary for resource claims runs.',
     prompts: [
       {
-        question: 'Which parameters here are measured well enough to calibrate against?',
-        evidence: `The Atacama sample is a real measurement with a published citation, ${
-          earth ? `${earth.rows.toLocaleString('en-US')} valid cells` : 'a documented grid'
-        } and derived slope and roughness — a defensible reference surface. Geology is not: surface geology is ${verdictPair(
-          'surface_geology',
-        )}, because the crosswalk was drafted from map-group names.`,
+        question: 'What can the catalogue say about the subsurface at all?',
+        evidence: `Nothing below the surface: the ten catalogued datasets are elevation grids, thermal inertia, rock abundance, land cover and a metadata API. Slope and roughness describe the top layer only, so water, ice or void claims start outside the evidence the pipeline holds.`,
       },
       {
-        question: 'At what footprint does the instrument sample, and does the analogue resolve that footprint?',
-        evidence: `A field spectrometer or rover camera samples metres to tens of metres. The DEM behind this site is ${candidateResolution} and the lunar baseline ${targetResolution(
-          'moon',
-        )}, so neither can validate a metre-scale sensor on its own: the calibration needs an independent ground-truth transect measured at the scale the instrument actually sees.`,
+        question: 'Where is the nearest proxy for caves and lava tubes?',
+        evidence: `The terrain families include caves, but no dataset resolves a void. Diviner's rock abundance at roughly 950 m/px stops at 60°S–60°N, which excludes the polar ground a lunar base would occupy — the proxy is missing exactly where the question matters most.`,
       },
       {
-        question: 'Which engine verdicts are waiting on a field measurement, and what would flip them?',
-        evidence: `Of ${dimensionTotal} dimension checks across both targets, ${thin.length} return insufficient evidence (${thinLabels.join(
+        question: 'What would move a resource claim from hypothesis to evidence?',
+        evidence: `A subsurface instrument — ground-penetrating radar or a neutron spectrometer — is not in the catalogue, so any ice or permafrost statement about this site should be labelled a hypothesis. Naming the instrument that would test it is the honest deliverable.`,
+      },
+    ],
+  },
+  {
+    id: 'prep',
+    kind: 'Line 05',
+    title: 'Human & Robotic Prep',
+    aim: 'Could this environment support instrument testing, field procedures or robotics research? And which planetary conditions cannot transfer at all?',
+    prompts: [
+      {
+        question: 'Which field procedures actually rehearse here?',
+        evidence: `Sampling, instrument deployment and traverse planning do; gravity, atmosphere, day length and radiation do not. A procedure proven at the analogue is proven only for the parts that do not depend on those four, and saying so is part of the result.`,
+      },
+      {
+        question: 'Which instrument can be validated against real numbers at this site?',
+        evidence: `Elevation, slope and roughness are measured values with a published citation, over ${earth ? `${earth.rows.toLocaleString('en-US')} valid cells` : 'a documented grid'}, so a DEM-referenced instrument can be checked against them. Thermal and mineralogical instruments cannot yet: ${thin.length} of ${dimensionTotal} engine checks return insufficient evidence (${thinLabels.join(
           ', ',
-        )}). Each names a dataset the pipeline has not ingested yet, so the validation plan and the ingestion backlog are the same list — the most useful thing an analogue site can hand a team before launch.`,
+        )}).`,
+      },
+      {
+        question: 'Can a crew get there, and does the journey fit a field season?',
+        evidence: `The gate airport and the modelled cheapest and fastest routes are already in the app under Plan my trip. A site with no commercial access is not a rehearsal site however good its terrain, because reaching it is part of whether an environment supports field work.`,
       },
     ],
   },
@@ -187,11 +224,11 @@ export function InvestigationPrompts() {
     <section className="investigations" aria-labelledby="investigations-title">
       <header className="investigations-head">
         <p className="investigations-kicker">Evidence-based investigation prompts</p>
-        <h2 id="investigations-title">What an analogue site lets you test</h2>
+        <h2 id="investigations-title">What an analogue site could be used for</h2>
         <p className="investigations-lede">
-          A candidate earns its place on this list by being somewhere a team could work. Each
-          prompt below starts from a measurement the pipeline already holds, states what that
-          measurement does not settle, and names the field work that would.
+          Five lines of investigation the pipeline's own measurements can support — each prompt
+          starts from a number or a verdict that already exists, states what it does not settle, and
+          names the field work that would.
         </p>
       </header>
 
