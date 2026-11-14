@@ -4,6 +4,7 @@ import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { DistanceFilter } from './components/layout/DistanceFilter';
 import { TravelDialog } from './components/layout/TravelDialog';
+import { TripPlanner } from './components/layout/TripPlanner';
 import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
 import { HomePage } from './components/layout/HomePage';
@@ -117,6 +118,8 @@ export default function App() {
   const [distanceOpen, setDistanceOpen] = useState(false);
   /** Which logistics dialog is open, if any. */
   const [travelOpen, setTravelOpen] = useState(false);
+  /** The cheapest-or-fastest route planner, opened from the dossier. */
+  const [tripOpen, setTripOpen] = useState(false);
   /** When on, only sites commercial travel can reach are listed. */
   const [travelOnly, setTravelOnly] = useState(false);
   const [query, setQuery] = useState('');
@@ -472,6 +475,7 @@ export default function App() {
     setManageOpen(false);
     setCompare(null);
     setTerrainOpen(false);
+    setTripOpen(false);
   }, [route]);
 
   // Keep the URL shareable without polluting browser history. The route rides
@@ -943,6 +947,7 @@ export default function App() {
               community={community}
               actions={communityActionsFor(selected?.id ?? '')}
               onExport={() => setExportOpen(true)}
+              onPlanTrip={() => setTripOpen(true)}
               onCompareSites={() => setCompareSitesOpen(true)}
               onCopyLink={copyLink}
               onSeeSite={() => selected && setGallerySite(selected)}
@@ -1029,6 +1034,17 @@ export default function App() {
           travelOnly={travelOnly}
           onTravelOnly={setTravelOnly}
           onClose={() => setTravelOpen(false)}
+        />
+      ) : null}
+
+      {tripOpen && selected ? (
+        <TripPlanner
+          key={selected.id}
+          site={selected}
+          origin={origin}
+          onPick={setOrigin}
+          onClear={() => setOrigin(null)}
+          onClose={() => setTripOpen(false)}
         />
       ) : null}
 

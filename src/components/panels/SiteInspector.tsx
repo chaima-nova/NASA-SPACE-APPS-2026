@@ -28,6 +28,8 @@ interface SiteInspectorProps {
   /** Community writes already bound to this prediction's id. */
   actions: CommunityActions;
   onExport: () => void;
+  /** Opens the cheapest-or-fastest route planner for this site. */
+  onPlanTrip: () => void;
   /** Opens the side-by-side comparison against another scored site. */
   onCompareSites: () => void;
   onCopyLink: () => void;
@@ -84,6 +86,7 @@ export function SiteInspector({
   community,
   actions,
   onExport,
+  onPlanTrip,
   onCompareSites,
   onCopyLink,
   onSeeSite,
@@ -278,6 +281,11 @@ export function SiteInspector({
         {/* Export and the copy-link action belong together: you export what is
             on screen, or you share the permalink to it. The comparison question
             is the longer one, so it keeps a row of its own underneath. */}
+        {/* The way out, above the things you carry back: a party planning a
+            field season settles how it gets there before what it exports. */}
+        <button type="button" className="btn btn-primary dossier-trip" onClick={onPlanTrip}>
+          Plan my trip
+        </button>
         <div className="dossier-export">
           <button type="button" className="btn btn-primary" onClick={onExport}>
             Export

@@ -5598,3 +5598,92 @@ html[data-a11y-motion='reduced'] *::after {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Plan my trip -------------------------------------------------------- */
+
+/* Sits above Export/Copy Link: getting there is the bigger decision. */
+.dossier-trip {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.trip-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.trip-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.trip-choice:hover {
+  background: var(--surface-3);
+  border-color: var(--line-3);
+}
+
+.trip-choice:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.trip-choice-index {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.trip-choice-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.trip-choice-total {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.trip-choice-hint {
+  font-size: 0.6rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.trip-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trip-links .btn {
+  text-align: center;
+}
+
+.trip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .trip-choices {
+    grid-template-columns: 1fr;
+  }
+}
