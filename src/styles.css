@@ -3350,6 +3350,8 @@ body::before {
 .compare-missing {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  margin: auto;
   gap: 6px;
   align-items: center;
   padding: 20px;

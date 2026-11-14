@@ -6,7 +6,7 @@ import { scoreColorHex } from '../../lib/colors';
 import { reducedMotion } from '../../lib/accessibility';
 import { createStarfield } from '../../lib/starfield';
 import { latLonToVec } from '../../lib/globe';
-import { trueColorUrl } from '../../lib/earthImagery';
+import { newestAvailableImageryDate, trueColorUrl } from '../../lib/earthImagery';
 import {
   earthLighting,
   greenwichSiderealTime,
@@ -462,41 +462,94 @@ export function EarthGlobe({
      * Pulls that day's clouds from NASA GIBS. One WMS request returns the whole
      * 2:1 mosaic, so this is a single texture download.
      */
+    /** The newest day the archive can actually draw, asked once. */
+    let provenLiveDate: string | null | undefined;
+
+    const daysBefore = (value: string, offset: number) =>
+      new Date(new Date(`${value}T00:00:00Z`).getTime() - offset * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+
+    /**
+     * True when a decoded frame carries nothing: GIBS answers a downlink it
+     * has not processed yet with a valid, black JPEG, so a missing day used to
+     * fade in as an empty globe with no error anywhere.
+     */
+    const frameIsBlank = (texture: THREE.Texture) => {
+      try {
+        const image = texture.image as HTMLImageElement;
+        const probe = document.createElement('canvas');
+        probe.width = 32;
+        probe.height = 16;
+        const context = probe.getContext('2d', { willReadFrequently: true });
+        if (!context) return false;
+        context.drawImage(image, 0, 0, 32, 16);
+        const { data } = context.getImageData(0, 0, 32, 16);
+        let brightest = 0;
+        for (let index = 0; index < data.length; index += 4) {
+          brightest = Math.max(brightest, data[index], data[index + 1], data[index + 2]);
+        }
+        return brightest < 12;
+      } catch {
+        return false;
+      }
+    };
+
+    /**
+     * Pulls the clouds for a day from NASA GIBS, one WMS request for the whole
+     * 2:1 mosaic.
+     *
+     * The requested day is only a preference now. The toggle asks for yesterday
+     * and the archive can be several days behind, so the newest proven day is
+     * resolved first, and a frame that still decodes black is retried a day at a
+     * time for a few days before the cloud layer admits it has nothing.
+     */
     const setImagery = (date: string) => {
       if (date === liveDate && liveTexture) {
         onImageryRef.current({ date, live: true });
         return;
       }
       const token = ++imageryToken;
-      loader
-        .loadAsync(trueColorUrl(date, imageryWidth))
-        .then((texture) => {
-          if (disposed) {
+
+      const attempt = async (wanted: string) => {
+        if (provenLiveDate === undefined) provenLiveDate = await newestAvailableImageryDate(wanted);
+        if (disposed || token !== imageryToken) return;
+        const proven = provenLiveDate ?? wanted;
+
+        for (let offset = 0; offset < 5; offset += 1) {
+          const candidate = offset === 0 ? proven : daysBefore(proven, offset);
+          let texture: THREE.Texture;
+          try {
+            texture = await loader.loadAsync(trueColorUrl(candidate, imageryWidth));
+          } catch {
+            continue;
+          }
+          if (disposed || token !== imageryToken) {
             texture.dispose();
             return;
           }
-          if (token !== imageryToken) {
+          if (frameIsBlank(texture)) {
             texture.dispose();
-            return;
+            continue;
           }
           prepare(texture, THREE.SRGBColorSpace);
           const previous = liveTexture;
           liveTexture = texture;
-          liveDate = date;
+          liveDate = candidate;
           earthMaterial.uniforms.uClouds.value = texture;
           if (previous) {
             const index = textures.indexOf(previous);
             if (index !== -1) textures.splice(index, 1);
             previous.dispose();
           }
-          onImageryRef.current({ date, live: true });
-        })
-        .catch(() => {
-          // Offline or blocked: the cloud-free base stays, and the UI says so.
-          if (!disposed && token === imageryToken) {
-            onImageryRef.current({ date, live: false });
-          }
-        });
+          onImageryRef.current({ date: candidate, live: true });
+          return;
+        }
+        // Offline, blocked, or a week of missing downlinks: keep the base map.
+        onImageryRef.current({ date: wanted, live: false });
+      };
+
+      void attempt(date);
     };
 
     const setClouds = (on: boolean) => {

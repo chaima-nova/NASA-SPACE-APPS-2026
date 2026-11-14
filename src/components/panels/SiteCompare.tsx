@@ -437,10 +437,11 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                   <p>NASA GIBS did not return an image for this day and box.</p>
                 ) : (
                   <>
-                    <p>NASA GIBS has no processed imagery for this day and box yet.</p>
+                    <p>This data hasn&rsquo;t been processed yet — please try selecting an earlier date.</p>
                     <p className="compare-missing-sub">
-                      Try an earlier day, or switch back to the cloud-free frame, which is built
-                      from the last {COMPOSITE_DAYS} days.
+                      {usingComposite
+                        ? `None of the last ${COMPOSITE_DAYS} days has arrived for this box yet.`
+                        : 'NASA GIBS publishes a day a few hours after the pass.'}
                     </p>
                   </>
                 )}
@@ -461,7 +462,10 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                     alt={`NASA satellite true-colour imagery around ${site.siteName}`}
                     onLoad={(event) => {
                       setSatState('ready');
-                      setBlankDay(!usingComposite && isBlankFrame(event.currentTarget));
+                      // Both frames are probed: a composite stacked from days that
+                      // all arrived blank is as black as a missing pass, and a blank
+                      // pane should say why rather than look like the ground is gone.
+                      setBlankDay(isBlankFrame(event.currentTarget));
                     }}
                     onError={() => setSatState('failed')}
                     className={satState === 'ready' && !blankDay ? 'is-loaded' : ''}
@@ -491,6 +495,11 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                 : `${day(date)} UTC pass`}
               . VIIRS corrected reflectance, ~375 m per pixel — regional context, not site detail.
             </span>
+            {blankDay ? (
+              <span className="compare-note">
+                NASA GIBS has not processed the {day(date)} pass over this box yet.
+              </span>
+            ) : null}
             {source === 'composite' && composite.status === 'failed' ? (
               <span className="compare-note">
                 The cloud-free stack could not be built for this box, so the single day is shown.
