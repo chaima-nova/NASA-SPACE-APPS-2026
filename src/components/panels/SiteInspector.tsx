@@ -28,7 +28,7 @@ interface SiteInspectorProps {
   /** Community writes already bound to this prediction's id. */
   actions: CommunityActions;
   onExport: () => void;
-  /** Opens the cheapest-or-fastest route planner for this site. */
+  /** Opens the Plan My Trip route planner for this site. */
   onPlanTrip: () => void;
   /** Opens the side-by-side comparison against another scored site. */
   onCompareSites: () => void;

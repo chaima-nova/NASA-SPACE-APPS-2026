@@ -2,7 +2,7 @@ import { Modal } from './Modal';
 import { OriginPrompt } from './OriginPrompt';
 import type { Origin } from '../../lib/geo';
 import type { Prediction } from '../../data-contracts/types';
-import { ACCESS_LABELS, itinerariesFor, travelAccessOf } from '../../lib/travel';
+import { ACCESS_LABELS, routeLinks, travelAccessOf } from '../../lib/travel';
 
 interface TravelDialogProps {
   /** The site being checked — the one selected in the workbench. */
@@ -16,14 +16,12 @@ interface TravelDialogProps {
   onClose: () => void;
 }
 
-const money = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
-
 /**
  * "Commercial travel available", as a dialog rather than a chip.
  *
  * It answers three questions in order: can this site be reached commercially at
- * all, which airport is the gate, and what do the cheapest and fastest journeys
- * look like from where the reader is. If the distance filter already has an
+ * all, which airport is the gate, and where to search the flights and the ground
+ * leg from where the reader is. If the distance filter already has an
  * origin, that origin is used and the reader is not asked again — the two
  * facets share one piece of state in the shell.
  */
@@ -37,13 +35,13 @@ export function TravelDialog({
   onClose,
 }: TravelDialogProps) {
   const access = site ? travelAccessOf(site) : null;
-  const pair = site && origin ? itinerariesFor(origin, site) : null;
+  const links = site && origin ? routeLinks(origin, site) : null;
 
   return (
     <Modal
       kicker="Logistics"
       title="Commercial travel available"
-      subtitle="Real gate airports, a modelled itinerary, and a live link to check today's flights."
+      subtitle="Real gate airports, and live searches for the flights and the ground leg."
       onClose={onClose}
       className="travel-modal"
     >
@@ -69,49 +67,33 @@ export function TravelDialog({
             <p className="distance-note">{access.note}</p>
           </div>
 
-          {pair ? (
+          {links ? (
             <>
-              <div className="itinerary-grid">
-                {[pair.fastest, pair.cheapest].map((itinerary) => (
-                  <article key={itinerary.kind} className="itinerary">
-                    <div className="itinerary-head">
-                      <span className="itinerary-kind">{itinerary.label}</span>
-                      <span className="itinerary-total">
-                        {itinerary.hours} h · {money(itinerary.costUsd)}
-                      </span>
-                    </div>
-                    <ol className="itinerary-legs">
-                      {itinerary.legs.map((leg, index) => (
-                        <li key={index} className="itinerary-leg">
-                          <b>
-                            {leg.from} → {leg.to}
-                          </b>
-                          <span>
-                            {leg.mode} · {leg.hours} h · {money(leg.costUsd)}
-                          </span>
-                        </li>
-                      ))}
-                    </ol>
-                  </article>
-                ))}
-              </div>
-
               <div className="travel-actions">
-                <a className="btn" href={pair.fastest.flightsUrl} target="_blank" rel="noreferrer">
-                  Check live flights to {access.gateway?.code}
+                {links.flights ? (
+                  <a className="btn" href={links.flights} target="_blank" rel="noreferrer">
+                    Check Live Flights to {links.gatewayCode}
+                  </a>
+                ) : null}
+                {links.transit ? (
+                  <a className="btn" href={links.transit} target="_blank" rel="noreferrer">
+                    Bus and Rail to {links.gatewayCode}
+                  </a>
+                ) : null}
+                <a className="btn" href={links.directions} target="_blank" rel="noreferrer">
+                  Directions to the Site
                 </a>
-                <span className="distance-note">
-                  Times and fares are modelled from distance, not quoted. The link opens a live
-                  Google Flights search for the route so you can verify availability.
-                </span>
               </div>
+              <span className="distance-note">
+                Live searches, not quotes: the fare and the timetable are whatever each site
+                shows today. This app does not price or time the journey itself.
+              </span>
             </>
           ) : (
             <p className="distance-error" role="status">
-              No commercial itinerary can be built to {site.siteName} from {origin.label}.
+              No commercial route can be built to {site.siteName} from {origin.label}.
             </p>
           )}
-
           <div className="distance-current">
             <span className="distance-current-label">Routing from {origin.label}</span>
             <button type="button" className="btn" onClick={onClear}>

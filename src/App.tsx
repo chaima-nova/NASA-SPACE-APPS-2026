@@ -119,7 +119,7 @@ export default function App() {
   const [distanceOpen, setDistanceOpen] = useState(false);
   /** Which logistics dialog is open, if any. */
   const [travelOpen, setTravelOpen] = useState(false);
-  /** The cheapest-or-fastest route planner, opened from the dossier. */
+  /** The Plan My Trip route planner, opened from the dossier. */
   const [tripOpen, setTripOpen] = useState(false);
   /** When on, only sites commercial travel can reach are listed. */
   const [travelOnly, setTravelOnly] = useState(false);

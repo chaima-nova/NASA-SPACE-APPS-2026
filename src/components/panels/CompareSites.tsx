@@ -5,7 +5,6 @@ import type { Prediction } from '../../data-contracts/types';
 import type { Origin } from '../../lib/geo';
 import {
   ACCESS_LABELS,
-  itinerariesFor,
   travelAccessOf,
   type TravelAccess,
 } from '../../lib/travel';
@@ -81,8 +80,6 @@ function radarValues(prediction: Prediction): number[] {
 /** What the comparison is about: the science, or the journey. */
 type Basis = 'scientific' | 'logistics';
 
-const money = (value: number) => `${Math.round(value).toLocaleString('en-US')}`;
-
 /** The gate airport, or a dash when the service has none on file. */
 const gateLabel = (access: TravelAccess) =>
   access.gateway ? `${access.gateway.code} · ${access.gateway.name}` : '—';
@@ -96,8 +93,8 @@ const transferLabel = (access: TravelAccess) =>
  *
  * Access, the gate airport and the last leg come from the real airports the
  * app holds, so they are facts about the site. The door-to-door hours and
- * fares are modelled from air distance, so they only appear with a starting
- * point and are labelled as estimates.
+ * no fare or timetable is shown at all: the app holds neither, so the route
+ * hands over to live searches instead of quoting a number.
  */
 function LogisticsComparison({
   current,
@@ -110,11 +107,6 @@ function LogisticsComparison({
 }) {
   const a = travelAccessOf(current);
   const b = travelAccessOf(other);
-  const pairA = origin ? itinerariesFor(origin, current) : null;
-  const pairB = origin ? itinerariesFor(origin, other) : null;
-  const route = (pair: typeof pairA, kind: 'fastest' | 'cheapest') =>
-    pair ? `${pair[kind].hours} h · ${money(pair[kind].costUsd)}` : '—';
-
   return (
     <>
       <div className="cmp-table">
@@ -127,12 +119,6 @@ function LogisticsComparison({
         <Row label="Access" a={ACCESS_LABELS[a.access]} b={ACCESS_LABELS[b.access]} />
         <Row label="Gate airport" a={gateLabel(a)} b={gateLabel(b)} />
         <Row label="Gate to site" a={transferLabel(a)} b={transferLabel(b)} />
-        {origin ? (
-          <>
-            <Row label="Fastest, door to door" a={route(pairA, 'fastest')} b={route(pairB, 'fastest')} />
-            <Row label="Cheapest, door to door" a={route(pairA, 'cheapest')} b={route(pairB, 'cheapest')} />
-          </>
-        ) : null}
       </div>
 
       <div className="cmp-verdicts">
@@ -148,7 +134,7 @@ function LogisticsComparison({
 
       <p className="cmp-basis-note">
         {origin
-          ? 'Access and the gate are read from the airports on file; times and fares are modelled from air distance, not quoted. Plan My Trip opens the live route search.'
+          ? 'Access and the gate are read from the airports on file. No fare or timetable is shown here: Plan My Trip hands over to live searches for the flight, the bus and rail, and the last leg.'
           : 'Access and the gate are read from the airports on file. Set a location under Mission constraints › Distance from me to compare door-to-door routes.'}
       </p>
     </>
