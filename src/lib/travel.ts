@@ -139,7 +139,7 @@ export function travelAccessOf(site: Place): TravelAccess {
 }
 
 export const ACCESS_LABELS: Record<Access, string> = {
-  scheduled: 'Commercial travel available',
+  scheduled: 'Commercial Travel Available',
   charter: 'Charter needed',
   none: 'No commercial access',
 };
@@ -220,7 +220,7 @@ export function travelExport(
   if (!links || !start) {
     return {
       available: false,
-      note: 'Set a location first — Mission constraints › Distance from me — so the route has somewhere to start.',
+      note: 'Set a location first — Mission constraints › Distance From Me — so the route has somewhere to start.',
       table: { header: ['leg', 'from', 'to', 'mode', 'live_search'], rows: [] },
       html: '',
     };

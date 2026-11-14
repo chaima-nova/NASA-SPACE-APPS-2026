@@ -40,7 +40,7 @@ export function TravelDialog({
   return (
     <Modal
       kicker="Logistics"
-      title="Commercial travel available"
+      title="Commercial Travel Available"
       subtitle="Real gate airports, and live searches for the flights and the ground leg."
       onClose={onClose}
       className="travel-modal"
@@ -49,7 +49,7 @@ export function TravelDialog({
         <>
           <p className="distance-note">
             Routes are measured from where you start. If you have already set a location under
-            Distance from me, that one is reused here.
+            Distance From Me, that one is reused here.
           </p>
           <OriginPrompt
             origin={origin}

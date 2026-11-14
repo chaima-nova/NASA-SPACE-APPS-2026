@@ -147,7 +147,7 @@ export function FilterBar({
                     onOpenDistance();
                   }}
                 >
-                  <span className="logistics-name">Distance from me</span>
+                  <span className="logistics-name">Distance From Me</span>
                   <span className="logistics-value">{originLabel ?? 'Not set'}</span>
                 </button>
 
@@ -178,7 +178,7 @@ export function FilterBar({
                     onOpenTravel();
                   }}
                 >
-                  <span className="logistics-name">Commercial travel available</span>
+                  <span className="logistics-name">Commercial Travel Available</span>
                   <span className="logistics-value">{travelOnly ? 'Filtering' : 'Check routes'}</span>
                 </button>
               </div>
