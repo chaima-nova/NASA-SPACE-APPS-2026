@@ -49,8 +49,8 @@ function Row({ label, a, b }: { label: string; a: string; b: string }) {
 /** The scored axes, in radar order: the eight dimensions first, then the fits. */
 const RADAR_AXES = [
   ...FACTOR_ORDER.map((key) => ({ id: key as string, label: FACTOR_LABELS[key] })),
-  { id: 'moon', label: 'Moon fit' },
-  { id: 'mars', label: 'Mars fit' },
+  { id: 'moon', label: 'Moon Fit' },
+  { id: 'mars', label: 'Mars Fit' },
   { id: 'confidence', label: 'Confidence' },
 ];
 

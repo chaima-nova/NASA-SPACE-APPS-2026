@@ -700,9 +700,9 @@ export default function App() {
             <label className="select">
               <span className="sr-only">Sort sites by</span>
               <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
-                <option value="fit">Best fit</option>
-                <option value="moon">Moon fit</option>
-                <option value="mars">Mars fit</option>
+                <option value="fit">Best Fit</option>
+                <option value="moon">Moon Fit</option>
+                <option value="mars">Mars Fit</option>
                 <option value="name">Name</option>
               </select>
             </label>
