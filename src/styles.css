@@ -5257,6 +5257,19 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-3);
 }
 
+.cmp-basis {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.cmp-basis-note {
+  margin: 10px 0 0;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
 .cmp-pick select {
   padding: 5px 8px;
   font: inherit;
