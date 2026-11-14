@@ -5830,6 +5830,26 @@ html[data-a11y-motion='reduced'] *::after {
   }
 }
 
+/* The route as a vertical timeline, the way a transit app draws one: a dot per
+   stop, a rail in the colour of the leg leaving it, and the booking site for
+   that leg underneath. The rail is drawn by the dot that starts it, so the
+   list needs no extra elements. */
+.trip-timeline { display: flex; flex-direction: column; margin: 12px 0 0; padding: 0; list-style: none; }
+.trip-step { position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding-bottom: 14px; }
+.trip-step::before { content: ''; position: absolute; left: 12px; top: 26px; bottom: 0; width: 2px; background: var(--line-3); }
+.trip-step:last-child::before { display: none; }
+.trip-step.is-air::before { background: var(--signal); }
+.trip-step.is-ground::before { background: var(--amber); }
+.trip-step-mark { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: var(--surface); border: 1px solid var(--line-3); border-radius: 50%; font-size: 0.72rem; line-height: 1; color: var(--ink-2); }
+.trip-step.is-air .trip-step-mark { border-color: var(--signal); color: var(--signal); }
+.trip-step.is-ground .trip-step-mark { border-color: var(--amber); color: var(--amber); }
+.trip-step-body { display: flex; flex-direction: column; gap: 2px; padding-top: 4px; }
+.trip-step-kicker { font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.trip-step-body b { font-size: 0.72rem; }
+.trip-step-detail { font-size: 0.62rem; color: var(--ink-3); }
+.trip-step-link { align-self: flex-start; margin-top: 3px; font-size: 0.6rem; color: var(--signal); }
+.trip-book { margin-top: 4px; }
+
 .trip-links {
   display: flex;
   flex-direction: column;

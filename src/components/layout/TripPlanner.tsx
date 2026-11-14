@@ -75,6 +75,23 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
   const itinerary: Itinerary | null =
     choice === 'cheapest' ? (pair?.cheapest ?? null) : choice === 'fastest' ? (pair?.fastest ?? null) : null;
 
+  /**
+   * One click for a whole route: the flight search, the bus and train search
+   * and the final-leg directions, opened together. A trip is booked as a
+   * route, not leg by leg; the same links also sit under each leg for
+   * browsers that stop the extra tabs.
+   */
+  const bookTrip = () => {
+    if (!origin) return;
+    const targets = [
+      itinerary?.flightsUrl,
+      access.gateway ? transitUrl(origin, access.gateway) : null,
+      siteDirectionsUrl(origin, site),
+    ];
+    for (const href of targets) {
+      if (href) window.open(href, '_blank', 'noopener');
+    }
+  };
   return (
     <Modal
       kicker="Logistics"
@@ -133,7 +150,7 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
               Directions to the site
             </a>
             <button type="button" className="btn" onClick={onClear}>
-              Change start
+              Change Start
             </button>
           </div>
         </>
@@ -164,7 +181,7 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
           </div>
           <div className="trip-actions">
             <button type="button" className="btn" onClick={onClear}>
-              Change start
+              Change Start
             </button>
           </div>
         </>
@@ -177,46 +194,48 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             </span>
           </div>
 
-          <ol className="itinerary-legs">
+          {/* The route as a vertical timeline: where it starts, each leg with
+              the booking site that sells it, and where it ends. No clock times —
+              the hours are modelled, so a clock would be borrowed authority. */}
+          <ol className="trip-timeline">
+            <li className="trip-step is-start">
+              <span className="trip-step-mark" aria-hidden="true">◎</span>
+              <div className="trip-step-body">
+                <span className="trip-step-kicker">Start</span>
+                <b>{origin.label}</b>
+              </div>
+            </li>
             {itinerary.legs.map((leg, index) => (
-              <li key={index} className="itinerary-leg">
-                <b>
-                  {leg.from} → {leg.to}
-                </b>
-                <span>
-                  {leg.mode} · {leg.hours} h · {money(leg.costUsd)}
-                </span>
+              <li key={index} className={'trip-step ' + (index === 0 ? 'is-air' : 'is-ground')}>
+                <span className="trip-step-mark" aria-hidden="true">{index === 0 ? '✈' : '⇢'}</span>
+                <div className="trip-step-body">
+                  <span className="trip-step-kicker">{index === 0 ? 'Flight' : 'Ground'}</span>
+                  <b>{leg.mode}</b>
+                  <span className="trip-step-detail">{leg.from} → {leg.to}</span>
+                  <a
+                    className="trip-step-link"
+                    href={index === 0 ? itinerary.flightsUrl : siteDirectionsUrl(origin, site)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {index === 0 ? 'Find flights to ' + (access.gateway?.code ?? 'the gate') : 'Directions to the site'}
+                  </a>
+                </div>
               </li>
             ))}
+            <li className="trip-step is-end">
+              <span className="trip-step-mark" aria-hidden="true">◉</span>
+              <div className="trip-step-body">
+                <span className="trip-step-kicker">Arrive</span>
+                <b>{site.siteName}</b>
+                <span className="trip-step-detail">{access.transferMode} from {access.gateway?.code ?? 'the gate'}</span>
+              </div>
+            </li>
           </ol>
 
           <p className="distance-note">
             {access.note} Times and fares are estimates — check the live links before booking.
           </p>
-
-          <div className="trip-links">
-            <a
-              className="btn btn-primary"
-              href={itinerary.flightsUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Flights to {access.gateway?.code}
-            </a>
-            {access.gateway ? (
-              <a
-                className="btn"
-                href={transitUrl(origin, access.gateway)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Bus &amp; train to {access.gateway.name.split(',')[0]}
-              </a>
-            ) : null}
-            <a className="btn" href={siteDirectionsUrl(origin, site)} target="_blank" rel="noreferrer">
-              Directions to {site.siteName.split(',')[0]}
-            </a>
-          </div>
 
           <p className="distance-note">
             The directions link ends at the site&rsquo;s coordinates, not the airport. Where the
@@ -224,12 +243,24 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             leg.
           </p>
 
+          <div className="trip-actions trip-book">
+            <button type="button" className="btn btn-primary" onClick={bookTrip}>
+              Book Trip
+            </button>
+          </div>
+
+          <p className="distance-note">
+            Book Trip opens the flight search, the bus and train search and the final-leg directions
+            together — allow pop-ups for this page if the browser asks. The same links are under each
+            leg above. Times and fares are estimates: check each site before booking.
+          </p>
+
           <div className="trip-actions">
             <button type="button" className="btn" onClick={() => setChoice(null)}>
-              Back to routes
+              Back to Routes
             </button>
             <button type="button" className="btn" onClick={onClear}>
-              Change start
+              Change Start
             </button>
           </div>
         </>
