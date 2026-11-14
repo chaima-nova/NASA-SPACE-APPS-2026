@@ -11,6 +11,7 @@ import { TeamPage } from './components/layout/TeamPage';
 import { Panel } from './components/layout/Panel';
 import { SiteBackdrop } from './components/layout/SiteBackdrop';
 import { DataSourceList } from './components/panels/DataSourceList';
+import { PipelineEvidence } from './components/panels/PipelineEvidence';
 import { ReportedDossier } from './components/panels/ReportedDossier';
 import { ReportedSitesPanel } from './components/panels/ReportedSitesPanel';
 import { ReportSiteForm } from './components/panels/ReportSiteForm';
@@ -980,6 +981,7 @@ export default function App() {
               className="sources-card"
             >
               <DataSourceList datasets={datasets} />
+              <PipelineEvidence />
             </Panel>
           </div>
         ) : null}
