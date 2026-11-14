@@ -83,11 +83,6 @@ function onwardMode(km: number, lat: number): string {
   return 'Charter flight';
 }
 
-const onwardSpeed = (mode: string) => {
-  if (mode === 'Road transfer') return 70;
-  if (mode === 'Off-road transfer') return 35;
-  return 240;
-};
 
 /** The nearest gate, and whether reaching this site commercially is realistic. */
 export function travelAccessOf(site: Place): TravelAccess {
@@ -149,142 +144,54 @@ export const ACCESS_LABELS: Record<Access, string> = {
   none: 'No commercial access',
 };
 
-export interface Leg {
-  from: string;
-  to: string;
-  /** Plain-language mode, e.g. "Direct flight" or "Off-road transfer". */
-  mode: string;
-  hours: number;
-  costUsd: number;
-}
-
-export interface Itinerary {
-  kind: 'fastest' | 'cheapest';
-  label: string;
-  legs: Leg[];
-  hours: number;
-  costUsd: number;
-  /** Live route search for the air leg. */
-  flightsUrl: string;
-}
-
-const round1 = (n: number) => Math.round(n * 10) / 10;
-
-/** Modelled door-to-door fare for a leg, in USD. Not a quote. */
-const airFare = (km: number) => Math.round(120 + km * 0.09);
-
-const onwardFare = (km: number, mode: string) =>
-  mode === 'Road transfer' || mode === 'Off-road transfer'
-    ? Math.round(40 + km * 0.9)
-    : Math.round(160 + km * 0.55);
-
-/** Google Flights search for the route into a gate airport. */
+/** Google Flights for one airport code, when no origin is known yet. */
 export function flightsUrl(code: string): string {
-  return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights to ${code}`)}`;
+  return `https://www.google.com/travel/flights?q=Flights to ${code}`;
 }
 
-/** Google Maps directions between two coordinates, in one travel mode. */
-function mapsDirections(from: Place, to: Place, mode: 'transit' | 'driving'): string {
-  const point = (place: Place) => `${place.lat.toFixed(5)},${place.lon.toFixed(5)}`;
-  return `https://www.google.com/maps/dir/?api=1&origin=${point(from)}&destination=${point(
-    to,
-  )}&travelmode=${mode}`;
+/** Bus and rail from the reader to the gate airport, as a Maps transit query. */
+export function transitUrl(origin: Origin, gateway: Gateway): string {
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lon}&destination=${gateway.lat},${gateway.lon}&travelmode=transit`;
 }
 
+/** Driving directions ending at the site itself, not at the airport. */
+export function siteDirectionsUrl(origin: Origin, site: Place): string {
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lon}&destination=${site.lat},${site.lon}&travelmode=driving`;
+}
 /**
- * Bus and rail options from the reader to the gate airport. Google Maps transit
- * is the one link that indexes coach and train operators without an API key and
- * without steering the reader to a single carrier.
- */
-export function transitUrl(origin: Place, gateway: Place): string {
-  return mapsDirections(origin, gateway, 'transit');
-}
-
-/**
- * The last leg: from the reader's start point to the site's own coordinates,
- * so the route ends on the ground rather than in an arrivals hall.
- */
-export function siteDirectionsUrl(origin: Place, site: Place): string {
-  return mapsDirections(origin, site, 'driving');
-}
-
-/**
- * The two itineraries a field party actually chooses between: the quickest way
- * there, and the cheapest. One air leg each (the cheapest one stops, and pays
- * for it in hours) plus the onward transfer from the gate.
+ * Live searches for one route.
  *
- * Returns null when the site cannot be reached commercially at all, so callers
- * can say "not reachable" instead of rendering a fiction.
+ * Every field is a real search on a real site, carrying the real airport code
+ * or the site coordinates: nothing here is a fare or a duration the app made
+ * up. That is deliberate — an invented price is worse than no price, because a
+ * reader plans around it.
  */
-export function itinerariesFor(
-  origin: Origin,
-  site: Place & { siteName: string },
-): { fastest: Itinerary; cheapest: Itinerary } | null {
-  const access = travelAccessOf(site);
-  if (access.access === 'none' || !access.gateway) return null;
-
-  const gateway = access.gateway;
-  const airKm = distanceKm(origin, gateway);
-  const gateLabel = `${gateway.code} · ${gateway.name}`;
-  const onwardHours = round1(access.transferKm / onwardSpeed(access.transferMode));
-  const onwardCost = onwardFare(access.transferKm, access.transferMode);
-
-  const fastest: Itinerary = {
-    kind: 'fastest',
-    label: 'Fastest',
-    legs: [
-      {
-        from: origin.label,
-        to: gateLabel,
-        mode: 'Direct flight',
-        hours: round1(airKm / 840 + 1.1),
-        costUsd: airFare(airKm),
-      },
-      {
-        from: gateway.code,
-        to: site.siteName,
-        mode: access.transferMode,
-        hours: onwardHours,
-        costUsd: onwardCost,
-      },
-    ],
-    hours: 0,
-    costUsd: 0,
-    flightsUrl: flightsUrl(gateway.code),
-  };
-
-  const cheapest: Itinerary = {
-    kind: 'cheapest',
-    label: 'Cheapest',
-    legs: [
-      {
-        from: origin.label,
-        to: gateLabel,
-        mode: 'Flight, one stop',
-        hours: round1((airKm / 840 + 1.1) * 1.16 + 2.5),
-        costUsd: Math.round(airFare(airKm) * 0.68),
-      },
-      {
-        from: gateway.code,
-        to: site.siteName,
-        mode: access.transferMode,
-        hours: onwardHours,
-        costUsd: onwardCost,
-      },
-    ],
-    hours: 0,
-    costUsd: 0,
-    flightsUrl: flightsUrl(gateway.code),
-  };
-
-  for (const itinerary of [fastest, cheapest]) {
-    itinerary.hours = round1(itinerary.legs.reduce((total, leg) => total + leg.hours, 0));
-    itinerary.costUsd = itinerary.legs.reduce((total, leg) => total + leg.costUsd, 0);
-  }
-
-  return { fastest, cheapest };
+export interface RouteLinks {
+  /** Google Flights search from the reader to the gate airport. */
+  flights: string | null;
+  /** The gate airport code, when the site has a gate on file. */
+  gatewayCode: string | null;
+  /** Bus and rail to the gate airport. */
+  transit: string | null;
+  /** Driving directions that end at the site coordinates. */
+  directions: string;
 }
 
+/** Google Flights, asked about the route rather than about an airport. */
+export function flightsToUrl(origin: Origin, code: string): string {
+  return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${origin.label} to ${code}`)}`;
+}
+
+export function routeLinks(origin: Origin, site: Place): RouteLinks {
+  const access = travelAccessOf(site);
+  const code = access.gateway?.code ?? null;
+  return {
+    flights: code ? flightsToUrl(origin, code) : null,
+    gatewayCode: code,
+    transit: access.gateway ? transitUrl(origin, access.gateway) : null,
+    directions: siteDirectionsUrl(origin, site),
+  };
+}
 /** What an export needs to carry, whether or not an origin has been set. */
 export interface TravelExport {
   available: boolean;
@@ -297,74 +204,56 @@ export interface TravelExport {
 const escapeXml = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const money = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
-
 /**
- * Ascending itinerary table, one row per leg. Both itineraries go in the same
- * table so a reader can compare them line by line rather than across tabs.
+ * The journey as an exportable list. One row per leg, each carrying the live
+ * search that sells it — no hours and no fares, because the app does not know
+ * them. A reader who exports this gets links to check, not numbers to trust.
  */
 export function travelExport(
   site: Place & { siteName: string },
   origin: Origin | null,
 ): TravelExport {
   const access = travelAccessOf(site);
-  const pair = origin ? itinerariesFor(origin, site) : null;
+  const start = origin;
+  const links = start ? routeLinks(start, site) : null;
 
-  if (!pair) {
+  if (!links || !start) {
     return {
       available: false,
-      note: origin
-        ? access.note
-        : 'Set a location first — Mission constraints › Distance from me — so the itinerary has somewhere to start.',
-      table: { header: ['itinerary', 'leg', 'from', 'to', 'mode', 'hours', 'est_cost_usd', 'note'], rows: [] },
+      note: 'Set a location first — Mission constraints › Distance from me — so the route has somewhere to start.',
+      table: { header: ['leg', 'from', 'to', 'mode', 'live_search'], rows: [] },
       html: '',
     };
   }
 
-  const header = ['itinerary', 'leg', 'from', 'to', 'mode', 'hours', 'est_cost_usd', 'note'];
+  const header = ['leg', 'from', 'to', 'mode', 'live_search'];
   const rows: string[][] = [];
-  for (const itinerary of [pair.fastest, pair.cheapest]) {
-    itinerary.legs.forEach((leg, index) => {
-      rows.push([
-        `${itinerary.label} · ${itinerary.hours} h · ${money(itinerary.costUsd)}`,
-        String(index + 1),
-        leg.from,
-        leg.to,
-        leg.mode,
-        leg.hours.toFixed(1),
-        String(leg.costUsd),
-        index === 0 ? 'Modelled air time and fare; check the live link before booking.' : 'Door-to-door from the gate airport.',
-      ]);
-    });
+  if (links.flights) {
+    rows.push([
+      String(rows.length + 1),
+      start.label,
+      `${links.gatewayCode} · ${access.gateway?.name ?? ''}`,
+      'Flight',
+      links.flights,
+    ]);
   }
+  rows.push([
+    String(rows.length + 1),
+    links.gatewayCode ?? 'the gate',
+    site.siteName,
+    access.transferMode,
+    links.directions,
+  ]);
 
-  const cards = [pair.fastest, pair.cheapest]
-    .map(
-      (itinerary) => `      <article class="itin">
-        <h3>${escapeXml(itinerary.label)} <span>${itinerary.hours} h · ${money(
-          itinerary.costUsd,
-        )}</span></h3>
-        <ol>
-${itinerary.legs
-  .map(
-    (leg) =>
-      `          <li><b>${escapeXml(leg.from)} → ${escapeXml(leg.to)}</b> · ${escapeXml(
-        leg.mode,
-      )} · ${leg.hours} h · ${money(leg.costUsd)}</li>`,
-  )
-  .join('\n')}
-        </ol>
-      </article>`,
-    )
-    .join('\n');
+  const items = rows
+    .map((row) => `          <li><b>${escapeXml(row[2])}</b> · ${escapeXml(row[3])} · <a href="${escapeXml(row[4])}">live search</a></li>`)
+    .join(String.fromCharCode(10));
 
-  const html = `    <h2>Getting there from ${escapeXml(origin?.label ?? '')}</h2>
-    <p class="hint">${escapeXml(access.note)} Gate: ${escapeXml(
-      access.gateway ? `${access.gateway.code} ${access.gateway.name}` : '—',
-    )}. Times and fares are modelled from distance, not quoted — check the live search before booking.</p>
-    <div class="itins">
-${cards}
-    </div>`;
+  const html = `    <h2>Getting there from ${escapeXml(start.label)}</h2>
+    <p class="hint">${escapeXml(access.note)} No fare or duration is quoted here: the searches are live, so the price and the schedule are whatever the site shows today.</p>
+    <ol>
+${items}
+    </ol>`;
 
   return { available: true, note: access.note, table: { header, rows }, html };
 }
