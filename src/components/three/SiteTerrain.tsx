@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { loadTerrainPatch, TERRAIN_PALETTE, type TerrainPatch, type TerrainSite } from '../../lib/terrain';
 import { formatCoords, formatElevation, terrainLabel } from '../../lib/site';
 import { reducedMotion } from '../../lib/accessibility';
+import { latestImageryDate } from '../../lib/earthImagery';
 
 interface SiteTerrainProps {
   /** A model prediction or a researcher's reported site — both are placeable. */
@@ -108,6 +109,13 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
   const [patch, setPatch] = useState<TerrainPatch | null>(null);
   const [failed, setFailed] = useState(false);
 
+  /** Which overlay is on. One at a time: both recolour the same ground. */
+  const [overlay, setOverlay] = useState<'none' | 'altitude' | 'temperature'>('none');
+  /** What the temperature drape says for itself, once it knows. */
+  const [tempNote, setTempNote] = useState<string | null>(null);
+  /** Set by the scene effect, so a toggle recolours without rebuilding it. */
+  const overlayApi = useRef<((mode: 'none' | 'altitude' | 'temperature') => void) | null>(null);
+
   // Escape returns to the globe, matching the Back button.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -147,6 +155,8 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
     const SIZE = patch.widthMeters;
     const EXAGGERATION = exaggerationFor(patch);
     const palette = paletteFor(prediction);
+
+    let disposed = false;
 
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -277,6 +287,37 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         colors[index * 3 + 2] = tint.b * grain;
       }
     }
+    // ---- Altitude overlay ---------------------------------------------------
+    // A hypsometric ramp over the same measured heights: low ground blue-green,
+    // mid slopes sand, summits white. Built once, then swapped in as the colour
+    // attribute, so switching overlay costs no geometry rebuild.
+    const altitudeColors = new Float32Array(n * n * 3);
+    const rampStops: Array<[number, [number, number, number]]> = [[0, [26, 62, 122]], [0.22, [42, 132, 138]], [0.42, [104, 162, 88]], [0.62, [206, 186, 96]], [0.8, [190, 118, 74]], [1, [246, 244, 240]]];
+    const rampAt = (value: number): [number, number, number] => {
+      const clamped = Math.min(1, Math.max(0, value));
+      for (let i = 1; i < rampStops.length; i += 1) {
+        const [right, rightRgb] = rampStops[i];
+        const [left, leftRgb] = rampStops[i - 1];
+        if (clamped <= right) {
+          const k = (clamped - left) / Math.max(1e-6, right - left);
+          return [
+            (leftRgb[0] + (rightRgb[0] - leftRgb[0]) * k) / 255,
+            (leftRgb[1] + (rightRgb[1] - leftRgb[1]) * k) / 255,
+            (leftRgb[2] + (rightRgb[2] - leftRgb[2]) * k) / 255,
+          ];
+        }
+      }
+      return [1, 1, 1];
+    };
+    for (let i = 0; i < n * n; i += 1) {
+      const level = Math.min(1, Math.max(0, (patch.heights[i] - patch.minElevation) / relief));
+      const [r, g, b] = rampAt(Math.pow(level, 0.85));
+      altitudeColors[i * 3] = r;
+      altitudeColors[i * 3 + 1] = g;
+      altitudeColors[i * 3 + 2] = b;
+    }
+    const baseAttr = new THREE.BufferAttribute(colors, 3);
+    const altitudeAttr = new THREE.BufferAttribute(altitudeColors, 3);
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.computeVertexNormals();
 
@@ -285,7 +326,103 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       roughness: 0.96,
       metalness: 0.02,
     });
+    /** True when a decoded frame carries nothing: GIBS answers a missing day so. */
+    const blankFrame = (image: CanvasImageSource) => {
+      try {
+        const probe = document.createElement('canvas');
+        probe.width = 32;
+        probe.height = 32;
+        const context = probe.getContext('2d', { willReadFrequently: true });
+        if (!context) return false;
+        context.drawImage(image, 0, 0, 32, 32);
+        const { data } = context.getImageData(0, 0, 32, 32);
+        let painted = 0;
+        for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 8) painted += 1;
+        return painted < 4;
+      } catch {
+        return false;
+      }
+    };
+    let tempState: 'idle' | 'loading' | 'ready' | 'missing' = 'idle';
+    let tempTexture: THREE.Texture | null = null;
+    const loadTemperature = async () => {
+      if (tempState === 'loading' || tempState === 'ready') return;
+      tempState = 'loading';
+      setTempNote('Loading the MODIS surface temperature layer…');
+      const start = new Date(latestImageryDate() + 'T00:00:00Z').getTime();
+      // An 8-day composite always lags: step back in whole composites and take the
+      // first frame that carries paint rather than assuming the newest one does.
+      for (const offset of [8, 16, 24]) {
+        const day = new Date(start - offset * 86_400_000).toISOString().slice(0, 10);
+        try {
+          const texture = await new THREE.TextureLoader().loadAsync(tempUrl(day));
+          if (disposed) {
+            texture.dispose();
+            return;
+          }
+          if (blankFrame(texture.image)) {
+            texture.dispose();
+            continue;
+          }
+          texture.colorSpace = THREE.SRGBColorSpace;
+          tempTexture = texture;
+          tempMaterial.map = texture;
+          tempMaterial.needsUpdate = true;
+          tempState = 'ready';
+          setTempNote(
+            'MODIS Terra land surface temperature · 8-day composite to ' +
+              day +
+              ' · colours are the GIBS ramp, not a value measured here',
+          );
+          return;
+        } catch {
+          continue;
+        }
+      }
+      tempState = 'missing';
+      setTempNote('NASA GIBS has no surface temperature for this ground in the last month.');
+    };
+    const applyOverlay = (mode: 'none' | 'altitude' | 'temperature') => {
+      const colours = mode === 'altitude' ? altitudeAttr : baseAttr;
+      geometry.setAttribute('color', colours);
+      colours.needsUpdate = true;
+      tempMesh.visible = mode === 'temperature';
+      tempMaterial.opacity = mode === 'temperature' ? 0.66 : 0;
+      if (mode === 'temperature') void loadTemperature();
+      if (mode !== 'temperature') setTempNote(null);
+    };
+    overlayApi.current = applyOverlay;
     const ground = new THREE.Mesh(geometry, groundMaterial);
+    // ---- Surface temperature drape ------------------------------------------
+    // The MODIS Terra 8-day land-surface-temperature layer, drawn on the same
+    // mesh as a translucent copy so the relief still reads through the colours.
+    // GIBS ships it colour-mapped, so no palette of ours is imposed on it.
+    const tempMaterial = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+    });
+    const tempMesh = new THREE.Mesh(geometry, tempMaterial);
+    tempMesh.visible = false;
+    scene.add(tempMesh);
+    const halfLat = patch.widthMeters / 2 / 111_320;
+    const halfLon =
+      patch.widthMeters / 2 / (111_320 * Math.max(0.05, Math.cos((prediction.lat * Math.PI) / 180)));
+    const bbox = [
+      prediction.lon - halfLon,
+      prediction.lat - halfLat,
+      prediction.lon + halfLon,
+      prediction.lat + halfLat,
+    ]
+      .map((value) => value.toFixed(4))
+      .join(',');
+    const tempUrl = (day: string) =>
+      'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=MODIS_Terra_Land_Surface_Temp_Day&STYLES=&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:4326&WIDTH=512&HEIGHT=512&TIME=' +
+      day +
+      '&BBOX=' +
+      bbox;
     ground.receiveShadow = true;
     ground.castShadow = true;
     scene.add(ground);
@@ -458,11 +595,20 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         if (Array.isArray(material)) material.forEach((m) => m.dispose());
         else material?.dispose?.();
       });
+      disposed = true;
+      overlayApi.current = null;
+      tempTexture?.dispose();
       skyMaterial.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
     };
   }, [patch, prediction]);
+
+  // The scene outlives individual renders, so the toggle tells it what to show
+  // rather than rebuilding the terrain each time.
+  useEffect(() => {
+    overlayApi.current?.(overlay);
+  }, [overlay, patch]);
 
   const reliefM = patch ? Math.round(patch.maxElevation - patch.minElevation) : 0;
 
@@ -498,6 +644,18 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           <span aria-hidden="true">←</span> Back to Globe
         </button>
       </div>
+
+      <div className="terrain-overlays" role="group" aria-label="Terrain overlays">
+        <span className="terrain-overlays-label">Overlay</span>
+        <button type="button" className="terrain-toggle" aria-pressed={overlay === 'temperature'} onClick={() => setOverlay((current) => (current === 'temperature' ? 'none' : 'temperature'))}>
+          Surface Temperature
+        </button>
+        <button type="button" className="terrain-toggle" aria-pressed={overlay === 'altitude'} onClick={() => setOverlay((current) => (current === 'altitude' ? 'none' : 'altitude'))}>
+          Altitude
+        </button>
+      </div>
+
+      {tempNote ? <p className="terrain-overlay-note">{tempNote}</p> : null}
 
       <div className="terrain-stats">
         <div>
