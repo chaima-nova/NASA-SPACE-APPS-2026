@@ -291,12 +291,12 @@ export function SiteInspector({
           <button type="button" className="btn btn-primary" onClick={onExport}>
             Export
           </button>
-          <button type="button" className="btn" onClick={onCopyLink}>
+          <button type="button" className="btn btn-primary" onClick={onCopyLink}>
             {copied ? 'Link Copied' : 'Copy Link'}
           </button>
           <button
             type="button"
-            className="btn dossier-compare"
+            className="btn btn-primary dossier-compare"
             onClick={onCompareSites}
           >
             Compare Analogue Sites
