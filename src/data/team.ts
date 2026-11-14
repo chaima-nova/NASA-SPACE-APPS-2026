@@ -18,28 +18,6 @@ export interface TeamMember {
   tasks: string[];
 }
 
-export interface FocusArea {
-  name: string;
-  /** One line on what the area is about. */
-  detail: string;
-}
-
-/** The three focus areas the team is preparing for. */
-export const FOCUS_AREAS: readonly FocusArea[] = [
-  {
-    name: 'Urban Heat Equity',
-    detail: 'Where heat lands hardest inside a city, and who it lands on.',
-  },
-  {
-    name: 'Atmospheric & Environmental Health',
-    detail: 'Air, haze and the conditions a base or a city has to live with.',
-  },
-  {
-    name: 'Orbital Dynamics & Space Systems',
-    detail: 'Orbits, ephemerides and the geometry that puts a site in context.',
-  },
-];
-
 export const TEAM: readonly TeamMember[] = [
   {
     name: 'Abid',
