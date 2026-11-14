@@ -5212,11 +5212,16 @@ html[data-a11y-motion='reduced'] *::after {
 /* ---- Compare analogue sites ---------------------------------------------- */
 
 .dossier-export {
-  display: flex;
+  /* Export and Copy Link share the first row; the comparison question is a
+     sentence rather than a peer action, so it takes the full width below. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   flex: 1;
-  flex-direction: column;
-  align-items: stretch;
   gap: 6px;
+}
+
+.dossier-compare {
+  grid-column: 1 / -1;
 }
 
 .cmp-head {

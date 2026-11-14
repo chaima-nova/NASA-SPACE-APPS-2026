@@ -93,7 +93,7 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
   return (
     <Modal
       kicker="Compare"
-      title="Compare analogue sites"
+      title="Compare Analogue Sites"
       subtitle={`Both sites scored against ${TARGET_LABELS[target]}. The gap is the left site minus the right.`}
       onClose={onClose}
       size="lg"

@@ -275,19 +275,24 @@ export function SiteInspector({
       <div className="divider" />
 
       <div className="dossier-actions">
-        {/* Export first, then the question that usually follows it: how does
-            this site compare with the one ranked above or below it? */}
+        {/* Export and the copy-link action belong together: you export what is
+            on screen, or you share the permalink to it. The comparison question
+            is the longer one, so it keeps a row of its own underneath. */}
         <div className="dossier-export">
           <button type="button" className="btn btn-primary" onClick={onExport}>
             Export
           </button>
-          <button type="button" className="btn" onClick={onCompareSites}>
-            Compare analogue sites
+          <button type="button" className="btn" onClick={onCopyLink}>
+            {copied ? 'Link Copied' : 'Copy Link'}
+          </button>
+          <button
+            type="button"
+            className="btn dossier-compare"
+            onClick={onCompareSites}
+          >
+            Compare Analogue Sites
           </button>
         </div>
-        <button type="button" className="btn" onClick={onCopyLink}>
-          {copied ? 'Link copied' : 'Copy link'}
-        </button>
       </div>
     </div>
   );
