@@ -1,3 +1,5 @@
+import type { Prediction } from '../../data-contracts/types';
+import { photoPageUrl, photosFor, photoUrl } from '../../data/sitePhotos';
 import { engineComparisons, measuredTerrain } from '../../services/pipeline';
 
 /**
@@ -227,7 +229,25 @@ const TRACKS: Track[] = [
   },
 ];
 
-export function InvestigationPrompts() {
+interface InvestigationPromptsProps {
+  /**
+   * The site the prompts are about. Its own field photographs illustrate the
+   * five lines; a site with no curated art keeps the text-only card rather than
+   * borrowing a picture of somewhere else.
+   */
+  prediction?: Prediction | null;
+}
+
+export function InvestigationPrompts({ prediction = null }: InvestigationPromptsProps) {
+  const photos = prediction ? photosFor(prediction) : [];
+
+  // One plate per line. Sites carry three photos and there are five lines, so
+  // the list cycles; a site with none gets null and draws nothing.
+  const plates = TRACKS.map((track, index) => ({
+    track,
+    photo: photos.length > 0 ? photos[index % photos.length] : null,
+  }));
+
   return (
     <section className="investigations" aria-labelledby="investigations-title">
       <header className="investigations-head">
@@ -240,8 +260,23 @@ export function InvestigationPrompts() {
       </header>
 
       <div className="investigations-grid">
-        {TRACKS.map((track) => (
+        {plates.map(({ track, photo }) => (
           <article key={track.id} className="investigation">
+            {photo ? (
+              <figure className="investigation-photo">
+                <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
+                  <img
+                    src={photoUrl(photo, 640)}
+                    alt={photo.caption}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+                <figcaption>
+                  {photo.credit} · {photo.license}
+                </figcaption>
+              </figure>
+            ) : null}
             <header className="investigation-head">
               <span className="investigation-kind">{track.kind}</span>
               <h3>{track.title}</h3>
