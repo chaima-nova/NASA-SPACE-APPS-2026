@@ -5495,7 +5495,9 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigations-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Five tracks on a wide screen, fewer as the window narrows: the cards are
+     tall, so auto-fit avoids a lonely second row. */
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 12px;
 }
 
@@ -5592,18 +5594,6 @@ html[data-a11y-motion='reduced'] *::after {
   font-size: 0.64rem;
   line-height: 1.55;
   color: var(--ink-3);
-}
-
-@media (max-width: 1180px) {
-  .investigations-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .investigations-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ---- Plan my trip -------------------------------------------------------- */
