@@ -106,13 +106,24 @@ export function siteImagery(
   size = 900,
   date = latestImageryDate(),
   layer = TRUE_COLOR_LAYER,
-): { url: string; bbox: string; widthKm: number; heightKm: number; date: string } {
+): {
+  url: string;
+  bbox: string;
+  widthKm: number;
+  heightKm: number;
+  /** The same extents in degrees, which is what a pan or a zoom moves in. */
+  widthDeg: number;
+  heightDeg: number;
+  date: string;
+} {
   const box = closeUpBox(lat, lon, spanDegrees);
   return {
     url: boxImageryUrl(box.bbox, size, date, layer),
     bbox: box.bbox,
     widthKm: Math.round(111.32 * box.widthDeg * Math.cos((lat * Math.PI) / 180)),
     heightKm: Math.round(111.32 * box.heightDeg),
+    widthDeg: box.widthDeg,
+    heightDeg: box.heightDeg,
     date,
   };
 }
