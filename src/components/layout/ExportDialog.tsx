@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { downloadBlob, downloadFile } from '../../lib/download';
-import { copyText, tableHtml, tableTsv, workbookXlsx, type Table } from '../../lib/export';
+import {
+  copyRich,
+  tableHtml,
+  tableHtmlFragment,
+  tableTsv,
+  workbookXlsx,
+  type Table,
+} from '../../lib/export';
 import type { TravelExport } from '../../lib/travel';
 
 interface ExportDialogProps {
@@ -103,6 +110,12 @@ export function ExportDialog({
   const [includeTravel, setIncludeTravel] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  // The provenance line the HTML page opens with; the workbook and the pasted
+  // tab carry it too, so all three exports agree on what was captured and when.
+  const note = `${table.rows.length} row${table.rows.length === 1 ? '' : 's'} · exported ${new Date()
+    .toISOString()
+    .slice(0, 10)}`;
+
   const travelReady = Boolean(travel?.available);
   const withTravel = includeTravel && travelReady && travel !== null;
   const chosen = (includeSite ? 1 : 0) + (withTravel ? 1 : 0);
@@ -110,8 +123,10 @@ export function ExportDialog({
 
   function saveExcel() {
     const sheets = [
-      ...(includeSite ? [{ name: sheet, table }] : []),
-      ...(withTravel && travel ? [{ name: 'Travel itinerary', table: travel.table }] : []),
+      ...(includeSite ? [{ name: sheet, title, note, table }] : []),
+      ...(withTravel && travel
+        ? [{ name: 'Travel itinerary', title: `${title} · travel`, note: travel.note, table: travel.table }]
+        : []),
     ];
     downloadBlob(`${filename}.xlsx`, workbookXlsx(title, sheets));
     onClose();
@@ -124,7 +139,9 @@ export function ExportDialog({
     // awaited: a window opened after an await is treated as a popup and
     // blocked. The copy then finishes behind the new tab.
     window.open('https://sheets.new', '_blank', 'noopener');
-    void copyText(tableTsv(primary)).then((copied) =>
+    // Both flavours go on the clipboard: Sheets keeps the header band and the
+    // row shading from the HTML twin, and a plain-text reader still gets cells.
+    void copyRich(tableHtmlFragment(title, primary, note), tableTsv(primary)).then((copied) =>
       setStatus(
         copied
           ? `Table copied. Paste it into the new sheet with Ctrl+V (⌘V on a Mac).${
@@ -201,7 +218,7 @@ export function ExportDialog({
                 <span className="export-option-hint">
                   {chosen > 1
                     ? 'One workbook, two tabs: the analysis and the itinerary.'
-                    : 'One sheet: every metric, the target\'s demand and the gap, plus the raw features.'}
+                    : 'One styled sheet: every metric, the target\'s demand and the gap, plus the raw features, with columns fitted to their contents.'}
                 </span>
               </span>
             </button>
@@ -216,7 +233,7 @@ export function ExportDialog({
               <span className="export-option-text">
                 <span className="export-option-label">Export to Google Sheets</span>
                 <span className="export-option-hint">
-                  Copies the same table, then opens a blank sheet.
+                  Copies the same styled table, then opens a blank sheet.
                 </span>
               </span>
             </button>
@@ -241,7 +258,10 @@ export function ExportDialog({
               type="button"
               className="btn btn-small export-copy-tab"
               onClick={() =>
-                void copyText(tableTsv(travel.table)).then((copied) =>
+                void copyRich(
+                  tableHtmlFragment(`${title} · travel`, travel.table, travel.note),
+                  tableTsv(travel.table),
+                ).then((copied) =>
                   setStatus(
                     copied
                       ? 'Travel itinerary copied. Paste it into a second tab of the same sheet.'
