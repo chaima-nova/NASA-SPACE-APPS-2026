@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '../layout/Modal';
+import { AnalogueRadar } from '../charts/AnalogueRadar';
 import type { Prediction } from '../../data-contracts/types';
-import { scoreColor } from '../../lib/colors';
 import {
   FACTOR_LABELS,
   FACTOR_ORDER,
@@ -38,30 +38,26 @@ function Row({ label, a, b }: { label: string; a: string; b: string }) {
   );
 }
 
-/** A scored row: same metric, two bars, and the gap between them. */
-function BarRow({ label, a, b }: { label: string; a: number; b: number }) {
-  const delta = a - b;
-  return (
-    <div className="cmp-row cmp-row-bar">
-      <span className="cmp-label">{label}</span>
-      <span className="cmp-cell">
-        <span className="cmp-bar">
-          <span style={{ width: `${Math.max(2, a * 100)}%`, background: scoreColor(a) }} />
-        </span>
-        <b>{formatScore(a)}</b>
-      </span>
-      <span className="cmp-cell">
-        <span className="cmp-bar">
-          <span style={{ width: `${Math.max(2, b * 100)}%`, background: scoreColor(b) }} />
-        </span>
-        <b>{formatScore(b)}</b>
-      </span>
-      <span className={delta >= 0 ? 'cmp-delta is-up' : 'cmp-delta is-down'}>
-        {delta >= 0 ? '+' : '−'}
-        {Math.abs(delta).toFixed(2)}
-      </span>
-    </div>
-  );
+/** The scored axes, in radar order: the four pillars first, then the fits. */
+const RADAR_AXES = [
+  ...FACTOR_ORDER.map((key) => ({ id: key as string, label: FACTOR_LABELS[key] })),
+  { id: 'moon', label: 'Moon fit' },
+  { id: 'mars', label: 'Mars fit' },
+  { id: 'confidence', label: 'Confidence' },
+];
+
+/** One site's values, in the same axis order as RADAR_AXES. */
+function radarValues(prediction: Prediction): number[] {
+  const factors = factorsOf(prediction);
+  return [
+    factors.geomorphology,
+    factors.mineralogy,
+    factors.environment,
+    factors.logistics,
+    fitFor(prediction, 'moon'),
+    fitFor(prediction, 'mars'),
+    prediction.confidence,
+  ];
 }
 
 /**
@@ -72,8 +68,9 @@ function BarRow({ label, a, b }: { label: string; a: number; b: number }) {
  * column is fixed to the site already open, so the comparison is always against
  * what the reader is looking at; the right column is any other scored site.
  *
- * Every row is the same metric on both sides, with the gap spelled out — a
- * difference you have to work out in your head is not a comparison.
+ * The scored axes are drawn as a radar, because "better on what" is a shape
+ * question; the rows below carry only the facts that have no shape — terrain,
+ * region, elevation, and the ground each site stands in for.
  */
 export function CompareSites({ current, options, target, onClose }: CompareSitesProps) {
   const others = options.filter((option) => option.id !== current.id);
@@ -85,8 +82,6 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
   );
   const other = others.find((option) => option.id === otherId) ?? current;
 
-  const a = factorsOf(current);
-  const b = factorsOf(other);
   const bodyA = targetSiteOf(current, target);
   const bodyB = targetSiteOf(other, target);
 
@@ -94,7 +89,7 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
     <Modal
       kicker="Compare"
       title="Compare Analogue Sites"
-      subtitle={`Both sites scored against ${TARGET_LABELS[target]}. The gap is the left site minus the right.`}
+      subtitle={`Both sites scored against ${TARGET_LABELS[target]} on the four pillars, both fits and model confidence — with the facts behind the shape underneath.`}
       onClose={onClose}
       size="lg"
       className="compare-sites-modal"
@@ -129,26 +124,29 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
         </div>
       </div>
 
+      {/* The shape first: the scored axes as one silhouette per site, which is
+          what a comparison is actually read for. The facts follow underneath. */}
+      <AnalogueRadar
+        axes={RADAR_AXES}
+        current={{
+          label: 'Current analogue',
+          color: '#22d3ee',
+          values: radarValues(current),
+        }}
+        other={{
+          label: 'Compared with',
+          color: '#fbbf24',
+          values: radarValues(other),
+        }}
+      />
+
       <div className="cmp-table">
         <div className="cmp-row cmp-head-row">
-          <span className="cmp-label">Metric</span>
+          <span className="cmp-label">Fact</span>
           <span className="cmp-value">Current</span>
           <span className="cmp-value">Comparison</span>
-          <span className="cmp-delta">Δ</span>
+          <span className="cmp-delta" aria-hidden="true" />
         </div>
-
-        <BarRow
-          label={`${TARGET_LABELS[target]} analog fit`}
-          a={fitFor(current, target)}
-          b={fitFor(other, target)}
-        />
-        <BarRow label="Moon fit" a={fitFor(current, 'moon')} b={fitFor(other, 'moon')} />
-        <BarRow label="Mars fit" a={fitFor(current, 'mars')} b={fitFor(other, 'mars')} />
-        <BarRow label="Model confidence" a={current.confidence} b={other.confidence} />
-
-        {FACTOR_ORDER.map((key) => (
-          <BarRow key={key} label={FACTOR_LABELS[key]} a={a[key]} b={b[key]} />
-        ))}
 
         <Row label="Terrain" a={terrainLabel(current)} b={terrainLabel(other)} />
         <Row label="Region" a={current.region ?? '—'} b={other.region ?? '—'} />
