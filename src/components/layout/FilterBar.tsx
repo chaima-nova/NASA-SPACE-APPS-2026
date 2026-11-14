@@ -1,4 +1,5 @@
 import type { TerrainType } from '../../data-contracts/types';
+import { RADIUS_OPTIONS, type Origin } from '../../lib/geo';
 import { formatScore, TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
 
 interface FilterBarProps {
@@ -12,6 +13,11 @@ interface FilterBarProps {
   meanFit: number;
   strong: number;
   datasetCount: number;
+  /** Where distances are measured from, or null while the facet is off. */
+  origin: Origin | null;
+  radiusKm: number;
+  onRadius: (radiusKm: number) => void;
+  onOpenDistance: () => void;
 }
 
 /**
@@ -30,7 +36,16 @@ export function FilterBar({
   meanFit,
   strong,
   datasetCount,
+  origin,
+  radiusKm,
+  onRadius,
+  onOpenDistance,
 }: FilterBarProps) {
+  // The full display name is a paragraph; the chip only needs the head of it.
+  const originLabel = origin
+    ? origin.label.split(',')[0].slice(0, 22) +
+      (origin.label.split(',')[0].length > 22 ? '…' : '')
+    : null;
   return (
     <div className="filterbar">
       <div className="facet-group">
@@ -78,6 +93,34 @@ export function FilterBar({
               <span className="chip-count">{counts[type] ?? 0}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="facet-group">
+        <span className="facet-label">Distance</span>
+        <div className="distance-control">
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={origin !== null}
+            onClick={onOpenDistance}
+          >
+            {originLabel ? 'From ' + originLabel : 'Distance from me'}
+          </button>
+          {origin ? (
+            <select
+              className="distance-range"
+              value={radiusKm}
+              aria-label="Maximum distance from the chosen origin"
+              onChange={(event) => onRadius(Number(event.target.value))}
+            >
+              {RADIUS_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  within {option.toLocaleString('en-US')} km
+                </option>
+              ))}
+            </select>
+          ) : null}
         </div>
       </div>
 

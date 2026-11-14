@@ -6,7 +6,13 @@
  * the shell working against older `Prediction` payloads from the backend.
  */
 
-import type { DataSource, Prediction, ReportedSite, TerrainType } from '../data-contracts/types';
+import type {
+  DataSource,
+  Prediction,
+  ReportedSite,
+  TargetSite,
+  TerrainType,
+} from '../data-contracts/types';
 import type { Table } from './export';
 
 /**
@@ -75,6 +81,15 @@ export function terrainOf(prediction: Pick<Prediction, 'terrainType'>): TerrainT
 export function terrainLabel(site: Pick<Prediction, 'terrainType'>): string {
   const terrain = terrainOf(site);
   return terrain ? TERRAIN_LABELS[terrain] : 'Unclassified';
+}
+
+/**
+ * Where this site lands on the chosen target body, or null when the payload
+ * predates the crosswalk. Callers hide the marker rather than inventing a
+ * coordinate, for the same reason an unscored report gets no analog fit.
+ */
+export function targetSiteOf(prediction: Prediction, target: Target): TargetSite | null {
+  return prediction.targetSites?.[target] ?? null;
 }
 
 /** Score used for ranking and colouring, given the active comparison target. */

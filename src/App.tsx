@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
+import { DistanceFilter } from './components/layout/DistanceFilter';
 import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
 import { HomePage } from './components/layout/HomePage';
@@ -44,13 +45,15 @@ import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
 import { scoreColor } from './lib/colors';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
+import { siteReport } from './lib/siteReport';
+import { distanceKm as distanceBetween, type Origin } from './lib/geo';
 import { imageryWindow, latestImageryDate } from './lib/earthImagery';
 import {
   fitFor,
   formatCoords,
   formatScore,
   siteRefOf,
-  siteTable,
+  targetSiteOf,
   TARGET_LABELS,
   TERRAIN_LABELS,
   terrainLabel,
@@ -103,6 +106,11 @@ export default function App() {
     return known.includes(value as TerrainType) ? (value as TerrainType) : 'all';
   });
   const [sort, setSort] = useState<SortKey>('fit');
+  /** Where "distance from me" is measured from, once the reader has picked it. */
+  const [origin, setOrigin] = useState<Origin | null>(null);
+  /** Radius of the distance filter, in kilometres. */
+  const [radiusKm, setRadiusKm] = useState(5000);
+  const [distanceOpen, setDistanceOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
   const [copied, setCopied] = useState(false);
@@ -188,7 +196,14 @@ export default function App() {
         (p) =>
           !needle || fold(p.siteName).includes(needle) || fold(p.region ?? '').includes(needle),
       )
-      .map((prediction) => ({ prediction, fit: fitFor(prediction, target) }));
+      // The distance facet is a hard cut, not a re-rank: a site outside the
+      // radius is not "further down the list", it is out of scope for this pass.
+      .filter((p) => !origin || distanceBetween(origin, p) <= radiusKm)
+      .map((prediction) => ({
+        prediction,
+        fit: fitFor(prediction, target),
+        distanceKm: origin ? distanceBetween(origin, prediction) : undefined,
+      }));
 
     const byFit = (t: Target) => (a: RankedItem, b: RankedItem) =>
       fitFor(b.prediction, t) - fitFor(a.prediction, t);
@@ -201,7 +216,7 @@ export default function App() {
     };
 
     return items.sort(sorters[sort]);
-  }, [predictions, terrain, query, sort, target]);
+  }, [predictions, terrain, query, sort, target, origin, radiusKm]);
 
   // Reported sites share the selection with model predictions: exactly one of
   // these two is ever non-null.
@@ -225,6 +240,23 @@ export default function App() {
   const selectedRank = selected
     ? ranked.findIndex((item) => item.prediction.id === selected.id) + 1
     : null;
+  /**
+   * Where the selected site lands on each target body. Memoised so the reference
+   * globe only moves when the selection actually changes.
+   */
+  const moonReference = useMemo(
+    () => (selected ? targetSiteOf(selected, 'moon') : null),
+    [selected],
+  );
+  const marsReference = useMemo(
+    () => (selected ? targetSiteOf(selected, 'mars') : null),
+    [selected],
+  );
+  /** The single-site analysis the export dialog writes. */
+  const exportReport = useMemo(
+    () => (selected ? siteReport(selected, target) : null),
+    [selected, target],
+  );
 
   /**
    * What blind mode says when the selection moves. For a reader who cannot see
@@ -597,6 +629,10 @@ export default function App() {
         meanFit={stats.meanFit}
         strong={stats.strong}
         datasetCount={datasets.length}
+        origin={origin}
+        radiusKm={radiusKm}
+        onRadius={setRadiusKm}
+        onOpenDistance={() => setDistanceOpen(true)}
       />
 
       {error ? <p className="error">⚠ {error}</p> : null}
@@ -911,9 +947,13 @@ export default function App() {
               }
             >
               {target === 'moon' ? (
-                <MoonMap predictions={NO_PREDICTIONS} showMarkers={false} />
+                <MoonMap
+                  predictions={NO_PREDICTIONS}
+                  showMarkers={false}
+                  highlight={moonReference}
+                />
               ) : (
-                <MarsMap />
+                <MarsMap highlight={marsReference} />
               )}
             </Panel>
             <Panel
@@ -946,17 +986,23 @@ export default function App() {
         />
       ) : null}
 
-      {exportOpen ? (
+      {distanceOpen ? (
+        <DistanceFilter
+          origin={origin}
+          onPick={setOrigin}
+          onClear={() => setOrigin(null)}
+          onClose={() => setDistanceOpen(false)}
+        />
+      ) : null}
+
+      {exportOpen && exportReport ? (
         <ExportDialog
-          title={`Analog sites · ${TARGET_LABELS[target]}`}
-          filename={`analog-sites-${target}`}
-          subtitle={`${ranked.length} site${ranked.length === 1 ? '' : 's'} as ranked now, best ${
-            TARGET_LABELS[target]
-          } fit first.`}
-          table={siteTable(
-            ranked.map((item) => item.prediction),
-            target,
-          )}
+          title={exportReport.title}
+          filename={exportReport.filename}
+          sheet={`${TARGET_LABELS[target]} analysis`}
+          subtitle={exportReport.subtitle}
+          table={exportReport.table}
+          html={exportReport.html}
           onClose={() => setExportOpen(false)}
         />
       ) : null}
