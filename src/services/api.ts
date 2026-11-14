@@ -27,6 +27,7 @@ import {
   mockOrbitalObjects,
   mockPredictions,
 } from '../data-contracts/mock';
+import { pipelineDatasets } from './pipeline';
 import type {
   CommunityState,
   DataSource,
@@ -66,8 +67,16 @@ export function getPredictions(): Promise<Prediction[]> {
   return fetchJson<Prediction[]>('/predictions', mockPredictions);
 }
 
+/**
+ * The catalogue the pipeline publishes in `docs/dataset_catalog.csv`, read at
+ * build time. The fixtures stay as the fallback for a checkout without the
+ * catalog, so the sources panel is never empty.
+ */
 export function getDatasets(): Promise<DataSource[]> {
-  return fetchJson<DataSource[]>('/datasets', mockDatasets);
+  return fetchJson<DataSource[]>(
+    '/datasets',
+    pipelineDatasets.length > 0 ? pipelineDatasets : mockDatasets,
+  );
 }
 
 export function getOrbitalObjects(): Promise<OrbitalObject[]> {
