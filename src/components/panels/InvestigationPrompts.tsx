@@ -73,15 +73,23 @@ const candidateResolution = engineComparisons[0]
  * confidence a single score invites.
  */
 const atacama = earth
-  ? `${earth.slopeMeanDeg.toFixed(2)}° mean slope, ${earth.slopeMaxDeg.toFixed(
+  ? `${earth.slopeMeanDeg.toFixed(2)}° mean slope (range ${earth.slopeMinDeg.toFixed(
       2,
-    )}° steepest cell and ${earth.roughnessMeanM.toFixed(1)} m TRI roughness, at ${candidateResolution}`
+    )}–${earth.slopeMaxDeg.toFixed(2)}°) and ${earth.roughnessMeanM.toFixed(
+      1,
+    )} m TRI roughness (range ${earth.roughnessMinM.toFixed(1)}–${earth.roughnessMaxM.toFixed(
+      1,
+    )} m) over ${earth.rows.toLocaleString('en-US')} cells at ${candidateResolution}`
   : 'slope and roughness the pipeline has not published for this site';
 
 const jezero = mars
-  ? `${mars.slopeMeanDeg.toFixed(2)}° mean slope and ${mars.roughnessMeanM.toFixed(
+  ? `${mars.slopeMeanDeg.toFixed(2)}° mean slope (range ${mars.slopeMinDeg.toFixed(
+      2,
+    )}–${mars.slopeMaxDeg.toFixed(2)}°) and ${mars.roughnessMeanM.toFixed(
       1,
-    )} m TRI roughness at ${targetResolution('mars')}`
+    )} m TRI roughness (range ${mars.roughnessMinM.toFixed(1)}–${mars.roughnessMaxM.toFixed(
+      1,
+    )} m) at ${targetResolution('mars')}`
   : 'slope and roughness the pipeline has not published for Jezero';
 
 /** Every dimension check the reports still call INSUFFICIENT_EVIDENCE. */
@@ -123,7 +131,7 @@ const TRACKS: Track[] = [
       },
       {
         question: 'How much of the ground is rough enough to cost wheel slip, and can a route avoid it?',
-        evidence: `TRI roughness is the closest mobility proxy the pipeline carries: ${earth ? `${earth.roughnessMeanM.toFixed(1)} m mean over ${earth.rows.toLocaleString('en-US')} cells` : 'no value for this build'} on Earth against ${mars ? `${mars.roughnessMeanM.toFixed(1)} m` : 'an unpublished figure'} on Mars. At ${targetResolution('mars')} the Mars figure measures the pixel as much as the ground.`,
+        evidence: `TRI roughness is the closest mobility proxy the pipeline carries: ${earth ? `${earth.roughnessMeanM.toFixed(1)} m mean (range ${earth.roughnessMinM.toFixed(1)}–${earth.roughnessMaxM.toFixed(1)} m) over ${earth.rows.toLocaleString('en-US')} cells` : 'no value for this build'} on Earth against ${mars ? `${mars.roughnessMeanM.toFixed(1)} m (range ${mars.roughnessMinM.toFixed(1)}–${mars.roughnessMaxM.toFixed(1)} m)` : 'an unpublished figure'} on Mars. At ${targetResolution('mars')} the Mars figure measures the pixel as much as the ground.`,
       },
       {
         question: 'What can only be measured on foot: bearing strength, embedded rock, slope at wheel scale?',

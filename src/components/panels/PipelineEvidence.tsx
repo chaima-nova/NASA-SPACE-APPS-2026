@@ -71,15 +71,15 @@ export function PipelineEvidence() {
       ))}
 
       <table className="pipeline-terrain">
-        <caption>Measured samples from the pipeline</caption>
+        <caption>Measured samples from the pipeline, with their spread</caption>
         <thead>
           <tr>
             <th scope="col">Body</th>
             <th scope="col">Region</th>
             <th scope="col">Rows</th>
-            <th scope="col">Mean elevation</th>
-            <th scope="col">Mean slope</th>
-            <th scope="col">Mean roughness</th>
+            <th scope="col">Elevation</th>
+            <th scope="col">Slope</th>
+            <th scope="col">Roughness</th>
           </tr>
         </thead>
         <tbody>
@@ -88,13 +88,34 @@ export function PipelineEvidence() {
               <td>{PLANET_LABELS[sample.planet] ?? sample.planet}</td>
               <td>{sample.region}</td>
               <td>{sample.rows.toLocaleString('en-US')}</td>
-              <td>{Math.round(sample.elevationMeanM).toLocaleString('en-US')} m</td>
-              <td>{sample.slopeMeanDeg.toFixed(2)}°</td>
-              <td>{sample.roughnessMeanM.toFixed(1)} m</td>
+              <td>
+                {Math.round(sample.elevationMeanM).toLocaleString('en-US')} m
+                {sample.elevationStdM === undefined
+                  ? null
+                  : ` ± ${Math.round(sample.elevationStdM).toLocaleString('en-US')}`}
+              </td>
+              <td>
+                {sample.slopeMeanDeg.toFixed(2)}°
+                <span className="pipeline-range">
+                  ({sample.slopeMinDeg.toFixed(2)}–{sample.slopeMaxDeg.toFixed(2)}°)
+                </span>
+              </td>
+              <td>
+                {sample.roughnessMeanM.toFixed(1)} m
+                <span className="pipeline-range">
+                  ({sample.roughnessMinM.toFixed(1)}–{sample.roughnessMaxM.toFixed(1)})
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <p className="pipeline-note">
+        ± is one sample standard deviation. The pipeline publishes no standard deviation for slope
+        or roughness, so those cells carry the measured minimum–maximum rather than a fabricated
+        error. Row counts are the cells each statistic was computed over.
+      </p>
     </div>
   );
 }
