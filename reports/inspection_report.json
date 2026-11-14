@@ -1,0 +1,83 @@
+[
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\earth\\srtm_gl1\\S24W069.hgt",
+    "type": "SRTM/NASADEM HGT binary",
+    "size_mb": 24.73,
+    "rows": 3601,
+    "cols": 3601,
+    "resolution_deg": 0.0002777777777777778,
+    "bbox": [
+      -69.0,
+      -24.0,
+      -68.0,
+      -23.0
+    ],
+    "shape": [
+      3601,
+      3601
+    ],
+    "valid_pixels": 12967201,
+    "nodata_pixels": 0,
+    "min_m": 2201.0,
+    "max_m": 4282.0,
+    "mean_m": 2629.61
+  },
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\earth\\srtm_gl1\\S24W069.hgt.gz",
+    "type": ".gz",
+    "size_mb": 9.95,
+    "notes": "Format not auto-inspected"
+  },
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\mars\\mola_meg128\\megt90n000cb.img",
+    "type": "PDS3 IMG binary",
+    "size_mb": 1.98,
+    "rows": "720",
+    "cols": "1440",
+    "sample_bits": "16",
+    "sample_type": "MSB_INTEGER",
+    "scaling_factor": "1.0",
+    "offset": "0.0",
+    "shape": [
+      720,
+      1440
+    ],
+    "valid_pixels": 1036800,
+    "nodata_pixels": 0,
+    "min_m": -8068.0,
+    "max_m": 21134.0,
+    "mean_m": -721.74
+  },
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\mars\\mola_meg128\\megt90n000cb.lbl",
+    "type": "PDS3 label",
+    "size_bytes": 4796,
+    "preview": "PDS_VERSION_ID                = PDS3\nRECORD_TYPE                   = FIXED_LENGTH\nFILE_RECORDS                  = 720\nRECORD_BYTES                  = 2880\n^IMAGE                        = \"MEGT90N000CB.IMG\"\nDATA_SET_ID                   = \"MGS-M-MOLA-5-MEGDR-L3-V1.0\"\nPRODUCT_ID                    = \"MEGT90N000CB.IMG\"\nSPACECRAFT_NAME               = \"MARS GLOBAL SURVEYOR\"\nINSTRUMENT_ID                 = MOLA\nINSTRUMENT_NAME               = \"MARS ORBITER LASER ALTIMETER\"\nTARGET_NAME                "
+  },
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\moon\\lola_64ppd\\ldem_4.img",
+    "type": "PDS3 IMG binary",
+    "size_mb": 1.98,
+    "rows": "720",
+    "cols": "1440",
+    "sample_bits": "16",
+    "sample_type": "LSB_INTEGER",
+    "scaling_factor": "0.5",
+    "offset": "1737400.",
+    "shape": [
+      720,
+      1440
+    ],
+    "valid_pixels": 1036800,
+    "nodata_pixels": 0,
+    "min_m": -8878.5,
+    "max_m": 10504.0,
+    "mean_m": -519.69
+  },
+  {
+    "file": "F:\\Sem5\\nasa\\data\\raw\\moon\\lola_64ppd\\ldem_4.lbl",
+    "type": "PDS3 label",
+    "size_bytes": 5107,
+    "preview": "PDS_VERSION_ID            = \"PDS3\"\n\n/*** GENERAL DATA DESCRIPTION PARAMETERS ***/\nPRODUCT_VERSION_ID        = \"V3.0\"\nDATA_SET_ID               = \"LRO-L-LOLA-4-GDR-V1.0\"\nPRODUCT_ID                = \"LDEM_4\"\nINSTRUMENT_HOST_NAME      = \"LUNAR RECONNAISSANCE ORBITER\"\nINSTRUMENT_NAME           = \"LUNAR ORBITER LASER ALTIMETER\"\nINSTRUMENT_ID             = \"LOLA\"\nMISSION_PHASE_NAME        = {\"COMMISSIONING\",\"NOMINAL MISSION\",\"SCIENCE\n                            MISSION\",\"EXTENDED SCIENCE MISSION\",\n   "
+  }
+]

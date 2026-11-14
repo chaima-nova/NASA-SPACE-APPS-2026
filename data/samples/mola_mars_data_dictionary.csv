@@ -1,0 +1,8 @@
+field_name,description,units,dtype,valid_range,nodata_value,source,notes
+latitude,Pixel centre latitude,degrees areographic (north positive),float64,"[-90, 90]",NaN,MOLA MEGaDR,
+longitude,Pixel centre longitude,degrees areographic (east positive 0-360),float64,"[0, 360]",NaN,MOLA MEGaDR,
+elevation_m,Elevation above Mars areoid (MOLA gravitational datum),meters,float32,"[-8200, 21500]",NaN,MOLA MEGaDR,
+slope_deg,Terrain slope in degrees (central difference),degrees,float32,"[0, 90]",NaN,Derived,
+roughness_tri_m,Terrain Ruggedness Index (3x3 kernel),meters,float32,"[0, 5000]",NaN,Derived,
+planet,Planetary body identifier,text,str,,,,
+datum,Vertical reference surface (areoid),text,str,,,,

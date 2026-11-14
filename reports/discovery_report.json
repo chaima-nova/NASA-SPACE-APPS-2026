@@ -1,0 +1,113 @@
+{
+  "total_datasets": 9,
+  "reachable_public": 3,
+  "reachable_auth_required": 0,
+  "api_reachable": 1,
+  "disabled": 2,
+  "errors": 1,
+  "datasets": [
+    {
+      "id": "srtm_gl1",
+      "name": "SRTM Global 1 Arc-Second DEM (GL1)",
+      "planet": "earth",
+      "endpoint": "https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/",
+      "auth_required": true,
+      "accessible": false,
+      "status_code": 404,
+      "content_length": null,
+      "error": null,
+      "status": "not_found",
+      "note": "HTTP 404 \u2013 URL may have changed"
+    },
+    {
+      "id": "modis_lst_terra",
+      "name": "MODIS/Terra Land Surface Temperature (MOD11A2 v061)",
+      "planet": "earth",
+      "endpoint": "https://opendap.cr.usgs.gov/opendap/hyrax/MOD11A2.061/",
+      "auth_required": true,
+      "accessible": false,
+      "status_code": null,
+      "content_length": null,
+      "error": "HTTPSConnectionPool(host='opendap.cr.usgs.gov', port=443): Max retries exceeded with url: /opendap/hyrax/MOD11A2.061/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x00000194F8FAA270>, 'Connection to opendap.cr.usgs.gov timed out. (connect timeout=15)'))",
+      "status": "connection_error"
+    },
+    {
+      "id": "modis_lc_mcd12q1",
+      "name": "MODIS Land Cover Type (MCD12Q1 v061)",
+      "planet": "earth",
+      "endpoint": "https://e4ftl01.cr.usgs.gov/MOTA/MCD12Q1.061/",
+      "auth_required": true,
+      "accessible": false,
+      "status_code": 404,
+      "content_length": null,
+      "error": null,
+      "status": "not_found",
+      "note": "HTTP 404 \u2013 URL may have changed"
+    },
+    {
+      "id": "mola_meg128",
+      "name": "MOLA MEGaDR Global Topography 128ppd",
+      "planet": "mars",
+      "endpoint": "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg128/",
+      "auth_required": false,
+      "accessible": true,
+      "status_code": 200,
+      "content_length": "12896",
+      "error": null,
+      "status": "reachable_public"
+    },
+    {
+      "id": "mcs_temperature",
+      "name": "MCS Mars Climate Sounder Temperature Profiles (MRO MCS DDR)",
+      "planet": "mars",
+      "status": "disabled",
+      "accessible": null,
+      "note": "Dataset disabled in config/datasets.json"
+    },
+    {
+      "id": "lola_1024ppd",
+      "name": "LOLA Global Lunar DEM (1024 ppd)",
+      "planet": "moon",
+      "endpoint": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/",
+      "auth_required": false,
+      "accessible": true,
+      "status_code": 200,
+      "content_length": null,
+      "error": null,
+      "status": "reachable_public"
+    },
+    {
+      "id": "lola_64ppd",
+      "name": "LOLA Global Lunar DEM (64 ppd \u2013 compact version)",
+      "planet": "moon",
+      "endpoint": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_64.IMG",
+      "auth_required": false,
+      "accessible": true,
+      "status_code": 200,
+      "content_length": "530841600",
+      "error": null,
+      "status": "reachable_public"
+    },
+    {
+      "id": "mars_ctx_mosaic",
+      "name": "Mars CTX Mosaic (Murray Lab / Caltech)",
+      "planet": "mars",
+      "status": "disabled",
+      "accessible": null,
+      "note": "Dataset disabled in config/datasets.json"
+    },
+    {
+      "id": "nasa_api_apod",
+      "name": "NASA APOD (Astronomy Picture of the Day) API",
+      "planet": "generic",
+      "endpoint": "https://api.nasa.gov/planetary/apod",
+      "auth_required": true,
+      "accessible": true,
+      "status_code": null,
+      "content_length": null,
+      "error": null,
+      "status": "api_reachable",
+      "note": "NASA API key: DEMO_KEY... APOD title: NASA Science"
+    }
+  ]
+}

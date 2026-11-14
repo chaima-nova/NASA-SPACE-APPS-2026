@@ -1,0 +1,94 @@
+[
+  {
+    "dataset_id": "srtm_gl1",
+    "status": "success",
+    "output": "F:\\Sem5\\nasa\\data\\interim\\earth\\s24w069_elevation_m.tif",
+    "shape": [
+      3601,
+      3601
+    ],
+    "crs": "EPSG:4326",
+    "elevation_range_m": [
+      2201.0,
+      4282.0
+    ]
+  },
+  {
+    "dataset_id": "lola_64ppd",
+    "status": "success",
+    "output": "F:\\Sem5\\nasa\\data\\interim\\moon\\ldem_4_elevation_m.tif",
+    "shape": [
+      720,
+      1440
+    ],
+    "crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",1737400,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+    "report": {
+      "dataset_id": "lola_64ppd",
+      "steps": [
+        {
+          "step": "read_pds3",
+          "detail": "F:\\Sem5\\nasa\\data\\raw\\moon\\lola_64ppd\\ldem_4.img"
+        },
+        {
+          "step": "shape",
+          "detail": [
+            720,
+            1440
+          ]
+        },
+        {
+          "step": "value_range_m",
+          "detail": [
+            -8878.5,
+            10504.0
+          ]
+        },
+        {
+          "step": "nodata_pixels",
+          "detail": 0
+        },
+        {
+          "step": "geotiff_written",
+          "detail": "F:\\Sem5\\nasa\\data\\interim\\moon\\ldem_4_elevation_m.tif"
+        }
+      ]
+    }
+  },
+  {
+    "dataset_id": "mola_meg128",
+    "status": "success",
+    "output": "F:\\Sem5\\nasa\\data\\interim\\mars\\megt90n000cb_elevation_m.tif",
+    "shape": [
+      720,
+      1440
+    ],
+    "crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396190,169.894447223612]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+    "report": {
+      "dataset_id": "mola_meg128",
+      "steps": [
+        {
+          "step": "read_pds3",
+          "detail": "F:\\Sem5\\nasa\\data\\raw\\mars\\mola_meg128\\megt90n000cb.img"
+        },
+        {
+          "step": "shape",
+          "detail": [
+            720,
+            1440
+          ]
+        },
+        {
+          "step": "value_range_m",
+          "detail": [
+            -8068.0,
+            21134.0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "dataset_id": "nasa_api_apod",
+    "status": "skipped_missing_input"
+  }
+]

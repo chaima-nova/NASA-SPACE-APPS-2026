@@ -1,0 +1,32 @@
+{
+  "dataset_id": "lola_gdr",
+  "planet": "moon",
+  "product_file": "ldem_4.img",
+  "region": "Lunar South Pole",
+  "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
+  "bbox": [
+    0.0,
+    -90.0,
+    360.0,
+    -80.0
+  ],
+  "grid_resolution_deg": 0.25,
+  "elevation_m": {
+    "min": -6439.0,
+    "max": 6846.0,
+    "mean": -1234.5,
+    "std": 1832.0
+  },
+  "slope_deg": {
+    "min": 0.02,
+    "max": 46.68,
+    "mean": 6.87
+  },
+  "roughness_tri_m": {
+    "min": 5.57,
+    "max": 6945.45,
+    "mean": 1482.93
+  },
+  "sample_rows": 25000,
+  "source_citation": "Smith et al. (2010). Initial observations from the Lunar Orbiter Laser Altimeter (LOLA). GRL."
+}
