@@ -1,0 +1,71 @@
+{
+  "_note": "TerraNexus 6-class geological crosswalk. Built from USGS map group names (Fortezzo 2020, Tanaka 2014) and literature. Confidence: low-moderate (draft). Must be verified against full unit descriptions before production use.",
+  "crosswalk_version": "1.0-draft",
+  "classes": [
+    {
+      "class_id": "volcanic",
+      "label": "Volcanic",
+      "moon_groups": ["Volcanic materials", "Mare basalt", "Pyroclastic deposits"],
+      "mars_groups": ["Volcanic units", "Amazonian volcanic", "Noachian volcanic"],
+      "earth_types": ["Basaltic lava plain", "Volcanic plateau", "Ignimbrite", "Pyroclastic flow deposit", "Lava field"]
+    },
+    {
+      "class_id": "impact_related",
+      "label": "Impact-related",
+      "moon_groups": ["Materials of craters", "Basin materials", "Imbrium Formation", "Orientale Formation"],
+      "mars_groups": ["Impact units", "Impact crater materials"],
+      "earth_types": ["Impact breccia", "Suevite", "Impact melt", "Shatter cone terrain"]
+    },
+    {
+      "class_id": "ancient_highland_crust",
+      "label": "Ancient highland crust",
+      "moon_groups": ["Terra materials", "Highland plains", "Undivided ancient highland"],
+      "mars_groups": ["Highland units", "Noachian highland", "Ancient cratered terrain"],
+      "earth_types": ["Precambrian crystalline basement", "Deformed metamorphic terrain", "Ancient shield terrain"]
+    },
+    {
+      "class_id": "plains_and_lowlands",
+      "label": "Plains and lowlands",
+      "moon_groups": ["Plains materials", "Light plains", "Dark plains"],
+      "mars_groups": ["Lowland and basin units", "Hesperian lowland plain", "Amazonian lowland"],
+      "earth_types": ["Flat sedimentary plain", "Alluvial fan", "Playa lake", "Hyper-arid desert flat", "Lacustrine sediment"]
+    },
+    {
+      "class_id": "apron_and_transition",
+      "label": "Apron and transition deposits",
+      "moon_groups": [],
+      "mars_groups": ["Apron and transition units", "Lobate debris apron", "Lineated valley fill"],
+      "earth_types": ["Talus slope", "Rock glacier", "Debris fan", "Colluvial apron", "Periglacial slope deposit"]
+    },
+    {
+      "class_id": "polar_and_ice",
+      "label": "Polar and ice-related",
+      "moon_groups": [],
+      "mars_groups": ["Polar units", "Planum boreum", "Planum australe", "Polar layered deposits"],
+      "earth_types": ["Glacial terrain", "Permafrost", "Arctic gravel plain", "Polar ice sheet margin", "Frozen lake bed"]
+    }
+  ],
+  "region_assignments": {
+    "earth_atacama_s24w069": {
+      "primary_class": "plains_and_lowlands",
+      "secondary_class": "volcanic",
+      "description": "Hyper-arid high plateau with ignimbrite volcanic plateau, alluvial fans, and salt flats (salares). Atacama: Rech et al. 2010; Evenstar et al. 2017.",
+      "landforms": ["Volcanic plateau (puna)", "Alluvial fan", "Playa / salar", "Canyon scarp", "Desert pavement"],
+      "confidence": "moderate"
+    },
+    "moon_south_pole_lola": {
+      "primary_class": "ancient_highland_crust",
+      "secondary_class": "impact_related",
+      "description": "Lunar South Pole region dominated by ancient highland anorthosite, overlaid by extensive impact basin ejecta and permanently shadowed crater floors. USGS Unified Geologic Map of the Moon (Fortezzo et al. 2020).",
+      "landforms": ["Polar crater rim", "Permanently shadowed region (PSR)", "Impact basin floor", "Highland massif"],
+      "confidence": "moderate"
+    },
+    "mars_jezero_mola": {
+      "primary_class": "plains_and_lowlands",
+      "secondary_class": "ancient_highland_crust",
+      "description": "Jezero Crater: ancient lacustrine delta deposit in a Noachian impact basin. Surrounded by highland volcanic basalt. USGS Geologic Map of Mars (Tanaka et al. 2014); Farley et al. 2022 (Perseverance).",
+      "landforms": ["Ancient river delta", "Crater floor", "Impact rim escarpment", "Basaltic volcanic terrain"],
+      "confidence": "moderate"
+    }
+  }
+}

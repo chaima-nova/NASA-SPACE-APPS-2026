@@ -1,0 +1,259 @@
+{
+  "candidate_id": "earth_atacama_s24w069",
+  "engine_version": "1.0.0",
+  "framework": "TERRANEXUS",
+  "location": {
+    "name": "Atacama Desert (Chile)",
+    "coordinates": [
+      -23.5,
+      -68.5
+    ],
+    "bbox": [
+      -69.0,
+      -24.0,
+      -68.0,
+      -23.0
+    ],
+    "analyzed_region": "Atacama Desert (Chile)",
+    "source_dataset": "srtm_gl1",
+    "native_resolution_m": 180.0
+  },
+  "planetary_context": {
+    "target_body": "moon",
+    "target_region": "Lunar South Pole",
+    "target_bbox": [
+      -45.0,
+      -90.0,
+      45.0,
+      -80.0
+    ],
+    "target_source_dataset": "lola_gdr",
+    "target_native_resolution_m": 7580.0,
+    "target_grid_shape": [
+      40,
+      360
+    ]
+  },
+  "dimensions": {
+    "terrain_topography": {
+      "status": "DIFFERENT",
+      "similarities": [],
+      "mismatches": [
+        {
+          "parameter": "local_relief",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions overlap only 0.0% (below 40% threshold). Candidate median 17.0 m is 1054.5 m lower than target median 1071.5 m.",
+          "candidate_stats": {
+            "count": 361201,
+            "p10": 3.0,
+            "p25": 5.0,
+            "p50": 17.0,
+            "p75": 34.0,
+            "p90": 62.0,
+            "mean": 26.083,
+            "std": 30.174,
+            "unit": "m",
+            "source": "Windowed Δh (3×3 px, 180 m/px)"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 349.5,
+            "p25": 606.5,
+            "p50": 1071.5,
+            "p75": 1906.0,
+            "p90": 2765.5,
+            "mean": 1354.307,
+            "std": 980.872,
+            "unit": "m",
+            "source": "Windowed Δh (3×3 px, 7580 m/px)"
+          },
+          "overlap_pct": 0.0,
+          "wasserstein": 1332.056,
+          "direction_note": "Distributions overlap only 0.0% (below 40% threshold). Candidate median 17.0 m is 1054.5 m lower than target median 1071.5 m."
+        },
+        {
+          "parameter": "slope_deg",
+          "state": "DIFFERENT",
+          "evidence_type": "model_derived",
+          "summary": "Distributions overlap only 31.9% (below 40% threshold). Candidate median 2.028 ° is 5.51 ° lower than target median 7.541 °.",
+          "candidate_stats": {
+            "count": 361201,
+            "p10": 0.229,
+            "p25": 0.529,
+            "p50": 2.028,
+            "p75": 4.039,
+            "p90": 7.379,
+            "mean": 3.12,
+            "std": 3.763,
+            "unit": "°",
+            "source": "Pre-computed by terrain.py at 180 m/px"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 1.953,
+            "p25": 3.867,
+            "p50": 7.541,
+            "p75": 12.133,
+            "p90": 17.22,
+            "mean": 8.909,
+            "std": 6.942,
+            "unit": "°",
+            "source": "Pre-computed by terrain.py at 7.6 km/px"
+          },
+          "overlap_pct": 31.9,
+          "wasserstein": 5.805,
+          "direction_note": "Distributions overlap only 31.9% (below 40% threshold). Candidate median 2.028 ° is 5.51 ° lower than target median 7.541 °."
+        },
+        {
+          "parameter": "surface_roughness_tri",
+          "state": "DIFFERENT",
+          "evidence_type": "model_derived",
+          "summary": "TRI roughness cannot be validly compared across resolution scales. Candidate TRI median 17.4 m at 180 m/px; Target TRI median 1464 m. Difference reflects pixel footprint, not terrain truth. Common-baseline resampling required for a valid comparison.",
+          "candidate_stats": {
+            "count": 361201,
+            "p10": 3.606,
+            "p25": 6.245,
+            "p50": 17.378,
+            "p75": 34.044,
+            "p90": 65.46,
+            "mean": 27.435,
+            "std": 31.869,
+            "unit": "m",
+            "source": "TRI pre-computed at 180 m/px"
+          },
+          "detail": "Resolution-scale artefact — not a scientific terrain mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "parameter": "absolute_elevation",
+          "state": "NOT_COMPARABLE",
+          "evidence_type": "datum_incompatibility",
+          "summary": "Absolute elevations cannot be compared across planetary bodies.",
+          "detail": "Candidate datum: EGM96 geoid (mean sea level = 0 m). Target datum: Geometric sphere R = 1,737,400 m (not a gravity equipotential surface). MOLA total vertical uncertainty ≥ 3 m; LOLA ≤ 1 m."
+        }
+      ]
+    },
+    "surface_geology": {
+      "status": "DIFFERENT",
+      "similarities": [],
+      "mismatches": [
+        {
+          "parameter": "geological_units",
+          "state": "DIFFERENT",
+          "evidence_type": "qualitative_crosswalk",
+          "summary": "No shared geological class. Candidate primary: plains_and_lowlands (Hyper-arid high plateau with ignimbrite volcanic plateau, alluvial fans, and salt flats (salares). Atacama: Rech et al. 2010; Evenstar et al. 2017.). Target primary: ancient_highland_crust (Lunar South Pole region dominated by ancient highland anorthosite, overlaid by extensive impact basin ejecta and permanently shadowed crater floors. USGS Unified Geologic Map of the Moon (Fortezzo et al. 2020).).",
+          "detail": "Draft crosswalk built from USGS map group names only (Fortezzo et al. 2020; Tanaka et al. 2014). Confidence: moderate. Full unit descriptions not yet verified."
+        },
+        {
+          "parameter": "weathering_state",
+          "state": "DIFFERENT",
+          "evidence_type": "classification_based",
+          "summary": "Earth Atacama shows aeolian deflation and trace evaporite alteration (gypsum, halite). Target surface has no atmospheric weathering — only micrometeorite comminution (Moon) or aeolian perchlorate chemistry (Mars). Earth soil is weathered; target regolith is pristine or reactive."
+        }
+      ],
+      "evidence": [
+        {
+          "parameter": "surface_material_rock_abundance",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "sensor_missing",
+          "summary": "Rock abundance data not yet ingested for any body.",
+          "detail": "Moon: Diviner GDR Level 3 Rock Abundance (60°S–60°N, 32 ppd) not ingested. Mars: THEMIS thermal inertia not ingested. Earth: no rock abundance product confirmed."
+        },
+        {
+          "parameter": "mineralogical_indicators",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "sensor_missing",
+          "summary": "Mineralogical indicator data not yet ingested for any body.",
+          "detail": "Moon: Diviner Christiansen Feature position not ingested. Mars: TES mineral maps (4 ppd, ~16 km) not ingested. Earth: no spectral mineral product confirmed."
+        }
+      ]
+    },
+    "temperature_thermal": {
+      "status": "INSUFFICIENT_EVIDENCE",
+      "similarities": [],
+      "mismatches": [
+        {
+          "parameter": "atmospheric_thermal_physics",
+          "state": "NOT_COMPARABLE",
+          "evidence_type": "physics_incompatibility",
+          "summary": "Direct cross-body temperature comparison is NOT COMPARABLE: Earth has a 1,013 hPa convective atmosphere; Mars ~6 hPa CO₂; Moon is hard vacuum. Thermal physics, atmospheric buffering, and local solar time sampling differ fundamentally."
+        }
+      ],
+      "evidence": [
+        {
+          "parameter": "surface_temperature",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "sensor_missing",
+          "summary": "Surface temperature data not available for candidate or target.",
+          "detail": "Earth land surface temperature product (ECOSTRESS / MODIS MOD11A2) not yet ingested — requires NASA Earthdata credentials. LRO Diviner GDR Level 2 calibrated brightness temperatures not yet ingested into the pipeline."
+        },
+        {
+          "parameter": "day_night_thermal_amplitude",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "sensor_missing",
+          "summary": "Day/night temperature pair not available for candidate or target.",
+          "detail": "LRO Diviner GDR Level 2 calibrated brightness temperatures not yet ingested into the pipeline. Published sanity values: ~400 K at noon, <100 K at night near equator. Polar Diviner L2 products extend to 75°S."
+        },
+        {
+          "parameter": "thermal_inertia",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "sensor_missing",
+          "summary": "Thermal inertia data not yet ingested for any body.",
+          "detail": "Lunar thermal inertia map (Hayne et al. 2017, JGR Planets 122) not yet downloaded or ingested."
+        }
+      ]
+    }
+  },
+  "data_quality": {
+    "candidate_source": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics.",
+    "candidate_resolution_m": 180.0,
+    "candidate_grid_shape": [
+      601,
+      601
+    ],
+    "candidate_valid_pct": 100.0,
+    "target_source": "Smith et al. (2010). Initial observations from the Lunar Orbiter Laser Altimeter (LOLA). GRL.",
+    "target_resolution_m": 7580.0,
+    "target_grid_shape": [
+      40,
+      360
+    ],
+    "target_valid_pct": 100.0,
+    "common_baseline_applied": false,
+    "common_baseline_note": "No resampling performed. Resolution disparity documented in uncertainties.",
+    "slope_roughness_source": "Pre-computed by Abid T S terrain.py pipeline (commit ab3228f)"
+  },
+  "uncertainties": [
+    "Resolution disparity is the dominant uncertainty: candidate at 180 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+    "All thermal and mineralogical parameters are INSUFFICIENT_EVIDENCE — pending dataset ingestion.",
+    "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified."
+  ],
+  "limitations": [
+    {
+      "factor": "gravity",
+      "earth": "1.00 g (9.81 m/s²)",
+      "target": "0.166 g (1.62 m/s²)",
+      "impact": "Slope stability, avalanche dynamics, and rover traction differ fundamentally. Equal slope angles are NOT equally hazardous across bodies."
+    },
+    {
+      "factor": "atmospheric_pressure",
+      "earth": "1,013.25 hPa (N₂/O₂)",
+      "target": "~10⁻¹² hPa (hard vacuum)",
+      "impact": "No convective heat dissipation, no liquid water stability, no atmospheric pressure on suits or habitats."
+    },
+    {
+      "factor": "ionizing_radiation",
+      "earth": "Geomagnetically shielded",
+      "target": "Direct GCR and solar particle events (no magnetospheric shielding)",
+      "impact": "Surface habitats require regolith berming or sub-surface siting. No Earth analogue preparation addresses this."
+    },
+    {
+      "factor": "biological_and_chemical_weathering",
+      "earth": "Active microbial, hydro-chemical, and aeolian weathering",
+      "target": "Micrometeorite comminution only; no atmospheric weathering; glassy electrostatic agglutinates",
+      "impact": "Earth regolith contains organic binders. Target body regolith is mechanically abrasive or chemically hazardous."
+    }
+  ]
+}
