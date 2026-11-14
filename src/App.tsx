@@ -52,7 +52,11 @@ import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
 import { travelAccessOf, travelExport } from './lib/travel';
-import { imageryWindow, latestImageryDate } from './lib/earthImagery';
+import {
+  imageryWindow,
+  latestImageryDate,
+  newestAvailableImageryDate,
+} from './lib/earthImagery';
 import {
   fitFor,
   formatCoords,
@@ -84,9 +88,6 @@ const readParam = (key: string) =>
 
 /** Stable empty list for the marker-free Moon reference scene. */
 const NO_PREDICTIONS: Prediction[] = [];
-
-/** The pickable span of NASA imagery days (UTC), computed once per session. */
-const IMAGERY_WINDOW = imageryWindow();
 
 /**
  * Diacritic-insensitive fold, so "rio" matches "Río Tinto" and "mauna"
@@ -126,6 +127,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
   const [copied, setCopied] = useState(false);
   const [imageryDate, setImageryDate] = useState(() => latestImageryDate());
+  /** The pickable span, re-based once the archive's newest day is known. */
+  const [imageryWindowBounds, setImageryWindowBounds] = useState(() => imageryWindow());
   const [imagery, setImagery] = useState<ImageryState | null>(null);
   const [showClouds, setShowClouds] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(true);
@@ -173,6 +176,22 @@ export default function App() {
       }
     }
     void load();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // The VIIRS archive can lag the calendar, and a gap day paints the globe
+  // black while the caption claims success. Ask the archive which day it
+  // actually holds, once, then point the picker and the first cloud request at
+  // that day instead of at "yesterday".
+  useEffect(() => {
+    let alive = true;
+    void newestAvailableImageryDate().then((date) => {
+      if (!alive || !date) return;
+      setImageryDate(date);
+      setImageryWindowBounds(imageryWindow(new Date(), date));
+    });
     return () => {
       alive = false;
     };
@@ -825,8 +844,8 @@ export default function App() {
                     <input
                       type="date"
                       value={imageryDate}
-                      min={IMAGERY_WINDOW.min}
-                      max={IMAGERY_WINDOW.max}
+                      min={imageryWindowBounds.min}
+                      max={imageryWindowBounds.max}
                       onChange={(event) => {
                         const next = event.target.value;
                         if (!next || next === imageryDate) return;
