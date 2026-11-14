@@ -4475,41 +4475,10 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 /* Three focus areas, side by side under the hero copy. */
-.team-focus {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: clamp(26px, 4vw, 40px) 0 0;
-  padding: 18px 0 0;
-  border-top: 1px solid var(--line-2);
-  list-style: none;
-}
 
-.team-focus li {
-  padding: 0 clamp(14px, 2vw, 26px);
-  border-left: 1px solid var(--line-2);
-}
 
-.team-focus li:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
 
-.team-focus h3 {
-  margin: 0 0 5px;
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #fff;
-}
 
-.team-focus p {
-  margin: 0;
-  font-size: 0.74rem;
-  line-height: 1.55;
-  color: var(--ink-3);
-}
 
 .team-list {
   padding: clamp(36px, 5vw, 64px) 4px 0;
@@ -4672,15 +4641,8 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 @media (max-width: 900px) {
-  .team-focus {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .team-focus li,
-  .team-focus li:first-child {
-    padding: 0 0 0 12px;
-    border-left: 2px solid var(--line-2);
-  }
+
+
   .team-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
