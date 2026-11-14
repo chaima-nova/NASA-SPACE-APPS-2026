@@ -627,7 +627,7 @@ export default function App() {
             href={routeHref('team')}
             aria-current={route === 'team' ? 'page' : undefined}
           >
-            Our team
+            Our Team
           </a>
         </nav>
 

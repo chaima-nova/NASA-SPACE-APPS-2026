@@ -53,13 +53,38 @@ export function useRoute(): [Route, (route: Route) => void] {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  /**
+   * Every route change lands at the top of the new view.
+   *
+   * A plain `<a href="#/solution">` changes the route through the hash and
+   * never passes through `go`, so the old scroll offset survived the swap: click
+   * "Open the solution" from the foot of the landing page and the workbench
+   * opened already scrolled down. The reset therefore hangs off the route itself
+   * rather than off one navigation helper, and covers the hash links, the back
+   * button and a shared link alike.
+   *
+   * Both the document and the workbench's own scroll columns are reset: the
+   * solution route is a fixed shell whose ranked list, globe column and dossier
+   * scroll inside themselves, so zeroing the window alone would leave those
+   * where they were.
+   */
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    const page = document.scrollingElement ?? document.documentElement;
+    page.scrollTop = 0;
+    document
+      .querySelectorAll<HTMLElement>(
+        '.app, .layout, .shell, .globe-column, .list-scroll, .dossier-column, .evidence',
+      )
+      .forEach((node) => {
+        node.scrollTop = 0;
+      });
+  }, [route]);
+
   const go = useCallback((next: Route) => {
     const target = routeHref(next);
     if (window.location.hash === target) return;
     window.location.hash = target;
-    // New view, new page position: a shared link should not land halfway down
-    // the workbench.
-    window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   return [route, go];
