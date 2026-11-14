@@ -1102,6 +1102,7 @@ export default function App() {
           current={selected}
           options={ranked.map((item) => item.prediction)}
           target={target}
+          origin={origin}
           onClose={() => setCompareSitesOpen(false)}
         />
       ) : null}
