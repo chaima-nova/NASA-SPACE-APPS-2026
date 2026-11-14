@@ -1,0 +1,32 @@
+{
+  "name": "nasa-viz-shell",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Visualization/web shell (Jasmine's part) for the NASA Space Apps 2026 challenge \"Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars\": map + charts + 3D, mock-data driven and ready for real ML/data outputs.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "build:moon": "node scripts/build-moon-textures.mjs",
+    "verify:moon": "node scripts/verify-moon.mjs"
+  },
+  "dependencies": {
+    "maplibre-gl": "^5.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
+    "three": "^0.172.0"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.172.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "sharp": "^0.35.5",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
+  }
+}

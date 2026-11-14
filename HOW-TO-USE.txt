@@ -1,0 +1,618 @@
+EARTH ANALOGS - HOW TO USE
+Moon & Mars base-site discovery surface
+NASA International Space Apps Challenge 2026
+Last updated: 18 October 2026
+
+===============================================================================
+1. WHAT THIS IS
+===============================================================================
+
+A single screen that answers three questions:
+
+  * Which Earth sites are the best analogs for a permanent Moon base or a
+    Mars base?
+  * How good is each site, for each target, and why?
+  * Which NASA datasets produced those numbers?
+
+Everything runs in the browser. No backend is required: the app ships with
+13 sample sites and 10 real NASA dataset records. The badge in the top bar
+reads "Sample data" while that is true, and "Live API" when a backend is
+connected (see section 9).
+
+
+===============================================================================
+2. RUN IT
+===============================================================================
+
+Prerequisites: Node.js 18 or newer (tested on Node 24) and npm.
+
+  cd ~/OneDrive/Documents/VSCode/"NASA Space Apps 2026"
+
+  npm install          # first time only
+  npm run dev          # development server
+  open http://localhost:5173
+
+Production build:
+
+  npm run build        # typecheck + bundle into dist/
+  npm run preview      # serves dist/ at http://localhost:4173
+
+Other useful commands:
+
+  npm run typecheck    # TypeScript only, no bundle
+  npm run verify:moon  # checks the lunar textures against known features
+
+If port 5173 is already taken:
+
+  npm run dev -- --port 5174
+
+
+===============================================================================
+3. THE SCREEN AT A GLANCE
+===============================================================================
+
+  +-------------------------------------------------------------------------+
+  | Earth Analogs                     [ Sample data ]  NASA Space Apps 2026 |
+  | Target [Moon|Mars]  Terrain [All][Desert 3][Arid 2]...  13/13  0.68  ... |
+  +------------------+----------------------------------+---------------------+
+  | Ranked sites     |                                  | Site dossier        |
+  | [ search... ]    |          EARTH GLOBE             | Atacama Desert      |
+  | sort: Best fit   |     beacons sized + coloured     | 0.84  Moon fit      |
+  | 01 Atacama  0.84 |                                  | Moon / Mars split   |
+  | 02 Haughton 0.62 |                                  | 4 pillar breakdown  |
+  | 03 ...           |  [ reset view ]                  | verdict + sources   |
+  |                  |  site coords / fit (bottom bar)  | [ See Site ]        |
+  | REPORTED (2)     |                                  | researcher signal   |
+  | + Report a site  |                                  | [Export] [Copy link]|
+  | O Askja   REPORTED                                  |                     |
+  +------------------+----------------------------------+---------------------+
+  | > EVIDENCE & PROVENANCE   (expand / collapse)                            |
+  |   Fit distribution | Feature influence | Moon reference | Data sources    |
+  +-------------------------------------------------------------------------+
+  | challenge note - "scores are model estimates" disclaimer                 |
+  +-------------------------------------------------------------------------+
+
+Layout by width:
+  * 1024 px and wider: three columns side by side.
+  * Under 1024 px: globe first, then ranked list, then dossier.
+  * Under 760 px: single column, everything stacks.
+
+
+===============================================================================
+4. TOUR OF EACH ZONE
+===============================================================================
+
+TOP BAR
+  * Brand + one-line purpose.
+  * "Site backdrop": switch for the ambient site photograph (see below).
+  * Data-mode badge: "Sample data" or "Live API".
+  * Link to the challenge page.
+
+AMBIENT SITE BACKDROP (behind everything)
+  * Selecting a site - clicking a beacon on the globe or a row in the list -
+    fades that site's own ground photograph into the page background, and
+    washes the same photo faintly through the panels on top of it.
+  * It is deliberately faint, and in two strengths: 30% in the open background
+    between and around the panels, and about 16% through the panel surfaces,
+    both under a wash of the same near-black blue the surface already uses.
+    Measured: the open background lifts from 7 to 13 of 255 mean luminance and
+    a panel from 22 to 25, so every label, chart and the globe keep their
+    contrast - the photo changes the mood of the surface, nothing else.
+  * Switching sites cross-fades: the new photograph is preloaded off-screen
+    first, so there is never a blank or half-loaded frame. Only the selected
+    site's photo is fetched - one image per site you visit.
+  * No photograph means no backdrop: the surface returns to plain. A reported
+    site shows the photo the reporter supplied, or nothing.
+  * Turn it off with "Site backdrop" in the top bar. The switch is per
+    session, not saved.
+
+CONTROL BAND (under the top bar)
+  * Target switch: Moon or Mars. Changing it re-scores, re-ranks, re-colours
+    every beacon and updates the dossier.
+  * Terrain chips: All, Desert, Arid, Polar, Volcanic, Cave, Impact, Fluvial.
+    The small number on each chip is how many sites have that terrain, across
+    the whole set. Click a chip to filter; click the active chip to go back to
+    All.
+  * KPIs, left to right:
+      Sites      how many are shown / how many exist
+      Mean fit   average fit of the shown sites, for the active target
+      Strong     shown sites scoring above 0.72
+      Datasets   how many NASA dataset records are loaded
+
+DISCOVERY PANEL (left)
+  * Search field. Matches site name and region. Accents are ignored, so
+    "rio" finds "Rio Tinto"; it also matches reported sites and their
+    reporters.
+  * Sort menu: Best fit, Moon fit, Mars fit, Name.
+  * Ranked list. Every row shows rank, short name, terrain, band label, a
+    fit bar and the numeric fit. Click a row to select it.
+  * Rows stay in sync with the globe and the dossier.
+  * "Reported candidates (n)": sites researchers added, below the ranking.
+    These carry no analog-fit score, so they are never ranked - each row
+    says "unreviewed" and is flagged REPORTED. Click one to open its report
+    in the dossier. The buttons here are "+ Report a site" and "Manage".
+    Reported rows respect the terrain chip and the search box.
+
+HERO GLOBE (centre)
+  * Real Earth (NASA Blue Marble), cloud-free by default, with a live
+    day/night terminator.
+  * "Clouds" button (bottom right of the globe) switches on NASA's actual
+    satellite pass: the real cloud cover for one day. While it is on, a date
+    field appears under the top-left caption. Pick any UTC day from the last
+    60; the default is yesterday, the latest complete day.
+  * Click "Clouds" again to return to the clear-sky base. The last pass stays
+    cached, so re-toggling is instant.
+  * One beacon per visible site, sized and coloured by fit.
+  * Drag to orbit, scroll to zoom, click a beacon to select that site.
+  * Clicking a beacon is a commitment: the camera animates from the global
+    view all the way down onto that site, then the local terrain view opens
+    over the globe (see "SITE TERRAIN VIEW" below).
+  * A drag always wins. If the pointer travels more than a few pixels between
+    press and release, the globe simply moves and nothing is selected - even
+    when the press started right on a dot, and even if the drag comes back and
+    ends on that same dot. Only a near-stationary click picks a site.
+  * Grabbing the globe while the camera is flying in cancels the flight, so
+    the terrain view does not open; move freely and click again when ready.
+  * "Reset view" returns the camera to the default framing.
+  * Top-right legend: Strong / Promising / Weak colour ramp.
+  * Bottom strip: selected site name, coordinates, terrain and fit.
+
+SITE DOSSIER (right)
+  * Rank chip, full site name, region, terrain, elevation.
+  * Large fit number for the active target, plus its band ("Strong", etc.).
+  * Moon fit and Mars fit bars, side by side. The active target is taller.
+  * "Why this site": four pillars with percentages. Hover a pillar name for
+    its definition:
+      Geomorphology  surface slope, roughness and crater density
+      Mineralogy     sulfates, iron oxides and regolith match
+      Environment    UV index, aridity, dust and thermal swing
+      Logistics      access to roads, power and resupply
+  * Verdict: one plain-language sentence.
+  * Sources: clickable dataset chips; each opens the provider's own page.
+  * Coordinates, confidence and model version.
+  * "See Site": opens the field-photo gallery for this site, with the number
+    of catalogued photos next to it. Disabled when no photos exist.
+  * "Orbit vs ground": opens the split view (see below).
+  * Researcher signal: an upvote button, then Field notes and Reviews tabs,
+    each with a short form and the contributions so far. Notes carry an
+    observer, an observation date and an optional photo link.
+  * Export CSV and Copy link buttons.
+
+REPORT A SITE (modal, from "+ Report a site")
+  * Fields: site name, region, latitude, longitude, terrain family, which
+    world it is proposed for (Moon / Mars / both), mean elevation, reporter,
+    field evidence, optional ground-photo link.
+  * Validation is specific, not generic: coordinates must fall inside the
+    real ranges, a terrain family must be chosen, and the evidence note needs
+    at least 20 characters. Errors appear under the offending field and the
+    caret jumps to the first problem on a rejected submit.
+  * The submitted site is deliberately unscored. It appears in the reported
+    list, on the globe as an amber ring, and in the dossier as
+    "No analog-fit score yet".
+
+REPORTED SITES ("Manage" button)
+  * Every report this browser holds, newest first, with its evidence and
+    provenance.
+  * Edit reopens the same form, prefilled; Delete removes the report
+    everywhere (list, globe, dossier).
+  * Export JSON (round-trip, for the pipeline) and Export CSV (one row per
+    report, with coordinates, targets, reporter, timestamp and evidence).
+
+ORBIT VS GROUND ("Orbit vs ground" button, model and reported sites)
+  * Left: the real NASA GIBS true-colour pass over that site's bounding box,
+    for a chosen UTC day in the last 60, at 50 km, 15 km or 4 km of ground.
+  * Right: the ground photograph - a curated Commons frame (browsable with
+    the thumbnails) or, for a reported site, the photo the reporter supplied.
+  * Both captions state what the image is and its real scale, and the footer
+    gives the exact bbox and date. A satellite pass at ~375 m per pixel is
+    regional context; it is labelled as such rather than implied to be site
+    detail.
+
+SITE TERRAIN VIEW (over the globe, after a beacon click)
+  * A real elevation patch around the site - roughly 7 km across, sampled at
+    SRTM/ASTER 30 m resolution - lit as a 3D surface, not a picture.
+  * Colour comes from the site's terrain family (desert sand, basaltic black,
+    polar snow, red fluvial dust...), darkening on steep rock.
+  * A pulsing cyan ring marks the site's exact coordinates - the centre of the
+    patch - with its latitude/longitude pinned just above it, so the point can
+    be read off the landscape instead of guessed. The caption keeps clear of
+    the ring as you zoom and hides only if the site leaves the frame.
+  * Header: site name, coordinates, terrain family, mean elevation.
+  * Stats strip:
+      Relief      lowest to highest point inside the patch
+      Mean slope  average ground gradient
+      Elevation   min-max metres above sea level
+      Source      "SRTM 30 m" for real tiles, "Procedural" for the offline
+                  fallback
+  * Drag to orbit the patch, scroll to zoom. Clicking or scrolling cancels
+    the fly-in animation and hands control over immediately.
+  * "Back to Globe" (top right), or Esc, closes the view and animates the
+    camera back out to the world view.
+
+FIELD-PHOTO GALLERY (modal, from "See Site")
+  * One large frame per photo, with a thumbnail rail underneath.
+  * Arrow buttons, thumbnails, or the left/right arrow keys browse. Home and
+    End jump to the first and last frame; the order wraps.
+  * Every frame carries its caption, photographer and licence, and links back
+    to the source file on Wikimedia Commons.
+  * Esc, the close button, or a click on the dark backdrop returns to the
+    dossier. Focus returns to the button that opened the gallery.
+
+EVIDENCE & PROVENANCE (bottom, collapsible)
+  * Fit distribution: histogram of fit scores for the current filter.
+  * Feature influence: mean absolute model contribution per feature.
+  * Comparison target: Moon globe with the real phase for right now.
+    No site markers here on purpose - these are Earth sites, not lunar ones.
+  * Data sources: the full dataset catalogue (provider, resolution,
+    temporal coverage, target tags).
+
+
+===============================================================================
+5. COMMON TASKS
+===============================================================================
+
+5.1 FIND THE BEST MOON ANALOG
+  1. Make sure Target is set to Moon.
+  2. Leave Sort on "Best fit".
+  3. The top row is the strongest Moon analog in the current filter.
+  4. Click it to read why in the dossier.
+
+5.2 SEE THE SAME SITES RANKED FOR MARS
+  Click "Mars" in the Target switch. Ranking, beacon colours and the dossier
+  all switch to Mars fit. The dossier always shows both scores, so you can
+  see a site that is strong for one and weak for the other.
+
+5.3 FILTER BY TERRAIN
+  Click Desert, Polar, Volcanic, Arid, Cave, Impact or Fluvial. The list,
+  the globe, the charts and the KPIs all narrow together. The chip counts do
+  not change - they describe the full set, not the filtered one.
+
+5.4 SEARCH FOR A SITE OR REGION
+  Type in the search field in the left panel, or press "/" anywhere.
+  Type "rio" for Rio Tinto or "antarctica" for the McMurdo Dry Valleys.
+  Clear the field with the x button or by deleting the text.
+
+5.5 COMPARE MOON VS MARS FOR ONE SITE
+  Select the site, then read the two bars under the big score in the dossier.
+  The taller bar is the active target; the other bar is always visible.
+
+5.6 EXPORT THE SHORTLIST
+  Click "Export CSV". Your browser downloads analog-sites-moon.csv or
+  analog-sites-mars.csv (named after the active target). The file contains
+  every site currently shown, ranked by the active target's fit, with these
+  columns:
+
+    rank, site, region, terrain, lat, lon, elevation_m,
+    moon_fit, mars_fit, analog_fit, label, confidence, target
+
+  Filters and search are respected; the sort menu is not (the export is always
+  ranked by fit).
+
+5.7 SHARE EXACTLY WHAT YOU ARE LOOKING AT
+  Click "Copy link". The URL already carries the target, terrain filter and
+  selected site, so the other person lands on the same view. The button reads
+  "Link copied" for a moment.
+
+5.8 USE THE GLOBE
+  Drag to orbit, scroll or pinch to zoom, click a beacon to select. Selecting
+  a row or beacon also rotates the globe to that site. "Reset view" undoes
+  all of it and starts the idle rotation again.
+
+  Dragging is safe: press anywhere, including on an edge of a dot, and move.
+  The globe turns and the site under the cursor is not selected. A site is
+  only picked by a click that stays put (under about six pixels of travel),
+  so an orbit never opens a dossier by accident.
+
+5.9 CHECK THE MOON REFERENCE
+  Expand "Evidence & provenance" (bottom) and look at "Comparison target".
+  It is a real lunar globe with the actual phase for the current moment.
+  Drag to orbit it like the main globe.
+
+5.10 FLY INTO A SITE'S LOCAL TERRAIN
+  Click any beacon on the globe (or click a ranked row and then its beacon).
+  The camera dives in and the terrain view opens over the globe. Read the
+  relief and mean slope from the stats strip, drag to orbit the landform, then
+  click "Back to Globe" (or press Esc) to pull back out. The globe returns to
+  the framing it had before the dive.
+
+5.11 SEE THE SITE ON THE GROUND
+  Select a site, then click "See Site" in the dossier. The gallery opens on the
+  first frame; walk the frames with the arrow keys or the thumbnails. The
+  counts and captions tell you what each photo shows. Press Esc when done.
+
+5.12 REPORT A NEW ANALOG SITE
+  1. Click "+ Report a site" under the ranked list (or "Report a site" in the
+     manager).
+  2. Fill the form: coordinates in decimal degrees, terrain family, which
+     world it is proposed for, and the field evidence behind the report.
+  3. Submit. The report is stored, selected, and shown on the globe as an
+     amber ring. It stays unscored until the model runs on it.
+
+5.13 REVIEW OR EXPORT WHAT YOU REPORTED
+  Click "Manage". Edit a report to fix a coordinate, delete a duplicate, or
+  export the set as JSON or CSV for the model pipeline. The footer of the
+  left panel and the manager header both show how many reports you hold.
+
+5.14 ADD A FIELD NOTE TO A SITE
+  In the dossier's "Researcher signal" block, stay on the Field notes tab,
+  add your name, the observation date, the observation and an optional photo
+  link, then "Add field note". Notes are listed newest first; Delete removes
+  one you added in this browser.
+
+5.15 UPVOTE OR REVIEW A SITE
+  The upvote button is a toggle: click to add your vote, click again to take
+  it back. Reviews live on the second tab, with the same author-and-text rule
+  as notes.
+
+5.16 COMPARE THE ORBIT VIEW WITH THE GROUND
+  Click "Orbit vs ground" in any dossier. Pick the imagery day and the ground
+  span on the left, browse the ground frames with the thumbnails. This is the
+  view to use when a site's satellite appearance and its field appearance
+  disagree - which is the point of visiting it.
+
+
+===============================================================================
+6. KEYBOARD
+===============================================================================
+
+  /            Focus the search field
+  Up / Down    Move the selection through the ranked list
+  Enter        Activate a focused row or button (standard browser behaviour)
+  Esc          Return the selection to the top site and leave the search field
+               Close the terrain view
+               Close the photo gallery
+  Tab          Move between controls; inside the gallery, focus stays in the
+               dialog and returns to the "See Site" button when it closes
+  Left / Right Browse photos (gallery only)
+  Home / End   Jump to the first / last photo (gallery only)
+
+The selected row scrolls into view automatically as you walk the list.
+List shortcuts pause while the terrain view or the gallery is open, so the
+arrow keys always do the obvious thing.
+
+
+===============================================================================
+7. HOW TO READ THE NUMBERS
+===============================================================================
+
+FIT SCORES
+  All scores are 0.00 - 1.00. The three values are:
+    analogScore  the model's overall analog fit
+    moonFit      fit against permanent Moon base conditions
+    marsFit      fit against Martian surface conditions
+  A site can be strong for one target and weak for the other. The target
+  switch decides which one drives the ranking.
+
+BANDS
+    above 0.72   Strong
+    above 0.55   Promising
+    otherwise    Weak / Marginal
+
+CONFIDENCE
+  The model's confidence in its own prediction, shown in the dossier facts.
+  It is not the same thing as the fit score.
+
+PILLARS
+  Four 0-100% bars per site: Geomorphology, Mineralogy, Environment,
+  Logistics. These are the "why" behind the headline number.
+
+IMPORTANT
+  With sample data, the scores, pillar values and feature contributions are
+  illustrative - they stand in for the ML pipeline, not measurements.
+  The site names and coordinates are real. Swap in the backend (section 9)
+  and the badge changes to "Live API".
+
+
+===============================================================================
+8. DEEP LINKS
+===============================================================================
+
+The address bar always reflects the current view, so any view can be shared
+or bookmarked:
+
+  ?target=moon|mars      comparison target
+  ?terrain=<type>        desert | arid | polar | volcanic | cave | impact |
+                         fluvial
+  ?site=<id>             e.g. pred-000 (pred-000 to pred-012 in sample data)
+
+Examples:
+
+  /?target=mars
+  /?terrain=cave
+  /?target=mars&terrain=cave&site=pred-012
+
+Unknown ids or terrain values are ignored safely. If a filter hides the
+selected site, the app falls back to the top of the new list.
+
+
+===============================================================================
+9. DATA, ASSETS AND THE BACKEND SEAM
+===============================================================================
+
+MODE
+  * No configuration: built-in sample data (src/data-contracts/mock.ts).
+  * Live: create a .env file with
+
+        VITE_API_BASE_URL=https://your-backend-host
+
+    and restart the dev server. The badge flips to "Live API".
+    Expected endpoints:
+
+        GET {base}/predictions    -> Prediction[]
+        GET {base}/datasets       -> DataSource[]
+        GET {base}/space/objects  -> OrbitalObject[]
+        GET {base}/community      -> CommunityState
+        POST {base}/community     -> one report / note / review / vote
+        DELETE {base}/community/{id} -> remove one record
+
+  All UI reads go through src/services/api.ts, so no component changes when
+  the backend arrives. Optional fields (moonFit, factors, terrainType, region,
+  elevationM) fall back gracefully if the payload does not include them.
+
+RESEARCHER REPORTS AND COMMUNITY SIGNAL (local-first)
+  Without a backend, reports, field notes, reviews and upvotes are stored in
+  this browser under the localStorage key "earth-analogs.community.v1".
+  Reported sites are merged with the ranking from the model; they are never
+  given an invented score.
+  With VITE_API_BASE_URL set, the same records are read from and written to
+  {base}/community. Writes are local-first: the browser store is updated and
+  the UI responds immediately, then the backend call is attempted. If it fails
+  the report is still saved and the manager says the shared backend did not
+  accept the last change. A record the backend sent is labelled remote and is
+  shown without a Delete button, so this browser can never delete someone
+  else's note.
+
+LOCAL TERRAIN (fetched live, no key)
+  elevation-tiles-prod on S3, Terrarium encoding: (R*256 + G + B/256) - 32768
+  metres. A 3x3 window of tiles at zoom 10-14 around the site is decoded into a
+  257x257 patch (~7 km at 27 m per sample), then shaded by slope and local
+  curvature so ridges, channels and crater rims read as landform. If the tiles
+  are unreachable the patch falls back to deterministic procedural relief
+  shaped by the site's terrain family, and the stats strip says "Procedural".
+
+FIELD PHOTOGRAPHY (fetched live, no key)
+  src/data/sitePhotos.ts lists 3 real ground photographs per sample site, from
+  Wikimedia Commons (the site itself, its rocks, and expedition/rover work).
+  Images stream through Commons' Special:FilePath endpoint with a server-side
+  resize, so nothing is bundled and the photographer and licence stay attached
+  to every frame. Each thumbnail and frame links to its Commons file page.
+
+SURFACE IMAGERY (NASA imagery, committed in public/)
+  earth/blue-marble-ice-4k.jpg NASA Blue Marble, July 2004, 5400x2700;
+                              Arctic sea ice added above 72N
+  earth/night-lights-3600.jpg NASA Earth at Night (Black Marble), 2012
+  earth/terrain-normal-2k.jpg terrain normal map, gives mountains relief
+                              (ocean mask and normal map are the standard
+                              three.js Earth textures, derived from NASA data)
+  moon/lroc-color-4k.jpg      LRO LROC colour mosaic
+  moon/ldem-4k.png            LOLA elevation
+  moon/starmap-4k.jpg         NASA Deep Star Maps 2020
+
+  The Earth terminator is computed from the real sub-solar point for the
+  current instant. The star background is anchored to Greenwich sidereal time
+  and the Earth's rotation axis, so the Milky Way and bright stars sit over
+  the longitudes they actually sit over. It advances at the real sidereal
+  rate. Precession and nutation are ignored (arcminutes).
+
+  Clouds are optional. The "Clouds" button pulls NASA GIBS's VIIRS
+  true-colour mosaic for the chosen UTC day as one WMS image; GIBS needs no
+  API key. The default view keeps the clear-sky Blue Marble so sites are
+  never hidden. GIBS has no data beyond about 82.5 degrees latitude, so those
+  near-pole texels fall back to Blue Marble instead of painting a black cap.
+
+
+===============================================================================
+10. TROUBLESHOOTING
+===============================================================================
+
+PORT ALREADY IN USE
+  npm run dev -- --port 5174
+
+THE GLOBE IS BLANK OR BLACK
+  * Check that public/earth/ and public/moon/ exist (they are committed).
+  * WebGL must be available. In Chrome, check chrome://gpu.
+  * Reload once; the largest texture is 2.3 MB and takes a moment on a cold
+    load.
+
+NO STARS / DARK SKY
+  The star map is 1.4 MB and loads asynchronously alongside the globe. If it
+  fails, the sky stays black by design rather than breaking the scene.
+
+FONTS LOOK DIFFERENT
+  Inter and JetBrains Mono load from Google Fonts. Offline, the app falls back
+  to system fonts; layout still works.
+
+"COPY LINK" SAYS NOTHING
+  On plain http:// origins the Clipboard API can be blocked. The app falls
+  back to a hidden-field copy; on the GitHub Pages (https) build it works
+  directly.
+
+CSV DID NOT APPEAR
+  It goes wherever your browser sends downloads. Check the downloads shelf or
+  the browser's download settings.
+
+SEARCH FINDS NOTHING
+  Search matches site names and regions only, not dataset names. Try a place
+  name ("atacama", "antarctica", "idaho").
+
+
+===============================================================================
+11. PROJECT MAP (FOR THE TEAM)
+===============================================================================
+
+  src/App.tsx                         state, filters, ranking, keyboard, URLs
+  src/components/layout/FilterBar.tsx target switch, terrain chips, KPIs
+  src/components/panels/SiteList.tsx  ranked discovery list
+  src/components/panels/SiteInspector.tsx  site dossier
+  src/components/three/EarthGlobe.tsx hero globe + Earth shader
+  src/components/three/MoonMap.tsx    lunar reference globe
+  src/components/charts/*             distribution and influence charts
+  src/components/panels/DataSourceList.tsx  dataset catalogue
+  src/data-contracts/types.ts         shared interface with the backend
+  src/data-contracts/mock.ts          sample sites, scores and datasets
+  src/services/api.ts                 the single backend seam
+  src/lib/astro.ts                    sub-solar point, sidereal time, phase
+  src/lib/site.ts                     fit selection, pillars, verdict, CSV
+  src/lib/colors.ts                   the one score colour ramp
+  src/lib/starfield.ts                star map + sidereal anchoring
+  src/lib/terrain.ts                  DEM tiles -> terrain patch
+  src/lib/earthImagery.ts             GIBS WMS (globe + site close-ups)
+  src/lib/community.ts                report/note/review store + exports
+  src/lib/download.ts                 text-file downloads
+  src/components/panels/ReportSiteForm.tsx     report a site (validated)
+  src/components/panels/ReportedSitesPanel.tsx manage / edit / export
+  src/components/panels/ReportedDossier.tsx    dossier for a report
+  src/components/panels/SiteCommunity.tsx      upvotes, notes, reviews
+  src/components/panels/SiteCompare.tsx        orbit vs ground split view
+  src/components/layout/Modal.tsx     shared dialog shell
+  src/components/layout/SiteBackdrop.tsx       ambient site photo backdrop
+                                               (panels pick up --site-photo
+                                               via .card::before)
+  src/styles.css                      the whole design system
+  docs/benchmark-existing-tools.md    research + wireframe proposal
+
+
+===============================================================================
+12. KNOWN LIMITATIONS
+===============================================================================
+
+  * Sample data: scores, pillars and confidences are illustrative until the
+    backend is connected.
+  * The Earth albedo is a July 2004 composite and the night lights are 2012,
+    so seasonal vegetation and new cities are not reflected.
+  * Cloud imagery is one daily daytime composite: it shows that day's cloud
+    cover, not an animation, and there are no clouds on the night side. No
+    weather or seasonal slider yet.
+  * The orbit-vs-ground view uses GIBS true colour (~375 m per pixel), so a
+    4 km ground span is upsampled; USGS TADP / Landsat detail is a planned
+    extension.
+  * CSV export carries coordinates, scores and metadata; it does not yet
+    bundle GeoTIFF elevation models or climate profiles.
+  * Star positions ignore precession/nutation and are limited by the 4K
+    texture.
+  * Reports, field notes, reviews and upvotes live in this browser until
+    VITE_API_BASE_URL points at a backend, so two people on two machines do
+    not see each other's contributions yet.
+  * Upvotes are one per browser, not one per authenticated person; there is
+    no reviewer approval step, so a report is visible immediately as
+    "unreviewed".
+  * Reported sites are unscored by design. Scoring them needs the feature
+    extraction and model run the pipeline owns.
+  * The site close-up is a bounding box around the coordinates you entered: a
+    typo puts the imagery somewhere else, which is exactly what the orbit
+    view lets a reviewer catch.
+  * Terrain patches are one 7 km tile crop per site: real slope and relief, but
+    no wider watershed context and no sub-30 m detail.
+  * Vertical exaggeration is applied to make landform readable; the exact
+    factor is printed under the terrain view.
+  * The procedural fallback is a stand-in shaped by the feature vector, not
+    survey data. The stats strip always labels which source was used.
+  * Field photos are curated Wikimedia Commons references near each analog
+    site - representative ground truth, not survey imagery of the exact
+    coordinates, and they need a network connection to load.
+  * The ambient backdrop uses the first curated photo of the site, not a
+    random or time-varying one, and it needs the network like the gallery.
+    The on/off switch is remembered for the session only.
+  * Because the panels carry a faint version of the photo, the very smallest
+    mono labels sit on a slightly lighter background where a photo is bright;
+    turn the backdrop off if you need the strictest contrast.
