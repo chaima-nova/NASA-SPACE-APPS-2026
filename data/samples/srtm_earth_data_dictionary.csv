@@ -1,0 +1,8 @@
+field_name,description,units,dtype,valid_range,nodata_value,source,notes
+latitude,Pixel centre latitude,degrees north (WGS84),float64,"[-24, -23]",NaN,NASA SRTM GL1,
+longitude,Pixel centre longitude,degrees east (WGS84),float64,"[-69, -68]",NaN,NASA SRTM GL1,
+elevation_m,Terrain elevation above EGM96 geoid,meters,float32,"[0, 9000]",NaN,NASA SRTM GL1,
+slope_deg,Terrain slope in degrees (central difference),degrees,float32,"[0, 90]",NaN,Derived,
+roughness_tri_m,Terrain Ruggedness Index (3x3 kernel),meters,float32,"[0, 5000]",NaN,Derived,
+planet,Planetary body identifier (earth),text,str,,,,
+datum,Vertical reference datum (EGM96 geoid),text,str,,,,

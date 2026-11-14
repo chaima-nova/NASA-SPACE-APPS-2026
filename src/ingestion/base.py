@@ -61,6 +61,15 @@ def make_session(
     return session
 
 
+def _compute_md5(path: Path) -> str:
+    """Compute MD5 hex digest of a local file."""
+    hasher = hashlib.md5()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 # ---------------------------------------------------------------------------
 # Core streaming downloader
 # ---------------------------------------------------------------------------
@@ -72,6 +81,7 @@ def download_file(
     chunk_size: int = 65_536,
     timeout: int = 120,
     skip_if_exists: bool = True,
+    expected_size: Optional[int] = None,
     expected_md5: Optional[str] = None,
 ) -> dict:
     """
@@ -95,13 +105,20 @@ def download_file(
     dest_path = Path(dest_path)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # ── Skip if file already exists and is non-empty ──────────────────────
+    # ── Skip if file already exists and meets integrity checks ───────────
     if skip_if_exists and dest_path.exists() and dest_path.stat().st_size > 0:
-        logger.info("SKIP (already exists): %s", dest_path.name)
-        record["status"] = "skipped_existing"
-        record["size_bytes"] = dest_path.stat().st_size
-        record["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        return record
+        current_size = dest_path.stat().st_size
+        # Check size if expected_size was specified
+        if expected_size is not None and current_size != expected_size:
+            logger.warning("Existing file %s size (%d) != expected (%d). Re-downloading.",
+                           dest_path.name, current_size, expected_size)
+        else:
+            logger.info("SKIP (already exists, valid size %d bytes): %s", current_size, dest_path.name)
+            record["status"] = "skipped_existing"
+            record["size_bytes"] = current_size
+            record["md5"] = _compute_md5(dest_path)
+            record["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            return record
 
     # ── Create session if none provided ───────────────────────────────────
     own_session = session is None

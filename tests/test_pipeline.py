@@ -280,6 +280,51 @@ class TestPDS3Reader:
         assert result["data"].shape == (nrows, ncols)
         assert float(np.nanmin(result["data"])) >= 0
 
+    def test_read_pds3_lola_scaling_and_offset(self):
+        """Test LOLA scaling factor (0.5) and offset (1737400.0) calculations."""
+        from src.processing.pds_reader import read_pds3_img
+        with tempfile.TemporaryDirectory() as tmpdir:
+            img_path = Path(tmpdir) / "ldem_test.img"
+            lbl_path = Path(tmpdir) / "ldem_test.lbl"
+
+            # Raw DN = 1000, 16-bit LSB (little-endian)
+            raw_dn = np.array([[1000]], dtype="<i2")
+            img_path.write_bytes(raw_dn.tobytes())
+            lbl_path.write_text(
+                "LINES = 1\nLINE_SAMPLES = 1\nSAMPLE_BITS = 16\nSAMPLE_TYPE = LSB_INTEGER\n"
+                "SCALING_FACTOR = 0.5\nOFFSET = 1737400.\nEND\n"
+            )
+            res = read_pds3_img(img_path, lbl_path)
+            assert res["error"] is None
+            # Elevation = DN * 0.5 = 500.0 m
+            assert res["data"][0, 0] == 500.0
+            assert res["scale"] == 0.5
+            assert res["offset"] == 1737400.0
+
+    def test_read_tes_thermal_inertia_synthetic(self):
+        """Test Putzig et al. (2005) TES binary reader with header and interpolation mask."""
+        from src.processing.pds_reader import read_tes_thermal_inertia
+        with tempfile.TemporaryDirectory() as tmpdir:
+            bin_path = Path(tmpdir) / "nmap2003.bin"
+            mask_path = Path(tmpdir) / "nmap2003_mask.bin"
+
+            rows, cols = 4, 8
+            header = b"Putzig 2005 TES Thermal Inertia Header" + b" " * (7200 - 38)
+            # 4x8 array of big-endian int16 values (e.g. 250 tiu)
+            data_raw = np.full((rows, cols), 250, dtype=">i2")
+            bin_path.write_bytes(header + data_raw.tobytes())
+
+            # Mask: 1 for measured, 0 for interpolated
+            mask_raw = np.ones((rows, cols), dtype=np.uint8)
+            mask_raw[0, 0] = 0  # Should become NaN
+            mask_path.write_bytes(mask_raw.tobytes())
+
+            res = read_tes_thermal_inertia(bin_path, mask_path=mask_path, header_bytes=7200, rows=rows, cols=cols)
+            assert res["error"] is None
+            assert res["data"].shape == (rows, cols)
+            assert np.isnan(res["data"][0, 0])
+            assert res["data"][1, 1] == 250.0
+
 
 class TestTerrain:
     def test_compute_slope_flat(self):
@@ -300,6 +345,39 @@ class TestTerrain:
         slope = compute_slope_degrees(arr, pixel_size_x_m=30.0, pixel_size_y_m=30.0)
         # Interior should be near 45 degrees
         assert 40 < np.nanmean(slope[1:-1, 1:-1]) < 50
+
+    def test_compute_slope_nan_handling(self):
+        """Ensure cells touching NaNs are masked and do not create false 90° cliffs."""
+        from src.processing.terrain import compute_slope_degrees
+        arr = np.ones((7, 7), dtype=np.float32) * 2500.0
+        arr[3, 3] = np.nan  # Center void
+        slope = compute_slope_degrees(arr, pixel_size_x_m=30.0, pixel_size_y_m=30.0)
+        # The void and its immediate 1-ring neighbors must be NaN, NOT huge fake slopes
+        assert np.isnan(slope[3, 3])
+        assert np.isnan(slope[2, 3])
+        assert np.isnan(slope[4, 3])
+        assert np.isnan(slope[3, 2])
+        assert np.isnan(slope[3, 4])
+        # Outer border untouched by NaN should remain flat (~0 slope)
+        assert slope[0, 0] < 0.1
+
+    def test_compute_slope_varying_latitudes(self):
+        """Ensure compute_slope_degrees accepts 1D array of latitude-varying px sizes."""
+        from src.processing.terrain import compute_slope_degrees
+        arr = np.ones((5, 10), dtype=np.float32) * 500.0
+        px_rows = np.array([1000.0, 800.0, 600.0, 400.0, 200.0], dtype=np.float64)
+        slope = compute_slope_degrees(arr, pixel_size_x_m=px_rows, pixel_size_y_m=1000.0)
+        assert slope.shape == (5, 10)
+        assert np.nanmax(slope) < 0.01
+
+    def test_roughness_residual_std(self):
+        """Test residual elevation standard deviation roughness."""
+        from src.processing.terrain import compute_roughness_residual_std
+        arr = np.ones((5, 5), dtype=np.float32) * 100.0
+        r_std = compute_roughness_residual_std(arr, window=3)
+        assert r_std.shape == (5, 5)
+        # Flat area has 0 std
+        assert np.nanmax(r_std[1:-1, 1:-1]) < 0.01
 
     def test_pixel_size_earth(self):
         from src.processing.terrain import pixel_size_meters

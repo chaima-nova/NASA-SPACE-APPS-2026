@@ -96,10 +96,23 @@ def build_lola_sample() -> dict:
     nrows, ncols = data.shape
     res_deg = 180.0 / nrows  # 0.25 deg for 720 rows (4ppd), 1/64 deg for 11520 rows
 
-    # Region: Lunar South Pole (-90 to -80 lat, full 360 deg longitude range)
+    # Load region from settings.json or use verified fallback
+    settings_file = ROOT / "config" / "settings.json"
+    moon_bbox = [0.0, -90.0, 360.0, -80.0]
+    region_name = "Lunar South Pole"
+    if settings_file.exists():
+        try:
+            with open(settings_file, "r", encoding="utf-8") as fh:
+                s_cfg = json.load(fh)
+                m_roi = s_cfg.get("regions_of_interest", {}).get("moon", {})
+                moon_bbox = m_roi.get("bbox", moon_bbox)
+                region_name = m_roi.get("name", region_name)
+        except Exception as e:
+            logger.warning("Could not read settings.json for Moon bbox: %s", e)
+
     south_pole_region = {
-        "west": 0.0, "south": -90.0, "east": 360.0, "north": -80.0,
-        "name": "Lunar South Pole",
+        "west": moon_bbox[0], "south": moon_bbox[1], "east": moon_bbox[2], "north": moon_bbox[3],
+        "name": region_name,
     }
     subset, info = extract_region(
         data,
@@ -109,16 +122,21 @@ def build_lola_sample() -> dict:
         resolution_deg=res_deg,
     )
 
-    # Compute physical pixel dimensions and terrain attributes
-    lat_center = -85.0
-    px_m, py_m = pixel_size_meters(lat_center, res_deg, "moon")
-    slope = compute_slope_degrees(subset, px_m, py_m)
-    tri = compute_roughness_tri(subset)
-
-    # Build CSV with coordinates, elevation, slope, TRI
     nsr, nsc = subset.shape
     lons = south_pole_region["west"] + (np.arange(nsc) + 0.5) * res_deg
     lats = south_pole_region["north"] - (np.arange(nsr) + 0.5) * res_deg
+
+    # Compute physical pixel dimensions accurately per latitude row
+    # (Avoids severe distortion near the pole where longitudinal width shrinks to < 50m)
+    R_moon = 1_737_400.0
+    deg_to_rad = np.pi / 180.0
+    px_m_rows = R_moon * res_deg * deg_to_rad * np.cos(np.radians(lats))
+    py_m = R_moon * res_deg * deg_to_rad
+
+    slope = compute_slope_degrees(subset, px_m_rows, py_m)
+    tri = compute_roughness_tri(subset)
+
+    # Build CSV with coordinates, elevation, slope, TRI
     lon_grid, lat_grid = np.meshgrid(lons, lats)
 
     df = pd.DataFrame({
@@ -148,9 +166,11 @@ def build_lola_sample() -> dict:
     df_sample.to_csv(csv_path, index=False, float_format="%.3f")
     logger.info("Saved: %s (%d rows)", csv_path.name, len(df_sample))
 
-    # Save numpy 2D array
+    # Save numpy 2D array grids (elevation, slope, roughness) for windowed spatial analysis
     npy_path = SAMPLES_DIR / "lola_moon_south_pole_elevation.npy"
     np.save(npy_path, subset)
+    np.save(SAMPLES_DIR / "lola_moon_south_pole_slope.npy", slope)
+    np.save(SAMPLES_DIR / "lola_moon_south_pole_roughness.npy", tri)
 
     # Stats JSON
     stats = {
@@ -252,8 +272,21 @@ def build_mola_sample() -> dict:
     nrows, ncols = data.shape
     res_deg = 180.0 / nrows  # 0.25 deg for 4ppd
 
-    # Jezero Crater region: ~76.0E to 79.0E, 17.0N to 20.0N
-    jezero = {"west": 76.0, "south": 17.0, "east": 79.0, "north": 20.0, "name": "Jezero Crater"}
+    # Load Mars region from settings.json
+    settings_file = ROOT / "config" / "settings.json"
+    jezero_bbox = [76.0, 17.0, 79.0, 20.0]
+    region_name = "Jezero Crater"
+    if settings_file.exists():
+        try:
+            with open(settings_file, "r", encoding="utf-8") as fh:
+                s_cfg = json.load(fh)
+                m_roi = s_cfg.get("regions_of_interest", {}).get("mars", {})
+                jezero_bbox = m_roi.get("bbox", jezero_bbox)
+                region_name = m_roi.get("name", region_name)
+        except Exception as e:
+            logger.warning("Could not read settings.json for Mars bbox: %s", e)
+
+    jezero = {"west": jezero_bbox[0], "south": jezero_bbox[1], "east": jezero_bbox[2], "north": jezero_bbox[3], "name": region_name}
     subset, info = extract_region(
         data,
         west=jezero["west"], south=jezero["south"],
@@ -294,6 +327,8 @@ def build_mola_sample() -> dict:
 
     npy_path = SAMPLES_DIR / "mola_mars_jezero_elevation.npy"
     np.save(npy_path, subset)
+    np.save(SAMPLES_DIR / "mola_mars_jezero_slope.npy", slope)
+    np.save(SAMPLES_DIR / "mola_mars_jezero_roughness.npy", tri)
 
     stats = {
         "dataset_id": "mola_megdr",
@@ -430,6 +465,8 @@ def build_earth_srtm_sample() -> dict:
 
     npy_path = SAMPLES_DIR / "srtm_earth_atacama_elevation.npy"
     np.save(npy_path, sub_arr)
+    np.save(SAMPLES_DIR / "srtm_earth_atacama_slope.npy", slope)
+    np.save(SAMPLES_DIR / "srtm_earth_atacama_roughness.npy", tri)
 
     stats = {
         "dataset_id": "srtm_gl1",
@@ -655,8 +692,9 @@ def build_cross_planetary_schema() -> dict:
 BUILDERS = {
     "lola_64ppd": build_lola_sample,
     "mola_meg128": build_mola_sample,
-    "earth_synthetic": build_earth_analogue_synthetic,
+    "earth_srtm": build_earth_srtm_sample,
     "cross_planetary_schema": build_cross_planetary_schema,
+    "earth_synthetic": build_earth_analogue_synthetic,
 }
 
 
