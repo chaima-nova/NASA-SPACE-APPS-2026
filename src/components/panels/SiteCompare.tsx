@@ -45,6 +45,28 @@ const SPANS: Array<{ label: string; degrees: number; size: number }> = [
 
 const WINDOW = imageryWindow();
 
+/** One frame is one square WMS image, whichever span it covers. */
+const FRAME = SPANS[0].size;
+
+/** Closest the view goes: below this the mosaic has no more detail to give. */
+const MIN_SPAN = 0.006;
+
+/** Furthest out: a region-scale frame, still a box the service will serve. */
+const MAX_SPAN = 4.5;
+
+/** The ground on view, in degrees. Longitude wraps, latitude is clamped. */
+interface View {
+  lat: number;
+  lon: number;
+  span: number;
+}
+
+const wrapLon = (lon: number) => ((((lon + 180) % 360) + 360) % 360) - 180;
+
+/** East-west extent of a box span degrees tall at lat, as the WMS draws it. */
+const widthAt = (span: number, lat: number) =>
+  Math.min(360, span / Math.max(0.05, Math.cos((lat * Math.PI) / 180)));
+
 /** Single day, or the median of the last few days. */
 type Source = 'day' | 'composite';
 
@@ -108,17 +130,117 @@ const day = (value: string) => {
  */
 export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompareProps) {
   const [date, setDate] = useState(() => latestImageryDate());
-  const [span, setSpan] = useState(SPANS[0]);
+  /**
+   * The ground on view, not the site: dragging moves it and the wheel narrows
+   * it, so the two panes behave like the map they are about.
+   */
+  const [view, setView] = useState<View>({ lat: site.lat, lon: site.lon, span: SPANS[0].degrees });
+  /** The same ground once the gesture stops, which is when it is refetched. */
+  const [settled, setSettled] = useState<View>({ lat: site.lat, lon: site.lon, span: SPANS[0].degrees });
+  /** Pixel offset of a drag in progress, so the picture follows the pointer. */
+  const [drag, setDrag] = useState<{ dx: number; dy: number } | null>(null);
   const [source, setSource] = useState<Source>('composite');
   const [satState, setSatState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [mapState, setMapState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [composite, setComposite] = useState<CompositeState>({ status: 'loading' });
   const [blankDay, setBlankDay] = useState(false);
 
+  // A gesture moves the view on every pointer move; the imagery is fetched
+  // once it stops, so a drag across the map is one request, not forty.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSettled(view), 220);
+    return () => window.clearTimeout(timer);
+  }, [view]);
+
   const imagery = useMemo(
-    () => siteImagery(site.lat, site.lon, span.degrees, span.size, date),
-    [site.lat, site.lon, span, date],
+    () => siteImagery(settled.lat, settled.lon, settled.span, FRAME, date),
+    [settled, date],
   );
+
+  /** Zoom about a point of the frame, keeping the ground under the pointer. */
+  const zoomAt = (factor: number, fx = 0.5, fy = 0.5) => {
+    setView((current) => {
+      const span = Math.min(MAX_SPAN, Math.max(MIN_SPAN, current.span * factor));
+      if (span === current.span) return current;
+      const groundLon = current.lon + (fx - 0.5) * widthAt(current.span, current.lat);
+      const groundLat = current.lat + (0.5 - fy) * current.span;
+      return {
+        span,
+        lon: wrapLon(groundLon - (fx - 0.5) * widthAt(span, current.lat)),
+        lat: Math.max(-85, Math.min(85, groundLat - (0.5 - fy) * span)),
+      };
+    });
+  };
+
+  // One element per pane; both carry the same handlers over the same view.
+  const panes = useRef<Array<HTMLDivElement | null>>([]);
+
+  // Caught natively: a React wheel handler is passive and cannot stop the page
+  // scrolling underneath while the pointer is over a pane.
+  useEffect(() => {
+    const nodes = panes.current.filter((node): node is HTMLDivElement => Boolean(node));
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect();
+      zoomAt(
+        Math.exp(event.deltaY * 0.0012),
+        (event.clientX - rect.left) / rect.width,
+        (event.clientY - rect.top) / rect.height,
+      );
+    };
+    nodes.forEach((node) => node.addEventListener("wheel", onWheel, { passive: false }));
+    return () => nodes.forEach((node) => node.removeEventListener("wheel", onWheel));
+    // The panes keep their identity for the life of the modal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Where a drag started: pointer id, its origin, and the frame it is on. */
+  const gesture = useRef<{ id: number; x: number; y: number; width: number; height: number } | null>(null);
+
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    gesture.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      width: rect.width,
+      height: rect.height,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = gesture.current;
+    if (!start || start.id !== event.pointerId) return;
+    setDrag({ dx: event.clientX - start.x, dy: event.clientY - start.y });
+  };
+
+  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = gesture.current;
+    gesture.current = null;
+    setDrag(null);
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (!dx && !dy) return;
+    // Pixels to degrees: crossing part of the frame moves the centre by that
+    // same part of the box, so the ground stays under the pointer.
+    setView((current) => ({
+      ...current,
+      lon: wrapLon(current.lon - (dx / start.width) * widthAt(current.span, current.lat)),
+      lat: Math.max(-85, Math.min(85, current.lat + (dy / start.height) * current.span)),
+    }));
+  };
+
+  const dragStyle = drag
+    ? { transform: "translate(" + drag.dx + "px, " + drag.dy + "px)" }
+    : undefined;
+
+  /** Where the site sits inside the current view, as frame percentages. */
+  const siteLeft = 50 + ((site.lon - settled.lon) / imagery.widthDeg) * 100;
+  const siteTop = 50 - ((site.lat - settled.lat) / imagery.heightDeg) * 100;
+  const siteInFrame = siteLeft > -3 && siteLeft < 103 && siteTop > -3 && siteTop < 103;
 
   // The composite is built off-screen: `trueColorUrl`-style requests per day,
   // medianed pixel for pixel. A frame that fails is dropped from the stack, and
@@ -132,8 +254,8 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
     setComposite({ status: 'loading' });
 
     const days = compositeDates(date);
-    const urls = days.map((day) => boxImageryUrl(imagery.bbox, span.size, day));
-    cloudFreeComposite(urls, span.size, controller.signal)
+    const urls = days.map((day) => boxImageryUrl(imagery.bbox, FRAME, day));
+    cloudFreeComposite(urls, FRAME, controller.signal)
       .then((result) => {
         if (ticket !== run.current) {
           URL.revokeObjectURL(result.url);
@@ -151,7 +273,7 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
       controller.abort();
       run.current += 1;
     };
-  }, [source, imagery.bbox, span.size, date]);
+  }, [source, imagery.bbox, FRAME, date]);
 
   // The composited frame is an object URL; keep it alive only while it is shown.
   useEffect(() => {
@@ -168,7 +290,7 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
     ? `cloud-free median of ${compositedDays ?? COMPOSITE_DAYS} days to ${day(date)}`
     : `the ${day(date)} pass`;
 
-  const relief = reliefMapUrl(imagery.bbox, span.size);
+  const relief = reliefMapUrl(imagery.bbox, FRAME);
   const satLoading = usingComposite ? composite.status !== 'ready' : satState === 'loading';
 
   return (
@@ -261,13 +383,13 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
               <button
                 key={option.label}
                 type="button"
-                aria-pressed={option.label === span.label}
+                aria-pressed={Math.abs(view.span - option.degrees) < 1e-9}
                 className="segmented-btn"
                 onClick={() => {
-                  if (option.label === span.label) return;
+                  if (Math.abs(view.span - option.degrees) < 1e-9) return;
                   setSatState('loading');
                   setBlankDay(false);
-                  setSpan(option);
+                  setView((current) => ({ ...current, span: option.degrees }));
                 }}
               >
                 {option.label}
@@ -275,11 +397,40 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
             ))}
           </div>
         </div>
+
+        <div className="compare-control">
+          <span className="facet-label">Move the frame</span>
+          <div className="compare-zoom" role="group" aria-label="Map view">
+            <button type="button" className="segmented-btn" aria-label="Zoom in" onClick={() => zoomAt(1 / 1.7)}>
+              +
+            </button>
+            <button type="button" className="segmented-btn" aria-label="Zoom out" onClick={() => zoomAt(1.7)}>
+              &#8722;
+            </button>
+            <button
+              type="button"
+              className="segmented-btn"
+              onClick={() => setView({ lat: site.lat, lon: site.lon, span: SPANS[0].degrees })}
+            >
+              Reset
+            </button>
+          </div>
+          <span className="compare-hint">drag to pan · wheel to zoom</span>
+        </div>
       </div>
 
       <div className="compare-grid">
         <figure className="compare-pane">
-          <div className="compare-media">
+          <div
+            className={drag ? "compare-media is-dragging" : "compare-media"}
+            ref={(node) => {
+              panes.current[0] = node;
+            }}
+            onPointerDown={startDrag}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+          >
             {satState === 'failed' || blankDay ? (
               <div className="compare-missing">
                 {satState === 'failed' ? (
@@ -315,6 +466,7 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                     onError={() => setSatState('failed')}
                     className={satState === 'ready' && !blankDay ? 'is-loaded' : ''}
                     draggable={false}
+                    style={dragStyle}
                   />
                 ) : null}
               </>
@@ -348,7 +500,16 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
         </figure>
 
         <figure className="compare-pane">
-          <div className="compare-media">
+          <div
+            className={drag ? "compare-media is-dragging" : "compare-media"}
+            ref={(node) => {
+              panes.current[1] = node;
+            }}
+            onPointerDown={startDrag}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+          >
             {mapState === 'failed' ? (
               <div className="compare-missing">
                 <p>NASA GIBS did not return a relief map for this box.</p>
@@ -369,13 +530,20 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
                   onError={() => setMapState('failed')}
                   className={mapState === 'ready' ? 'is-loaded' : ''}
                   draggable={false}
+                  style={dragStyle}
                 />
               </>
             )}
             <span className="compare-tag" aria-hidden="true">
               a
             </span>
-            <span className="compare-crosshair" aria-hidden="true" />
+            {siteInFrame ? (
+              <span
+                className="compare-crosshair"
+                aria-hidden="true"
+                style={{ left: siteLeft + "%", top: siteTop + "%" }}
+              />
+            ) : null}
             <span className="compare-scale" aria-hidden="true">
               <span className="compare-scale-bar" />
               {Math.round(imagery.widthKm * 0.22).toLocaleString('en-US')} km

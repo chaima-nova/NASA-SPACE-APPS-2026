@@ -3302,12 +3302,22 @@ body::before {
 
 .compare-media {
   position: relative;
+  /* The panes are dragged, so the pointer is a grab hand and a touch drags
+     the map rather than scrolling the page. */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1 / 1;
   background: #04070c;
   overflow: hidden;
+}
+
+.compare-media.is-dragging {
+  cursor: grabbing;
 }
 
 .compare-media img {
@@ -3320,6 +3330,11 @@ body::before {
 
 .compare-media img.is-loaded {
   opacity: 1;
+}
+
+.compare-zoom {
+  display: flex;
+  gap: 4px;
 }
 
 .compare-corner {
