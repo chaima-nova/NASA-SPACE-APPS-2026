@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FeatureImportance } from './components/charts/FeatureImportance';
-import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { DistanceFilter } from './components/layout/DistanceFilter';
 import { TravelDialog } from './components/layout/TravelDialog';
@@ -995,18 +993,12 @@ export default function App() {
           <span className={evidenceOpen ? 'caret is-open' : 'caret'} aria-hidden="true" />
           Evidence &amp; provenance
           <span className="evidence-hint">
-            fit distribution · feature influence · lunar reference · data sources
+            lunar reference · data sources
           </span>
         </button>
 
         {evidenceOpen ? (
           <div className="evidence-grid">
-            <Panel title="Fit distribution" subtitle="Sites per analog-fit bucket">
-              <ScoreDistribution predictions={visiblePredictions} />
-            </Panel>
-            <Panel title="Feature influence" subtitle="Mean absolute contribution">
-              <FeatureImportance predictions={visiblePredictions} />
-            </Panel>
             <Panel
               title="Data sources"
               subtitle="NASA Earth, Moon & Mars datasets behind these layers"
