@@ -11,7 +11,7 @@ import { routeHref } from '../../lib/route';
  * is a file replacement — no code change.
  */
 const ARCTIC_PHOTO = `${import.meta.env.BASE_URL}home/arctic.jpg`;
-const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert-aligned.webp`;
+const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
 
 interface HomePageProps {
   /** Live counts, so the page never advertises numbers the app does not have. */
