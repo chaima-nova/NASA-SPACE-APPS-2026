@@ -32,7 +32,6 @@ import {
   saveNote,
   saveReportedSite,
   saveReview,
-  usingMockData,
 } from './services/api';
 import type {
   CommunityState,
@@ -609,10 +608,6 @@ export default function App() {
                 <span className="backdrop-dot" aria-hidden="true" />
                 Site backdrop
               </button>
-              <span className={usingMockData ? 'status status-mock' : 'status status-live'}>
-                <span className="status-dot" />
-                {usingMockData ? 'Sample data' : 'Live API'}
-              </span>
             </>
           ) : null}
           <a

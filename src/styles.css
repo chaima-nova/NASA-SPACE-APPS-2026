@@ -248,37 +248,7 @@ body::before {
   flex: none;
 }
 
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--line-2);
-  font-size: 0.64rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--ink-2);
-  white-space: nowrap;
-}
-
-.status-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--amber);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
-}
-
-.status-live {
-  color: var(--signal);
-  border-color: rgba(34, 211, 238, 0.32);
-}
-
-.status-live .status-dot {
-  background: var(--signal);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.75);
-}.topbar-link {
+.topbar-link {
   font-size: 0.62rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
