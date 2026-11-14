@@ -3,7 +3,15 @@ import { Modal } from './Modal';
 import { OriginPrompt } from './OriginPrompt';
 import type { Origin } from '../../lib/geo';
 import type { Prediction } from '../../data-contracts/types';
-import { ACCESS_LABELS, routeLinks, siteDirectionsUrl, travelAccessOf } from '../../lib/travel';;
+import {
+  ACCESS_LABELS,
+  formatHours,
+  formatMoney,
+  routeLinks,
+  siteDirectionsUrl,
+  travelAccessOf,
+  tripEstimate,
+} from '../../lib/travel';
 
 interface TripPlannerProps {
   /** The site the reader wants to reach. */
@@ -56,6 +64,8 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
 
   const access = travelAccessOf(site);
   const links = origin ? routeLinks(origin, site) : null;
+  /** What the trip costs and takes, as the two options a party picks between. */
+  const estimate = origin ? tripEstimate(origin, site) : null;
 
   /**
    * One click for a whole route: the flight search, the bus and train search
@@ -133,6 +143,42 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             <span className="itinerary-total">{Math.round(access.transferKm).toLocaleString("en-US")} km from {links.gatewayCode ?? "the gate"}</span>
           </div>
 
+          {/* Cost and time, for the two ways a party can make this trip.
+              The figures are modelled, so they are shown as a range, said to
+              be modelled, and left beside the live searches, which quote. */}
+          {estimate && estimate.options.length > 0 ? (
+            <>
+              <div className="trip-options">
+                {estimate.options.map((option) => (
+                  <article className={`trip-option is-${option.id}`} key={option.id}>
+                    <span className="trip-option-kicker">{option.headline}</span>
+                    <b className="trip-option-mode">{option.mode}</b>
+                    <span className="trip-option-price">
+                      {formatMoney(option.costLow)}–{formatMoney(option.costHigh)}
+                    </span>
+                    <span className="trip-option-time">
+                      {formatHours(option.hours)} · {Math.round(option.km).toLocaleString('en-US')} km
+                    </span>
+                  </article>
+                ))}
+              </div>
+
+              <p className="trip-total">
+                <span className="trip-total-label">Total cost</span>
+                <b>
+                  {formatMoney(estimate.totalLow)}–{formatMoney(estimate.totalHigh)}
+                </b>
+                <span className="trip-total-tag">modelled estimate</span>
+              </p>
+
+              <p className="distance-note">
+                {estimate.groundPossible
+                  ? "Both figures are modelled from the great-circle route to the gate and the measured last leg, priced for a party of four, and the range covers the spread. They are not quotes: the live searches above show the price of the day."
+                  : "Only the flying option is modelled from here: an overland trip would be further than the point at which a vehicle stops being the cheaper way to arrive."}
+              </p>
+            </>
+          ) : null}
+
           {/* The route as a vertical timeline: the start, each leg with the site that sells it, and the arrival. No clock times and no fares — the app knows neither, so the live search is the only honest figure. */}
           <ol className="trip-timeline">
             <li className="trip-step is-start"><span className="trip-step-mark" aria-hidden="true">◎</span><div className="trip-step-body"><span className="trip-step-kicker">Start</span><b>{origin?.label}</b></div></li>
@@ -147,7 +193,7 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             <button type="button" className="btn btn-primary" onClick={bookTrip}>Book Trip</button>
           </div>
 
-          <p className="distance-note">Book Trip opens the live searches for the flight, for bus and rail, and for the last leg — allow pop-ups if the browser asks. No fare and no schedule is quoted here, because this app does not know today's: each site shows its own, and the same links sit under each leg above.</p>
+          <p className="distance-note">Book Trip opens the live searches for the flight, for bus and rail, and for the last leg — allow pop-ups if the browser asks. The costs above are modelled ranges, not quotes: the live search has the price a party would actually pay, and the same links sit under each leg.</p>
 
           <div className="trip-actions">
             <button type="button" className="btn" onClick={onClose}>Close</button>
