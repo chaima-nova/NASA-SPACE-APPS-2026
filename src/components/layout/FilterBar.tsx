@@ -95,7 +95,7 @@ export function FilterBar({
           aria-controls="mission-constraints"
           onClick={() => setOpen((wasOpen) => !wasOpen)}
         >
-          Mission constraints
+          Mission Constraints
           {active > 0 ? <span className="chip-count">{active}</span> : null}
           <span className={open ? 'caret is-open' : 'caret'} aria-hidden="true" />
         </button>

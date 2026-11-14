@@ -276,8 +276,8 @@ function scatterPanel(
     ${grid}
     <line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="${SUB}" stroke-width="0.8" />
     <line x1="${left}" y1="${top}" x2="${left}" y2="${bottom}" stroke="${SUB}" stroke-width="0.8" />
-    <text x="${(left + right) / 2}" y="${y + h - 12}" font-size="9" fill="${SUB}" text-anchor="middle">Moon fit</text>
-    <text transform="translate(${x + 14}, ${(top + bottom) / 2}) rotate(-90)" font-size="9" fill="${SUB}" text-anchor="middle">Mars fit</text>
+    <text x="${(left + right) / 2}" y="${y + h - 12}" font-size="9" fill="${SUB}" text-anchor="middle">Moon Fit</text>
+    <text transform="translate(${x + 14}, ${(top + bottom) / 2}) rotate(-90)" font-size="9" fill="${SUB}" text-anchor="middle">Mars Fit</text>
     ${dots}
   </g>`;
 }

@@ -134,14 +134,14 @@ export function SiteInspector({
 
       <div className="split">
         <Meter
-          label="Moon fit"
+          label="Moon Fit"
           value={moonFit}
           accent="var(--moon)"
           active={target === 'moon'}
           hint="Fit against permanent Moon base conditions"
         />
         <Meter
-          label="Mars fit"
+          label="Mars Fit"
           value={marsFit}
           accent="var(--mars)"
           active={target === 'mars'}

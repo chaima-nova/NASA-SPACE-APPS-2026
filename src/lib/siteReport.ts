@@ -213,8 +213,8 @@ function detailTable(prediction: Prediction, target: Target): Table {
       '—',
       prediction.label,
     ],
-    ['score', 'Moon fit', fitFor(prediction, 'moon').toFixed(3), '—', '—', '—'],
-    ['score', 'Mars fit', fitFor(prediction, 'mars').toFixed(3), '—', '—', '—'],
+    ['score', 'Moon Fit', fitFor(prediction, 'moon').toFixed(3), '—', '—', '—'],
+    ['score', 'Mars Fit', fitFor(prediction, 'mars').toFixed(3), '—', '—', '—'],
     ['score', 'Model confidence', prediction.confidence.toFixed(2), '—', '—', '—'],
     ['score', 'Verdict', verdictOf(prediction, target), '—', '—', '—'],
     ...FACTOR_ORDER.map((key) => [
@@ -365,8 +365,8 @@ ${scoreRing(score, `${TARGET_LABELS[target]} fit`)}
       <dl class="facts">
         <div><dt>Analog fit</dt><dd>${score.toFixed(3)} · ${escapeXml(prediction.label)}</dd></div>
         <div><dt>Confidence</dt><dd>${prediction.confidence.toFixed(2)}</dd></div>
-        <div><dt>Moon fit</dt><dd>${fitFor(prediction, 'moon').toFixed(3)}</dd></div>
-        <div><dt>Mars fit</dt><dd>${fitFor(prediction, 'mars').toFixed(3)}</dd></div>
+        <div><dt>Moon Fit</dt><dd>${fitFor(prediction, 'moon').toFixed(3)}</dd></div>
+        <div><dt>Mars Fit</dt><dd>${fitFor(prediction, 'mars').toFixed(3)}</dd></div>
         <div><dt>Target ground</dt><dd>${
           body ? escapeXml(body.name) : 'not crosswalked'
         }</dd></div>
