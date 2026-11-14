@@ -92,12 +92,27 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
       className="compare-sites-modal"
     >
       <div className="cmp-head">
-        <div className="cmp-site">
-          <span className="kicker">Current analogue</span>
-          <h3>{current.siteName}</h3>
-          <span className="cmp-meta">
-            {terrainLabel(current)} · {formatCoords(current.lat, current.lon)}
-          </span>
+        {/* The two sites are the subject, so they sit as one centred pair with
+            a rule between them; the picker that changes the right-hand site
+            moves to the right edge, out of the line of comparison. */}
+        <div className="cmp-pair">
+          <div className="cmp-site">
+            <span className="kicker">Current analogue</span>
+            <h3>{current.siteName}</h3>
+            <span className="cmp-meta">
+              {terrainLabel(current)} · {formatCoords(current.lat, current.lon)}
+            </span>
+          </div>
+
+          <span className="cmp-rule" aria-hidden="true" />
+
+          <div className="cmp-site">
+            <span className="kicker">Compared with</span>
+            <h3>{other.siteName}</h3>
+            <span className="cmp-meta">
+              {terrainLabel(other)} · {formatCoords(other.lat, other.lon)}
+            </span>
+          </div>
         </div>
 
         <label className="cmp-pick">
@@ -111,14 +126,6 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
             ))}
           </select>
         </label>
-
-        <div className="cmp-site cmp-site-right">
-          <span className="kicker">Compared with</span>
-          <h3>{other.siteName}</h3>
-          <span className="cmp-meta">
-            {terrainLabel(other)} · {formatCoords(other.lat, other.lon)}
-          </span>
-        </div>
       </div>
 
       {/* The shape first: the scored axes as one silhouette per site, which is
