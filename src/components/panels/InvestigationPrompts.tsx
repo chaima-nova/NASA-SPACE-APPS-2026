@@ -221,7 +221,7 @@ const TRACKS: Track[] = [
       },
       {
         question: 'Can a crew get there, and does the journey fit a field season?',
-        evidence: `The gate airport and the modelled cheapest and fastest routes are already in the app under Plan my trip. A site with no commercial access is not a rehearsal site however good its terrain, because reaching it is part of whether an environment supports field work.`,
+        evidence: `The gate airport and the modelled cheapest and fastest routes are already in the app under Plan My Trip. A site with no commercial access is not a rehearsal site however good its terrain, because reaching it is part of whether an environment supports field work.`,
       },
     ],
   },

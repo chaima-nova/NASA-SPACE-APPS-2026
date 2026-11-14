@@ -281,10 +281,11 @@ export function SiteInspector({
         {/* Export and the copy-link action belong together: you export what is
             on screen, or you share the permalink to it. The comparison question
             is the longer one, so it keeps a row of its own underneath. */}
-        {/* The way out, above the things you carry back: a party planning a
-            field season settles how it gets there before what it exports. */}
+        {/* The way out runs the full width above them, not beside them: a party
+            planning a field season settles how it gets there before what it
+            exports, and the strip gives that decision the weight it has. */}
         <button type="button" className="btn btn-primary dossier-trip" onClick={onPlanTrip}>
-          Plan my trip
+          Plan My Trip
         </button>
         <div className="dossier-export">
           <button type="button" className="btn btn-primary" onClick={onExport}>

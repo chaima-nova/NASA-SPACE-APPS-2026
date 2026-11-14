@@ -25,7 +25,7 @@ interface TripPlannerProps {
 const money = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
 
 /**
- * "Plan my trip" — the reader's route to one site, as a two-step choice.
+ * "Plan My Trip" — the reader's route to one site, as a two-step choice.
  *
  * Step one asks the only question that actually has two answers: the cheapest
  * way there, or the fastest. Step two shows that route and hands over to sites
@@ -48,7 +48,7 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
   return (
     <Modal
       kicker="Logistics"
-      title="Plan my trip"
+      title="Plan My Trip"
       subtitle="Pick the trade-off you want — the cheapest way there, or the fastest — then take the route to a site that sells it."
       onClose={onClose}
       className="travel-modal"
