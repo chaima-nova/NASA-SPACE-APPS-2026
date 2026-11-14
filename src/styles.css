@@ -1767,18 +1767,20 @@ body::before {
   box-shadow: 0 0 6px var(--signal);
 }
 
-/* What the drawn layer is, or why nothing could be drawn, above the controls. */
+/* What the drawn layer is, or why nothing could be drawn, in a box at the top
+   left of the rail. Thin right-aligned text vanished into whatever the drape was
+   painting, which is the one thing it must not do. */
 .terrain-overlay-note {
-  position: absolute;
-  right: 15px;
-  bottom: 78px;
-  z-index: 4;
-  max-width: 330px;
   margin: 0;
-  text-align: right;
-  font-size: 0.58rem;
+  padding: 7px 9px;
+  width: 100%;
+  background: rgba(6, 10, 16, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  backdrop-filter: blur(6px);
+  font-size: 0.55rem;
   line-height: 1.5;
-  color: var(--ink-3);
+  color: var(--ink-2);
 }
 
 .terrain-stats {
@@ -3559,11 +3561,6 @@ body::before {
     bottom: 118px;
   }
 
-  .terrain-overlay-note {
-    right: 10px;
-    bottom: 152px;
-    max-width: 240px;
-  }
   .gallery-backdrop {
     padding: 10px;
   }
@@ -6756,20 +6753,34 @@ a.compare-thumb {
   }
 }
 
+/* The left rail: the layer's caption and its scale in one column, so a long
+   caption cannot land on the scale. Readouts, not controls, so a drag across
+   them still orbits the terrain. */
+.terrain-rail {
+  position: absolute;
+  left: 15px;
+  top: 92px;
+  bottom: 126px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 200px;
+  pointer-events: none;
+}
+
 /* The scale for whichever overlay is drawn, parked on the left edge where the
    ground is not. Fitted to the patch in view rather than to the planet: a
    planet-wide ramp put a 7 km site inside one colour, so the legend names the
    metres or the bands this ground actually occupies. */
 .terrain-scale {
-  position: absolute;
-  left: 15px;
-  top: 96px;
-  bottom: 126px;
-  z-index: 3;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
-  width: 138px;
+  width: 100%;
   padding: 9px 10px;
   background: rgba(6, 10, 16, 0.78);
   border: 1px solid var(--line);
@@ -6818,11 +6829,11 @@ a.compare-thumb {
   color: var(--ink-3);
 }
 
-/* On a phone the stats strip owns the bottom left, so the scale stops higher. */
+/* On a phone the stats strip owns the bottom left, so the rail stops higher. */
 @media (max-width: 720px) {
-  .terrain-scale {
+  .terrain-rail {
     top: 88px;
     bottom: 152px;
-    width: 116px;
+    width: 168px;
   }
 }
