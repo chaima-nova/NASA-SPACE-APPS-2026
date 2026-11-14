@@ -4,10 +4,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import type { Prediction } from '../../data-contracts/types';
+import type { Prediction, TargetSite } from '../../data-contracts/types';
 import { scoreColorHex } from '../../lib/colors';
 import { createStarfield } from '../../lib/starfield';
+import { createTargetMarker } from '../../lib/highlight';
 import { latLonToVec } from '../../lib/globe';
+import { formatCoords } from '../../lib/site';
 import { greenwichSiderealTime, moonLighting } from '../../lib/astro';
 
 interface MoonMapProps {
@@ -18,6 +20,12 @@ interface MoonMapProps {
    * sites do not belong on a lunar sphere.
    */
   showMarkers?: boolean;
+  /**
+   * Where the selected terrestrial site corresponds to on the Moon. The globe
+   * orbits to it and lights a marker there, so the panel answers "which lunar
+   * ground is this desert standing in for?" rather than only naming a phase.
+   */
+  highlight?: TargetSite | null;
 }
 
 interface Marker {
@@ -38,8 +46,10 @@ interface Marker {
  *
  * Drag to orbit, scroll to zoom, hover a marker for its analog-fit score.
  */
-export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
+export function MoonMap({ predictions, showMarkers = true, highlight = null }: MoonMapProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  /** Imperative handle so the selection can move the marker without a rebuild. */
+  const apiRef = useRef<{ apply(site: TargetSite | null): void } | null>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const phaseRef = useRef<HTMLSpanElement>(null);
   // Frozen per mount: the phase is computed once for this render of the scene.
@@ -160,6 +170,26 @@ export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
     // ---- Site markers -------------------------------------------------------
     const markerGroup = new THREE.Group();
     moon.add(markerGroup);
+
+    // ---- Target-body marker -------------------------------------------------
+    // Where the selected Earth site lands on the Moon. Built once with the
+    // scene and moved by the `highlight` effect below, because rebuilding this
+    // globe reloads two 4k textures and would flash on every click.
+    const targetMarker = createTargetMarker(RADIUS);
+    markerGroup.add(targetMarker.group);
+
+    /** Where the camera should settle when a target-body location is picked. */
+    let desiredCamera: THREE.Vector3 | null = null;
+
+    const applyHighlight = (site: TargetSite | null) => {
+      targetMarker.set(site);
+      if (!site) return;
+      // Keep the reader's zoom, but never drift inside the surface.
+      const distance = Math.min(Math.max(camera.position.length(), 3.4), 6.2);
+      desiredCamera = latLonToVec(site.lat, site.lon, distance);
+    };
+
+    apiRef.current = { apply: applyHighlight };
 
     const markers: Marker[] = [];
 
@@ -290,6 +320,18 @@ export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
       );
       controls.update();
 
+      // Swing the globe round to the picked location instead of snapping: the
+      // reader keeps their bearings and sees which way the body turned.
+      if (desiredCamera) {
+        camera.position.lerp(desiredCamera, 0.09);
+        if (camera.position.distanceTo(desiredCamera) < 0.02) {
+          camera.position.copy(desiredCamera);
+          desiredCamera = null;
+        }
+      }
+
+      targetMarker.tick(t);
+
       markers.forEach((m, i) => {
         const phase = (t * 0.9 + i * 0.28) % 1;
         const s = 0.7 + phase * 1.6;
@@ -310,6 +352,8 @@ export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
       renderer.domElement.removeEventListener('pointermove', onPointerMove);
       renderer.domElement.removeEventListener('pointerleave', onPointerLeave);
       controls.dispose();
+      apiRef.current = null;
+      targetMarker.dispose();
       bloom.dispose();
       composer.dispose();
       starfield.dispose();
@@ -323,10 +367,24 @@ export function MoonMap({ predictions, showMarkers = true }: MoonMapProps) {
     };
   }, [predictions, showMarkers]);
 
+  // Only the dot moves when the selection changes; the scene above is untouched.
+  useEffect(() => {
+    apiRef.current?.apply(highlight ?? null);
+  }, [highlight]);
+
   return (
     <div className="moon-map">
       <div ref={mountRef} className="three-mount" />
       <div ref={tipRef} className="moon-tip" />
+      {highlight ? (
+        <div className="target-caption">
+          <span className="target-caption-dot" aria-hidden="true" />
+          <span className="target-caption-name">{highlight.name}</span>
+          <span className="target-caption-coords">
+            {formatCoords(highlight.lat, highlight.lon)}
+          </span>
+        </div>
+      ) : null}
       <div className="moon-phase">
         <span className="moon-phase-dot" />
         <span ref={phaseRef}>

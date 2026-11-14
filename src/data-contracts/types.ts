@@ -67,6 +67,19 @@ export interface GeoPoint {
   elevationM?: number;
 }
 
+/**
+ * A location on a target body that a terrestrial site is being compared
+ * against — the lunar or martian ground the score is really about.
+ */
+export interface TargetSite {
+  /** Named feature on the target body, e.g. "Mare Tranquillitatis". */
+  name: string;
+  /** Planetographic latitude in degrees, north positive. */
+  lat: number;
+  /** East-positive longitude in degrees. */
+  lon: number;
+}
+
 /** One analog-fit inference result produced by Harshil's pipeline. */
 export interface Prediction {
   id: string;
@@ -95,6 +108,13 @@ export interface Prediction {
   region?: string;
   /** Optional mean elevation in metres. */
   elevationM?: number;
+  /**
+   * Optional: where on each target body this site corresponds to. Drives the
+   * lit marker on the comparison-target globe, so a reader can see which piece
+   * of lunar or martian ground the Earth site is standing in for. Absent on
+   * reports and on payloads written before the crosswalk existed.
+   */
+  targetSites?: Partial<Record<'moon' | 'mars', TargetSite>>;
   /**
    * Optional per-axis scores for the proposal's four pillars, each in [0, 1]:
    * geomorphology (slope, crater density), mineralogy (sulfates, iron oxides),

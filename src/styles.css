@@ -1337,6 +1337,49 @@ body::before {
   text-transform: capitalize;
 }
 
+/* Where the selected Earth site lands on the target body. Sits at the top so it
+   never stacks on the phase badge in the corner. */
+.target-caption {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--ink-2);
+  background: #070b11;
+  border: 1px solid var(--line-2);
+  pointer-events: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.target-caption-dot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9beaff;
+  box-shadow: 0 0 6px #9beaff;
+}
+
+.target-caption-name {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.target-caption-coords {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-3);
+}
+
 .moon-phase {
   position: absolute;
   left: 8px;
@@ -4723,4 +4766,127 @@ html[data-a11y-motion='reduced'] *::after {
   .topbar-link {
     display: none;
   }
+}
+
+/* ---- Distance filter ---------------------------------------------------- */
+
+.distance-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.distance-range {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.distance-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.distance-option {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 11px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.distance-option[aria-pressed='true'] {
+  border-color: var(--signal);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--signal);
+}
+
+.distance-option-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.distance-option-hint {
+  font-size: 0.66rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.distance-panel {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.distance-note {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.distance-field {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+}
+
+.distance-field-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+}
+
+.distance-field input {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+}
+
+.distance-field input:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 1px;
+}
+
+.distance-error {
+  margin: 10px 0 0;
+  font-size: 0.68rem;
+  color: #f0a08a;
+}
+
+.distance-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.distance-current-label {
+  font-size: 0.68rem;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

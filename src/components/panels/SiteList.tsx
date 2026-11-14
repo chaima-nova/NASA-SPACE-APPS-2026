@@ -5,6 +5,8 @@ import { formatScore, terrainLabel, type Target } from '../../lib/site';
 export interface RankedItem {
   prediction: Prediction;
   fit: number;
+  /** Kilometres from the reader's chosen origin, when that facet is on. */
+  distanceKm?: number;
 }
 
 interface SiteListProps {
@@ -32,7 +34,7 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
 
   return (
     <ol className="ranked-list" aria-label={`Sites ranked by ${target} analog fit`}>
-      {items.map(({ prediction, fit }, index) => {
+      {items.map(({ prediction, fit, distanceKm }, index) => {
         const selected = prediction.id === selectedId;
         return (
           <li key={prediction.id}>
@@ -48,6 +50,9 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
                 <span className="site-name">{prediction.siteName.split(',')[0]}</span>
                 <span className="site-meta">
                   {terrainLabel(prediction)} · {prediction.label}
+                  {distanceKm === undefined
+                    ? null
+                    : ' · ' + Math.round(distanceKm).toLocaleString('en-US') + ' km away'}
                 </span>
                 <span className="site-bar" aria-hidden="true">
                   <span

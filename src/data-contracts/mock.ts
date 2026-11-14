@@ -16,6 +16,7 @@ import type {
   GeoPoint,
   OrbitalObject,
   Prediction,
+  TargetSite,
   TerrainType,
 } from './types';
 
@@ -28,10 +29,15 @@ interface SiteSpec {
   region: string;
   elevationM: number;
   features: Record<string, number>;
+  /** Where on each target body this Earth site is standing in for. */
+  targetSites: Record<'moon' | 'mars', TargetSite>;
 }
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
+/** Terse helper for the target-body crosswalk rows. */
+const target = (name: string, lat: number, lon: number): TargetSite => ({ name, lat, lon });
 
 /**
  * Candidate analog sites. Feature keys describe how closely each place mirrors a
@@ -50,6 +56,10 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const SITES: SiteSpec[] = [
   {
     name: 'Atacama Desert, Chile',
+    targetSites: {
+      moon: target('Mare Tranquillitatis', 8.5, 31.4),
+      mars: target('Jezero Crater', 18.38, 77.58),
+    },
     lat: -23.5,
     lon: -69.2,
     focusArea: 'dual-analog',
@@ -60,6 +70,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Haughton Crater, Devon Island, Canada',
+    targetSites: {
+      moon: target('Shackleton connecting ridge', -89.45, 137),
+      mars: target('Gale Crater', -5.4, 137.8),
+    },
     lat: 75.37,
     lon: -89.68,
     focusArea: 'moon-base-analog',
@@ -70,6 +84,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Death Valley, California, USA',
+    targetSites: {
+      moon: target('Mare Imbrium', 32.8, -15.6),
+      mars: target('Melas Chasma', -9.8, -76.4),
+    },
     lat: 36.24,
     lon: -116.82,
     focusArea: 'mars-base-analog',
@@ -80,6 +98,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'McMurdo Dry Valleys, Antarctica',
+    targetSites: {
+      moon: target('Mons Mouton', -84.6, 31),
+      mars: target('Phoenix landing site', 68.22, -125.75),
+    },
     lat: -77.5,
     lon: 162.0,
     focusArea: 'mars-base-analog',
@@ -90,6 +112,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Mauna Kea, Hawaii, USA',
+    targetSites: {
+      moon: target('Marius Hills', 12, -52.8),
+      mars: target('Arsia Mons', -8.8, -120.1),
+    },
     lat: 19.82,
     lon: -155.47,
     focusArea: 'moon-base-analog',
@@ -100,6 +126,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Kilauea, Hawaii, USA',
+    targetSites: {
+      moon: target('Rimae Prinz', 27, -43),
+      mars: target('Elysium Planitia', 4.6, 135.9),
+    },
     lat: 19.42,
     lon: -155.29,
     focusArea: 'moon-base-analog',
@@ -110,6 +140,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Río Tinto, Spain',
+    targetSites: {
+      moon: target('Hadley Rille', 26.13, 3.63),
+      mars: target('Nili Fossae', 21, 74),
+    },
     lat: 37.69,
     lon: -6.56,
     focusArea: 'mars-base-analog',
@@ -120,6 +154,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Timanfaya, Lanzarote, Spain',
+    targetSites: {
+      moon: target('Mare Serenitatis', 28, 17.5),
+      mars: target('Olympus Mons', 18.65, -133.8),
+    },
     lat: 29.0,
     lon: -13.7,
     focusArea: 'moon-base-analog',
@@ -130,6 +168,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Craters of the Moon, Idaho, USA',
+    targetSites: {
+      moon: target('Ina irregular mare patch', 18.66, 5.3),
+      mars: target('Gusev Crater', -14.5, 175.4),
+    },
     lat: 43.42,
     lon: -113.52,
     focusArea: 'moon-base-analog',
@@ -140,6 +182,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Qaidam Basin, Tibetan Plateau, China',
+    targetSites: {
+      moon: target('South Pole–Aitken basin', -53, -169),
+      mars: target('Hellas Planitia', -42.4, 70.5),
+    },
     lat: 37.5,
     lon: 94.0,
     focusArea: 'mars-base-analog',
@@ -150,6 +196,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Mojave Desert, California, USA',
+    targetSites: {
+      moon: target('Oceanus Procellarum', 18, -57),
+      mars: target('Arcadia Planitia', 40, -160),
+    },
     lat: 35.0,
     lon: -116.0,
     focusArea: 'mars-base-analog',
@@ -160,6 +210,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Askja, Iceland',
+    targetSites: {
+      moon: target('de Gerlache rim', -88.5, -87.1),
+      mars: target('Deuteronilus Mensae', 42, 24),
+    },
     lat: 65.03,
     lon: -16.75,
     focusArea: 'dual-analog',
@@ -170,6 +224,10 @@ const SITES: SiteSpec[] = [
   },
   {
     name: 'Lava Beds National Monument, California, USA',
+    targetSites: {
+      moon: target('Mare Tranquillitatis pit', 8.34, 33.22),
+      mars: target('Arsia Mons skylights', -8.9, -120.2),
+    },
     lat: 41.71,
     lon: -121.51,
     focusArea: 'moon-base-analog',
@@ -213,7 +271,7 @@ const WEIGHTS = {
  * weighted formula so the UI shows plausible ranking structure until the real
  * pipeline lands.
  */
-function buildPredictions(points: GeoPoint[]): Prediction[] {
+function buildPredictions(points: GeoPoint[], specs: SiteSpec[]): Prediction[] {
   return points.map((point, i) => {
     const f = point.features;
     const tempSwingNorm = clamp01(f.diurnalTempSwingC / 40);
@@ -290,6 +348,7 @@ function buildPredictions(points: GeoPoint[]): Prediction[] {
       terrainType: point.terrainType,
       region: point.region,
       elevationM: point.elevationM,
+      targetSites: specs[i].targetSites,
       factors,
       label,
       confidence: round3(0.6 + 0.35 * ((Math.sin(i * 7.13) + 1) / 2)),
@@ -307,7 +366,7 @@ function buildPredictions(points: GeoPoint[]): Prediction[] {
   });
 }
 
-export const mockPredictions: Prediction[] = buildPredictions(mockGeoPoints);
+export const mockPredictions: Prediction[] = buildPredictions(mockGeoPoints, SITES);
 
 export const mockDatasets: DataSource[] = [
   {

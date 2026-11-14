@@ -12,6 +12,11 @@ interface ExportDialogProps {
   sheet?: string;
   /** The rows to write, already filtered to what is on screen. */
   table: Table;
+  /**
+   * A full standalone page to write instead of a bare table — the per-site
+   * analysis, with its charts. Falls back to a table page when absent.
+   */
+  html?: string;
   subtitle: string;
   onClose: () => void;
 }
@@ -80,6 +85,7 @@ export function ExportDialog({
   filename,
   sheet = 'Sites',
   table,
+  html,
   subtitle,
   onClose,
 }: ExportDialogProps) {
@@ -105,14 +111,14 @@ export function ExportDialog({
   }
 
   function saveHtml() {
-    downloadFile(`${filename}.html`, tableHtml(title, table), 'text/html');
+    downloadFile(`${filename}.html`, html ?? tableHtml(title, table), 'text/html');
     onClose();
   }
 
   return (
     <Modal
       kicker="Export"
-      title="Take this ranking with you"
+      title="Take this analysis with you"
       subtitle={subtitle}
       onClose={onClose}
       className="export-modal"
@@ -123,7 +129,7 @@ export function ExportDialog({
           <span className="export-option-text">
             <span className="export-option-label">Export to Excel</span>
             <span className="export-option-hint">
-              A .xlsx workbook with one sheet, frozen header and real numbers.
+              One sheet: every metric, the target's demand and the gap, plus the raw features.
             </span>
           </span>
         </button>
@@ -133,7 +139,7 @@ export function ExportDialog({
           <span className="export-option-text">
             <span className="export-option-label">Export to Google Sheets</span>
             <span className="export-option-hint">
-              Copies the table, then opens a blank sheet to paste into.
+              Copies the same metric-by-metric table, then opens a blank sheet.
             </span>
           </span>
         </button>
@@ -143,7 +149,7 @@ export function ExportDialog({
           <span className="export-option-text">
             <span className="export-option-label">Export to HTML</span>
             <span className="export-option-hint">
-              A standalone .html table that opens in any browser and prints cleanly.
+              A standalone report: score ring, pillar charts, mismatch table, prints cleanly.
             </span>
           </span>
         </button>

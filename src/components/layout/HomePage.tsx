@@ -122,7 +122,10 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
     };
 
     const resize = () => {
-      const box = hero.getBoundingClientRect();
+      // Measure the canvas, not the hero: the canvas sits inside the hero border,
+      // so sizing it from the outer box painted the sand at a marginally larger
+      // scale than the ice and left the dune tips slightly off the peaks.
+      const box = canvas.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       width = Math.max(1, Math.round(box.width * dpr));
       height = Math.max(1, Math.round(box.height * dpr));
