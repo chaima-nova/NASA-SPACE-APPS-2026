@@ -308,7 +308,7 @@ function sheetName(title: string): string {
  * and fitted columns. The header freezes at whatever row it lands on, so the
  * title block scrolls away while the column names stay put.
  */
-function sheetXml(sheet: Sheet): string {
+function sheetXml(sheet: Sheet, drawing = false): string {
   const table = sheet.table;
   const columns = Math.max(table.header.length, 1);
   const lastColumn = columnName(columns - 1);
@@ -373,7 +373,39 @@ function sheetXml(sheet: Sheet): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0"><pane ySplit="${headerRow}" topLeftCell="A${headerRow + 1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="16"/><cols>${cols}</cols><sheetData>${rows.join(
     '',
-  )}</sheetData>${filter}${merged}</worksheet>`;
+  )}</sheetData>${filter}${merged}${drawing ? '<drawing r:id="rId1"/>' : ''}</worksheet>`;
+}
+
+/** One EMU is 1/9525 of a pixel, which is the unit drawings are measured in. */
+const EMU = 9525;
+
+/**
+ * The four parts a picture needs: the sheet's relationship to its drawing, the
+ * drawing itself, the drawing's relationship to the media file, and the media.
+ * The anchor is one cell — the image keeps its size and floats from A5, below
+ * the plate sheet's title block.
+ */
+function figureFiles(figure: WorkbookFigure): { name: string; data: Uint8Array }[] {
+  const cx = Math.round(figure.width * EMU);
+  const cy = Math.round(figure.height * EMU);
+  return [
+    {
+      name: 'xl/worksheets/_rels/sheet1.xml.rels',
+      data: encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>`),
+    },
+    {
+      name: 'xl/drawings/drawing1.xml',
+      data: encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>4</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="${cx}" cy="${cy}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="1" name="Evidence plate"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`),
+    },
+    {
+      name: 'xl/drawings/_rels/drawing1.xml.rels',
+      data: encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/></Relationships>`),
+    },
+    { name: 'xl/media/image1.png', data: figure.bytes },
+  ];
 }
 
 /**
@@ -390,9 +422,37 @@ const STYLES_XML = `<styleSheet xmlns="http://schemas.openxmlformats.org/spreads
  * one download with both tabs is what a field party actually hands on. Sheet
  * names are de-duplicated, because Excel refuses a workbook that repeats one.
  */
-export function workbookXlsx(title: string, sheets: Sheet[]): Blob {
-  const requested: Sheet[] =
-    sheets.length > 0 ? sheets : [{ name: 'Sites', table: { header: ['empty'], rows: [] } }];
+/**
+ * A picture to sit beside the tables. Excel holds bitmaps, not vector, so the
+ * caller rasterises whatever it wants shown and hands the bytes over here.
+ * `width`/`height` are the size it occupies on the sheet, in pixels.
+ */
+export interface WorkbookFigure {
+  bytes: Uint8Array;
+  width: number;
+  height: number;
+}
+
+export function workbookXlsx(
+  title: string,
+  sheets: Sheet[],
+  figure: WorkbookFigure | null = null,
+): Blob {
+  // The plate gets the leading tab: a reader opening the workbook should meet
+  // the figures before the tables, the way a paper puts its plate first.
+  const plateSheet: Sheet | null = figure
+    ? {
+        name: 'Evidence plate',
+        title,
+        note: 'Pillar profile, score drivers, position in the field and the Moon/Mars trade-off — drawn from this site\u2019s own numbers.',
+        table: { header: ['Figure 1 — evidence plate'], rows: [] },
+      }
+    : null;
+  const requested: Sheet[] = plateSheet
+    ? [plateSheet, ...sheets]
+    : sheets.length > 0
+      ? sheets
+      : [{ name: 'Sites', table: { header: ['empty'], rows: [] } }];
 
   const used: string[] = [];
   const tabs = requested.map((entry) => {
@@ -414,6 +474,10 @@ export function workbookXlsx(title: string, sheets: Sheet[]): Blob {
     )
     .join('');
 
+  const figureContent = figure
+    ? '<Default Extension="png" ContentType="image/png"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>'
+    : '';
+
   const sheetEntries = tabs
     .map(
       (tab, index) =>
@@ -432,7 +496,7 @@ export function workbookXlsx(title: string, sheets: Sheet[]): Blob {
     {
       name: '[Content_Types].xml',
       data: encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${contentOverrides}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`),
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${figureContent}<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${contentOverrides}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`),
     },
     {
       name: '_rels/.rels',
@@ -457,8 +521,9 @@ export function workbookXlsx(title: string, sheets: Sheet[]): Blob {
     { name: 'xl/styles.xml', data: encoder.encode(STYLES_XML) },
     ...tabs.map((tab, index) => ({
       name: `xl/worksheets/sheet${index + 1}.xml`,
-      data: encoder.encode(sheetXml(tab)),
+      data: encoder.encode(sheetXml(tab, Boolean(figure) && index === 0)),
     })),
+    ...(figure ? figureFiles(figure) : []),
   ];
 
   return zipStore(files);

@@ -286,10 +286,14 @@ export default function App() {
     () => (selected ? targetSiteOf(selected, 'mars') : null),
     [selected],
   );
-  /** The single-site analysis the export dialog writes. */
+  /**
+   * The single-site analysis the export dialog writes. The whole ranked field
+   * goes in with it: the plate's distribution and scatter compare this site
+   * against every other one, and a one-site field would show nothing.
+   */
   const exportReport = useMemo(
-    () => (selected ? siteReport(selected, target) : null),
-    [selected, target],
+    () => (selected ? siteReport(selected, target, predictions) : null),
+    [selected, target, predictions],
   );
 
   /** The itinerary tab the export can add, once an origin is known. */
@@ -1080,6 +1084,7 @@ export default function App() {
           subtitle={exportReport.subtitle}
           table={exportReport.table}
           html={exportReport.html}
+          plate={exportReport.plate}
           travel={exportTravel}
           onClose={() => setExportOpen(false)}
         />
