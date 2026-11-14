@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 # ── Load sample CSV ────────────────────────────────────────────────────────
-df = pd.read_csv(r"F:\Sem5\nasa\data\samples\lola_moon_south_pole_sample.csv")
+df = pd.read_csv(r"F:\Sem5\nasa\abid\data\samples\lola_moon_south_pole_sample.csv")
 print(df.head())
 print(f"\nShape: {df.shape}")
 print(f"\nStatistics:\n{df['elevation_m'].describe()}")

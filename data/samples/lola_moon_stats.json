@@ -5,28 +5,28 @@
   "region": "Lunar South Pole",
   "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
   "bbox": [
-    0.0,
+    -45.0,
     -90.0,
-    360.0,
+    45.0,
     -80.0
   ],
   "grid_resolution_deg": 0.25,
   "elevation_m": {
-    "min": -6439.0,
+    "min": -4100.5,
     "max": 6846.0,
-    "mean": -1234.5,
-    "std": 1832.0
+    "mean": -192.1,
+    "std": 2083.2
   },
   "slope_deg": {
-    "min": 0.02,
-    "max": 46.68,
-    "mean": 6.87
+    "min": 0.05,
+    "max": 69.64,
+    "mean": 8.91
   },
   "roughness_tri_m": {
-    "min": 5.57,
+    "min": 8.4,
     "max": 6945.45,
-    "mean": 1482.93
+    "mean": 1795.03
   },
-  "sample_rows": 25000,
+  "sample_rows": 14400,
   "source_citation": "Smith et al. (2010). Initial observations from the Lunar Orbiter Laser Altimeter (LOLA). GRL."
 }

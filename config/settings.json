@@ -10,23 +10,24 @@
   },
 
   "focus_areas": {
-    "_note": "UNRESOLVED REQUIREMENT – The three official focus areas for the Space Apps Challenge have not yet been confirmed. The pipeline is currently configured around Earth/Mars/Moon planetary analogue comparison, which is the working hypothesis. Update this block once the official challenge theme is confirmed.",
-    "confirmed": false,
+    "confirmed": true,
+    "theme": "Cross-Planetary Terrestrial Analogue Research (Earth, Mars, Moon)",
     "working_hypothesis": ["earth", "mars", "moon"],
     "alternative_options": [
       "specific Earth biomes (desert, polar, volcanic)",
-      "specific Mars regions (Hellas, Valles Marineris, Jezero)",
-      "specific Lunar regions (south pole, equatorial)"
+      "specific Mars regions (Hellas, Valles Marineris, Jezero, Syrtis Major)",
+      "specific Lunar regions (south pole, equatorial, highlands)"
     ]
   },
 
   "regions_of_interest": {
     "earth": {
-      "_comment": "Atacama Desert, Chile – hyperarid, iron-rich, extensively studied Mars analogue",
-      "name": "Atacama Desert",
-      "bbox": [-70.0, -24.5, -68.0, -22.0],
+      "_comment": "Atacama Desert, Chile (tile S24W069) – hyperarid, iron-rich Mars analogue",
+      "name": "Atacama Desert (Tile S24W069)",
+      "bbox": [-69.0, -24.0, -68.0, -23.0],
       "bbox_note": "[west, south, east, north] in decimal degrees WGS84",
       "alternative_regions": {
+        "atacama_regional": [-70.0, -24.5, -68.0, -22.0],
         "sahara_niger": [13.0, 20.0, 17.0, 23.0],
         "iceland_volcanic": [-24.0, 63.5, -18.0, 65.5],
         "devon_island_arctic": [-85.0, 75.0, -80.0, 76.5],
@@ -34,24 +35,26 @@
       }
     },
     "mars": {
-      "_comment": "Jezero Crater – Mars 2020/Perseverance landing site; Hellas Basin as alternative",
+      "_comment": "Jezero Crater – Mars 2020/Perseverance landing site; Syrtis Major as regional context",
       "name": "Jezero Crater",
-      "bbox": [76.0, 17.0, 78.5, 19.5],
+      "bbox": [76.0, 17.0, 79.0, 20.0],
       "bbox_note": "[west, south, east, north] in Mars areographic degrees",
       "alternative_regions": {
+        "syrtis_major": [60.0, 5.0, 75.0, 20.0],
         "hellas_basin": [60.0, -50.0, 80.0, -35.0],
         "valles_marineris": [-90.0, -15.0, -30.0, -5.0],
         "gale_crater": [136.0, -6.0, 139.0, -3.0]
       }
     },
     "moon": {
-      "_comment": "Lunar South Pole – Artemis target area; permanently shadowed regions and water ice evidence",
+      "_comment": "Lunar South Pole – Artemis target area (80S to 90S, 0-360E)",
       "name": "Lunar South Pole",
-      "bbox": [-45.0, -90.0, 45.0, -80.0],
+      "bbox": [0.0, -90.0, 360.0, -80.0],
       "bbox_note": "[west, south, east, north] in selenographic degrees",
       "alternative_regions": {
         "shackleton_crater": [-10.0, -89.9, 10.0, -89.5],
-        "mare_tranquillitatis": [20.0, 0.0, 35.0, 12.0]
+        "mare_tranquillitatis": [20.0, 0.0, 35.0, 12.0],
+        "lunar_highlands": [15.0, -15.0, 35.0, 5.0]
       }
     }
   },

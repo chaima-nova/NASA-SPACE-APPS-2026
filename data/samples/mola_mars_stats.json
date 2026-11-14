@@ -7,26 +7,26 @@
   "bbox": [
     76.0,
     17.0,
-    79.0,
-    20.0
+    78.5,
+    19.5
   ],
   "grid_resolution_deg": 0.25,
   "elevation_m": {
-    "min": -3723.0,
-    "max": -364.0,
-    "mean": -2147.1,
-    "std": 726.9
+    "min": -3434.0,
+    "max": -749.0,
+    "mean": -2121.9,
+    "std": 601.1
   },
   "slope_deg": {
     "min": 0.23,
-    "max": 3.74,
-    "mean": 1.21
+    "max": 3.27,
+    "mean": 1.2
   },
   "roughness_tri_m": {
-    "min": 191.05,
-    "max": 2385.22,
-    "mean": 778.16
+    "min": 102.64,
+    "max": 2037.56,
+    "mean": 754.01
   },
-  "sample_rows": 144,
+  "sample_rows": 100,
   "source_citation": "Smith et al. (2001). Mars Orbiter Laser Altimeter. JGR Planets."
 }
