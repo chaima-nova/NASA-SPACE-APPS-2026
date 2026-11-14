@@ -3,9 +3,8 @@
  *
  * This is the team's own division of work, kept in data rather than in the page
  * so a name, a role or a responsibility is a one-line edit here. The
- * responsibilities are the remit as the team defined it, written as statements
- * so a reader sees what each person is answerable for rather than a note
- * addressed to them.
+ * responsibilities are the team's own core-responsibility column, split at its
+ * commas so each line is one thing owned rather than a paragraph to read.
  *
  * The team owner is listed first, because the owner is the one answerable for
  * the whole; the rest follow in the order the work reaches them.
@@ -27,50 +26,50 @@ export const TEAM: readonly TeamMember[] = [
     role: 'Product Direction & System Integration',
     owner: true,
     tasks: [
-      'Set the product architecture: what the finder is for, and how its parts fit.',
-      'Own the discovery workflow a reader moves through.',
-      'Coordinate across the data, science, ML and interface threads.',
-      'Integrate the modules into one running system, and tell its story.',
+      'Product architecture.',
+      'Discovery workflow.',
+      'Cross-team coordination.',
+      'System integration and storytelling.',
     ],
   },
   {
     name: 'Abid',
     role: 'Geospatial Data & GIS',
     tasks: [
-      'Own dataset availability: what exists, from which mission, and under what licence.',
-      'Establish geographic coverage — which regions each layer actually reaches.',
-      'Harmonise the spatial layers: projections, grids and resolution, so they can be joined.',
-      'Map the candidate sites those layers support.',
+      'Dataset availability.',
+      'Geographic coverage.',
+      'Spatial harmonisation.',
+      'Candidate mapping.',
     ],
   },
   {
     name: 'Zehra',
     role: 'Scientific Criteria & Validation',
     tasks: [
-      'Define the planetary criteria a terrestrial site has to meet to count as an analog.',
-      'Judge scientific comparability between Earth conditions and the Moon or Mars.',
-      'Keep the reference literature behind every criterion.',
-      'Own the validation methodology, so a score can be defended rather than asserted.',
+      'Planetary criteria.',
+      'Scientific comparability.',
+      'Reference literature.',
+      'Validation methodology.',
     ],
   },
   {
     name: 'Harshil',
     role: 'Machine Learning & AI',
     tasks: [
-      'Analyse the features: which measurements actually separate a good analog from a poor one.',
-      'Build the screening algorithms that cut a continent down to a shortlist.',
-      'Train the candidate-detection models.',
-      'Evaluate performance, and report what the models get wrong.',
+      'Feature analysis.',
+      'Screening algorithms.',
+      'Candidate-detection models.',
+      'Performance evaluation.',
     ],
   },
   {
     name: 'Jasmine',
     role: 'Frontend & User Experience',
     tasks: [
-      'Build the Analog Atlas visual interface.',
-      'Design the Analog Quest flow, from the first question to a shortlist.',
-      'Render the Analog DNA profiles that explain a site at a glance.',
-      'Own the candidate-investigation experience: dossier, comparison and export.',
+      'Analog Atlas visual UI.',
+      'Analog Quest flow.',
+      'Analog DNA profiles.',
+      'Candidate investigation UX.',
     ],
   },
 ];
