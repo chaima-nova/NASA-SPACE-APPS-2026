@@ -308,9 +308,6 @@ export interface TripEstimate {
   options: TripOption[];
   /** True when an overland-only trip is plausible from where the reader is. */
   groundPossible: boolean;
-  /** What a party should budget for, across the options offered. */
-  totalLow: number;
-  totalHigh: number;
 }
 
 /** Fares are quoted to the nearest ten: a modelled number should not pretend
@@ -381,13 +378,7 @@ export function tripEstimate(origin: Origin, site: Place): TripEstimate {
     });
   }
 
-  return {
-    airKm,
-    options,
-    groundPossible,
-    totalLow: options.length ? Math.min(...options.map((option) => option.costLow)) : 0,
-    totalHigh: options.length ? Math.max(...options.map((option) => option.costHigh)) : 0,
-  };
+  return { airKm, options, groundPossible };
 }
 
 /** Hours as a reader reads them: "14 h 20 m". */

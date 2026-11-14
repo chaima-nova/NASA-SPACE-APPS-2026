@@ -11,6 +11,7 @@ import {
   siteDirectionsUrl,
   travelAccessOf,
   tripEstimate,
+  type TripOption,
 } from '../../lib/travel';
 
 interface TripPlannerProps {
@@ -68,6 +69,22 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
   const estimate = origin ? tripEstimate(origin, site) : null;
 
   /**
+   * Which of the two ways the reader is taking. The cards below are the choice,
+   * and everything after them follows it: the total is the cost of the picked
+   * route rather than a spread across both, the timeline describes that route,
+   * and Book Trip opens only the searches that sell it.
+   *
+   * The pick is held by id, not by the option object, because the estimate is
+   * rebuilt whenever the site or the start point changes. When the picked way
+   * stops being offered — a road trip once the next site is too far from this
+   * start point — the first option still offered takes over, so nothing is left
+   * pressed at a route that is not on screen.
+   */
+  const [pick, setPick] = useState<TripOption['id']>('faster');
+  const selected = estimate?.options.find((option) => option.id === pick) ?? estimate?.options[0] ?? null;
+  const byRoad = selected?.id === 'cheaper';
+
+  /**
    * One click for a whole route: the flight search, the bus and train search
    * and the final-leg directions, opened together. A trip is booked as a
    * route, not leg by leg; the same links also sit under each leg for
@@ -75,11 +92,11 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
    */
   const bookTrip = () => {
     if (!links) return;
-    const targets = [
-      links.flights,
-      links.transit,
-      links.directions,
-    ];
+    // A road trip is one drive: there is no flight and no gate transfer to
+    // search, so opening those would send a party after tickets it will not use.
+    const targets = byRoad
+      ? [links.directions]
+      : [links.flights, links.transit, links.directions];
     for (const href of targets) {
       if (href) window.open(href, '_blank', 'noopener');
     }
@@ -140,17 +157,31 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
         <>
           <div className="travel-summary">
             <span className={`travel-badge is-${access.access}`}>{ACCESS_LABELS[access.access]}</span>
-            <span className="itinerary-total">{Math.round(access.transferKm).toLocaleString("en-US")} km from {links.gatewayCode ?? "the gate"}</span>
+            <span className="itinerary-total">{byRoad && selected ? `${Math.round(selected.km).toLocaleString("en-US")} km by road from ${origin?.label ?? "your start point"}` : `${Math.round(access.transferKm).toLocaleString("en-US")} km from ${links.gatewayCode ?? "the gate"}`}</span>
           </div>
 
-          {/* Cost and time, for the two ways a party can make this trip.
-              The figures are modelled, so they are shown as a range, said to
-              be modelled, and left beside the live searches, which quote. */}
+          {/* Cost and time, as the two ways a party can make this trip — and a
+              choice between them. The cards are buttons: pressing one re-costs
+              the total, rewrites the timeline below and narrows Book Trip to the
+              searches that sell the route picked, so the screen describes one
+              trip rather than two half-trips. The figures stay modelled, so the
+              total is a range said to be modelled, with the live search beside
+              it as the only quote. */}
           {estimate && estimate.options.length > 0 ? (
             <>
-              <div className="trip-options">
+              <div
+                className={`trip-options${estimate.options.length > 1 ? '' : ' is-single'}`}
+                role="group"
+                aria-label="Choose how to make the trip"
+              >
                 {estimate.options.map((option) => (
-                  <article className={`trip-option is-${option.id}`} key={option.id}>
+                  <button
+                    type="button"
+                    className="trip-option"
+                    key={option.id}
+                    aria-pressed={selected?.id === option.id}
+                    onClick={() => setPick(option.id)}
+                  >
                     <span className="trip-option-kicker">{option.headline}</span>
                     <b className="trip-option-mode">{option.mode}</b>
                     <span className="trip-option-price">
@@ -159,31 +190,33 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
                     <span className="trip-option-time">
                       {formatHours(option.hours)} · {Math.round(option.km).toLocaleString('en-US')} km
                     </span>
-                  </article>
+                  </button>
                 ))}
               </div>
 
-              <p className="trip-total">
-                <span className="trip-total-label">Total cost</span>
-                <b>
-                  {formatMoney(estimate.totalLow)}–{formatMoney(estimate.totalHigh)}
-                </b>
-                <span className="trip-total-tag">modelled estimate</span>
-              </p>
+              {selected ? (
+                <p className="trip-total" aria-live="polite">
+                  <span className="trip-total-label">Total cost · {selected.headline}</span>
+                  <b>{formatMoney(selected.costLow)}–{formatMoney(selected.costHigh)}</b>
+                  <span className="trip-total-tag">modelled estimate</span>
+                </p>
+              ) : null}
 
               <p className="distance-note">
-                {estimate.groundPossible
-                  ? "Both figures are modelled from the great-circle route to the gate and the measured last leg, priced for a party of four, and the range covers the spread. They are not quotes: the live searches above show the price of the day."
-                  : "Only the flying option is modelled from here: an overland trip would be further than the point at which a vehicle stops being the cheaper way to arrive."}
+                {byRoad
+                  ? "Priced as one road journey from your start point to the site, with the vehicle and its fuel carried by the party of four. It is a modelled range, not a quote: the driving search below has the real fuel, tolls and hire prices."
+                  : estimate.groundPossible
+                    ? "Both figures are modelled from the great-circle route to the gate and the measured last leg, priced for a party of four, and the range covers the spread. They are not quotes: the live searches above show the price of the day."
+                    : "Only the flying option is modelled from here: an overland trip would be further than the point at which a vehicle stops being the cheaper way to arrive."}
               </p>
             </>
           ) : null}
 
-          {/* The route as a vertical timeline: the start, each leg with the site that sells it, and the arrival. No clock times and no fares — the app knows neither, so the live search is the only honest figure. */}
+          {/* The route as a vertical timeline for the option picked above: the start, the leg or legs that option uses with the site that sells each, and the arrival. The hours and the total are modelled; the live search beside each leg is the only quote. */}
           <ol className="trip-timeline">
             <li className="trip-step is-start"><span className="trip-step-mark" aria-hidden="true">◎</span><div className="trip-step-body"><span className="trip-step-kicker">Start</span><b>{origin?.label}</b></div></li>
-            {links.flights ? (<li className="trip-step is-air"><span className="trip-step-mark" aria-hidden="true">✈</span><div className="trip-step-body"><span className="trip-step-kicker">Flight</span><b>Fly to {links.gatewayCode}</b><span className="trip-step-detail">{origin?.label} → {links.gatewayCode} · {access.gateway?.name}</span><a className="trip-step-link" href={links.flights} target="_blank" rel="noreferrer">Search Live Flights to {links.gatewayCode}</a></div></li>) : null}
-            <li className="trip-step is-ground"><span className="trip-step-mark" aria-hidden="true">⇢</span><div className="trip-step-body"><span className="trip-step-kicker">Ground</span><b>{access.transferMode}</b><span className="trip-step-detail">{links.gatewayCode ?? "the gate"} → {site.siteName}</span><a className="trip-step-link" href={links.directions} target="_blank" rel="noreferrer">Directions to the Site</a></div></li>
+            {!byRoad && links.flights ? (<li className="trip-step is-air"><span className="trip-step-mark" aria-hidden="true">✈</span><div className="trip-step-body"><span className="trip-step-kicker">Flight</span><b>Fly to {links.gatewayCode}</b><span className="trip-step-detail">{origin?.label} → {links.gatewayCode} · {access.gateway?.name}</span><a className="trip-step-link" href={links.flights} target="_blank" rel="noreferrer">Search Live Flights to {links.gatewayCode}</a></div></li>) : null}
+            <li className="trip-step is-ground"><span className="trip-step-mark" aria-hidden="true">⇢</span><div className="trip-step-body"><span className="trip-step-kicker">{byRoad ? "Road" : "Ground"}</span><b>{byRoad ? "Drive to the site" : access.transferMode}</b><span className="trip-step-detail">{byRoad ? origin?.label : (links.gatewayCode ?? "the gate")} → {site.siteName}</span>{byRoad && selected ? (<span className="trip-step-detail">{formatHours(selected.hours)} on the road · {Math.round(selected.km).toLocaleString("en-US")} km</span>) : null}<a className="trip-step-link" href={links.directions} target="_blank" rel="noreferrer">{byRoad ? "Search the Driving Route" : "Directions to the Site"}</a></div></li>
             <li className="trip-step is-end"><span className="trip-step-mark" aria-hidden="true">◉</span><div className="trip-step-body"><span className="trip-step-kicker">Arrive</span><b>{site.siteName}</b><span className="trip-step-detail">{Math.round(access.transferKm).toLocaleString("en-US")} km from {links.gatewayCode ?? "the gate"}</span></div></li>
           </ol>
 
@@ -193,7 +226,11 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             <button type="button" className="btn btn-primary" onClick={bookTrip}>Book Trip</button>
           </div>
 
-          <p className="distance-note">Book Trip opens the live searches for the flight, for bus and rail, and for the last leg — allow pop-ups if the browser asks. The costs above are modelled ranges, not quotes: the live search has the price a party would actually pay, and the same links sit under each leg.</p>
+          <p className="distance-note">
+            {byRoad
+              ? "Book Trip opens the driving route for this trip, with the same link beside the road leg — allow pop-ups if the browser asks. The total above is a modelled range, not a quote: the search is where the real fuel, tolls and hire prices are."
+              : "Book Trip opens the live searches for the flight, for bus and rail, and for the last leg — allow pop-ups if the browser asks. The total above is a modelled range, not a quote: the live search has the price a party would actually pay, and the same links sit under each leg."}
+          </p>
 
           <div className="trip-actions">
             <button type="button" className="btn" onClick={onClose}>Close</button>

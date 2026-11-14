@@ -6632,19 +6632,43 @@ a.compare-thumb {
   margin-top: 12px;
 }
 
+/* Each card is a button. The two are alternatives rather than a comparison:
+   pressing one re-costs the total, rewrites the timeline and narrows Book Trip,
+   so exactly one is pressed at a time and the pressed card is the route the
+   rest of the dialog describes. */
 .trip-option {
   display: grid;
   gap: 3px;
   padding: 10px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
   background: var(--surface-2);
   border: 1px solid var(--line-2);
   border-radius: 6px;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
 }
 
-/* The faster option carries the signal edge: it is the itinerary the rest of
-   the planner builds, and the one the timeline below describes. */
-.trip-option.is-faster {
-  border-color: rgba(34, 211, 238, 0.45);
+.trip-option:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+.trip-option:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.trip-option[aria-pressed='true'] {
+  background: rgba(34, 211, 238, 0.09);
+  border-color: var(--signal);
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.4);
+}
+
+/* One option only, when the road is not plausible: the card keeps the full
+   width rather than sitting in half a two-column grid. */
+.trip-options.is-single {
+  grid-template-columns: 1fr;
 }
 
 .trip-option-kicker {
@@ -6707,7 +6731,8 @@ a.compare-thumb {
 }
 
 @media (max-width: 520px) {
-  .trip-options {
+  .trip-options,
+  .trip-options.is-single {
     grid-template-columns: 1fr;
   }
 }
