@@ -940,8 +940,6 @@ export default function App() {
             </div>
           </div>
           </section>
-
-          <InvestigationPrompts />
         </div>
 
         <div className="dossier-column">
@@ -997,6 +995,13 @@ export default function App() {
           </section>
         </div>
       </main>
+
+      {/* The prompts span the page instead of sharing the middle column: inside
+          it they took the height the globe needed, so the globe stopped short of
+          the ranked list and the dossier beside it. */}
+      <section className="investigations-band">
+        <InvestigationPrompts />
+      </section>
 
       <section className="evidence">
         <button
