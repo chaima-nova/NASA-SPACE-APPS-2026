@@ -1,19 +1,20 @@
 /**
- * Who is building this, and what each of them owns before the challenge drops.
+ * Who is building this, and what each of them owns.
  *
- * This is the team's own plan, kept in data rather than in the page so a name,
- * a role or a task is a one-line edit here. The tasks are the board's wording,
- * lightly turned into statements ("start collecting…") so a reader sees what
- * each person is doing rather than a note addressed to them.
+ * This is the team's own division of work, kept in data rather than in the page
+ * so a name, a role or a responsibility is a one-line edit here. The
+ * responsibilities are the remit as the team defined it, written as statements
+ * so a reader sees what each person is answerable for rather than a note
+ * addressed to them.
  */
 
 export interface TeamMember {
   name: string;
-  /** The remit, as the board names it. */
+  /** The role or domain, as the team names it. */
   role: string;
   /** Marks the team owner; the page badges the name rather than restating it. */
   owner?: boolean;
-  /** What they own, in the order they would do it. */
+  /** What they are responsible for, in the order the work reaches them. */
   tasks: string[];
 }
 
@@ -41,91 +42,73 @@ export const FOCUS_AREAS: readonly FocusArea[] = [
 
 export const TEAM: readonly TeamMember[] = [
   {
-    name: 'Chaima',
-    role: 'Systems / Backend / Integration',
-    owner: true,
-    tasks: [
-      'Continue building and organising the shared GitHub repository.',
-      "Set up the backend and API structure and define the data contracts between everyone's modules.",
-      "Connect Abid and Farwa's data → Harshil's ML outputs → backend → Jasmine's visualisations.",
-      "Integrate Zehra's space-systems outputs where relevant.",
-      'Keep the architecture, documentation and decision log updated.',
-      "Make sure everyone's work plugs into the same system rather than becoming separate projects.",
-    ],
-  },
-  {
     name: 'Abid',
-    role: 'NASA Data / Platform',
+    role: 'Geospatial Data & GIS',
     tasks: [
-      'Start collecting and preparing the actual NASA datasets we can use across our three focus areas.',
-      'Set up the data-ingestion workflows so we can download and access the datasets consistently.',
-      'Clean and organise the data, and document where each dataset comes from.',
-      'Prepare sample datasets that can be handed directly to Farwa and Harshil for their work.',
-      'Keep the data workflows reusable so we can adapt them once the official challenge is released.',
-    ],
-  },
-  {
-    name: 'Farwa',
-    role: 'Earth Observation / Geospatial',
-    tasks: [
-      "Start preparing the Earth-observation and geospatial datasets we can use for Urban Heat Equity and Atmospheric & Environmental Health.",
-      "Work with Abid's NASA data and handle the geospatial preprocessing, feature extraction and spatial organisation.",
-      'Produce cleaned, usable datasets and features that Harshil can directly use for ML training.',
-      'Document the preprocessing steps so the workflow can be reproduced later.',
-    ],
-  },
-  {
-    name: 'Harshil',
-    role: 'Machine Learning / Data Engineering',
-    tasks: [
-      'Start building the machine-learning pipeline now.',
-      "Once Abid and Farwa have the cleaned datasets ready, use them to train and test the baseline ML models.",
-      'Build the preprocessing → training → validation → evaluation → inference workflow.',
-      'Keep the models and inference code modular so we can replace or adapt the model once we know the final challenge.',
-      'Give the backend a clear model input/output structure it can connect to.',
+      'Own dataset availability: what exists, from which mission, and under what licence.',
+      'Establish geographic coverage — which regions each layer actually reaches.',
+      'Harmonise the spatial layers: projections, grids and resolution, so they can be joined.',
+      'Map the candidate sites those layers support.',
     ],
   },
   {
     name: 'Zehra',
-    role: 'Space Systems',
+    role: 'Scientific Criteria & Validation',
     tasks: [
-      'Start preparing the space-systems side of the project.',
-      "Identify and set up the tools and libraries needed for orbital calculations, coordinates, TLE/ephemeris data and trajectory-related work.",
-      'Build a small working space-systems module or demo that we can reuse later.',
-      'Document how the outputs are structured so they can connect to the backend if the final challenge requires it.',
+      'Define the planetary criteria a terrestrial site has to meet to count as an analog.',
+      'Judge scientific comparability between Earth conditions and the Moon or Mars.',
+      'Keep the reference literature behind every criterion.',
+      'Own the validation methodology, so a score can be defended rather than asserted.',
+    ],
+  },
+  {
+    name: 'Harshil',
+    role: 'Machine Learning & AI',
+    tasks: [
+      'Analyse the features: which measurements actually separate a good analog from a poor one.',
+      'Build the screening algorithms that cut a continent down to a shortlist.',
+      'Train the candidate-detection models.',
+      'Evaluate performance, and report what the models get wrong.',
     ],
   },
   {
     name: 'Jasmine',
-    role: '3D / Visualization / Web',
+    role: 'Frontend & User Experience',
     tasks: [
-      'Start building the reusable visualisation and web shell.',
-      'Prepare the map, charts and 3D visualisation structure.',
-      'Use mock or sample data initially so building can start before the final datasets and ML outputs are ready.',
-      "Make the components ready to receive the actual outputs from Harshil and the rest of the team.",
+      'Build the Analog Atlas visual interface.',
+      'Design the Analog Quest flow, from the first question to a shortlist.',
+      'Render the Analog DNA profiles that explain a site at a glance.',
+      'Own the candidate-investigation experience: dossier, comparison and export.',
+    ],
+  },
+  {
+    name: 'Chaima',
+    role: 'Product Direction & System Integration',
+    owner: true,
+    tasks: [
+      'Set the product architecture: what the finder is for, and how its parts fit.',
+      'Own the discovery workflow a reader moves through.',
+      'Coordinate across the data, science, ML and interface threads.',
+      'Integrate the modules into one running system, and tell its story.',
     ],
   },
 ];
 
 /**
- * The order work flows through the team. Chaima and Jasmine sit in the middle
- * because they are where the other four threads meet, not because their part
- * starts after everyone else's.
+ * The order work flows through the team. Integration sits in the middle because
+ * that is where the other threads meet, not because its part starts later.
  */
 export const WORKFLOW: readonly { who: string; detail: string }[] = [
-  { who: 'Abid + Farwa', detail: 'Prepare and clean the usable data.' },
-  { who: 'Harshil', detail: 'Uses that data to train and validate the ML models.' },
+  { who: 'Abid', detail: 'Datasets, coverage and spatial harmonisation.' },
+  { who: 'Zehra', detail: 'The planetary criteria and the validation methodology.' },
+  { who: 'Harshil', detail: 'Feature analysis, screening and candidate detection.' },
   {
     who: 'Chaima',
-    detail: 'Connects the data, the ML and the space-systems outputs through the backend.',
+    detail: 'Product architecture, and the integration that joins the threads.',
   },
   {
     who: 'Jasmine',
-    detail: 'Turns those outputs into maps, charts, 3D visuals and the final interface.',
-  },
-  {
-    who: 'Zehra',
-    detail: 'Provides the space-systems and orbital layer that plugs into the pipeline.',
+    detail: 'The atlas, the quest flow and the investigation interface.',
   },
 ];
 
