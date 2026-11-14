@@ -231,8 +231,7 @@ export function InvestigationPrompts() {
   return (
     <section className="investigations" aria-labelledby="investigations-title">
       <header className="investigations-head">
-        <p className="investigations-kicker">Evidence-based investigation prompts</p>
-        <h2 id="investigations-title">What an analogue site could be used for</h2>
+        <h2 id="investigations-title">What Can This Site Be Used For?</h2>
         <p className="investigations-lede">
           Five lines of investigation the pipeline's own measurements can support — each prompt
           starts from a number or a verdict that already exists, states what it does not settle, and
