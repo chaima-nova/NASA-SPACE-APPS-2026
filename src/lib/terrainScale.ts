@@ -88,42 +88,73 @@ function warmth({ r, g, b }: { r: number; g: number; b: number }): number {
   return hue > 250 ? 250 - hue : 240 - hue;
 }
 
+export interface TemperatureSurface {
+  /** Vertex colours in 0..1, row-major from the north-west like the patch. */
+  colours: Float32Array;
+  /** The bands present, coldest first, for the scale. */
+  bands: string[];
+}
+
 /**
- * The colours a temperature frame actually puts on this ground, coldest first.
+ * Read a temperature frame once and return both things the view needs from it:
+ * the colours to paint on the ground's vertices, and the bands for the scale.
  *
- * MODIS land surface temperature ships colour-mapped: the picture carries a
- * position on NASA's ramp, not degrees, and GIBS serves no legend for it. So the
- * scale is read back off the frame the reader is looking at. Bands covering less
- * than half a percent of the ground are dropped, since one antialiased edge pixel
- * is not a band, and what survives is stretched across the whole scale — which is
- * what makes a one-patch legend more specific than the planet's.
+ * The frame is baked into the ground rather than draped as a second mesh on the
+ * same geometry. Two coincident surfaces fight over the depth buffer, and that
+ * is what left whole slopes in terrain palette while the slope beside them
+ * showed temperature. One surface cannot fight itself.
+ *
+ * `size` matches the terrain grid, so pixel (col, row) is vertex (row, col).
+ * Pixels the product leaves transparent keep the ground's own colour: missing
+ * data is a gap in the product, not a hole in the terrain.
  */
-export function temperatureBands(image: CanvasImageSource): string[] {
+export function temperatureSurface(
+  image: CanvasImageSource,
+  size: number,
+  fallback: Float32Array,
+): TemperatureSurface {
+  const empty: TemperatureSurface = { colours: fallback, bands: [] };
   try {
     const probe = document.createElement('canvas');
-    probe.width = 64;
-    probe.height = 64;
+    probe.width = size;
+    probe.height = size;
     const context = probe.getContext('2d', { willReadFrequently: true });
-    if (!context) return [];
-    context.drawImage(image, 0, 0, 64, 64);
-    const { data } = context.getImageData(0, 0, 64, 64);
+    if (!context) return empty;
+    context.drawImage(image, 0, 0, size, size);
+    const { data } = context.getImageData(0, 0, size, size);
+    const colours = new Float32Array(size * size * 3);
     const bands = new Map<string, { r: number; g: number; b: number; pixels: number }>();
     let painted = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 40) continue;
+    for (let i = 0; i < size * size; i += 1) {
+      const at = i * 4;
+      if (data[at + 3] < 40) {
+        colours[i * 3] = fallback[i * 3];
+        colours[i * 3 + 1] = fallback[i * 3 + 1];
+        colours[i * 3 + 2] = fallback[i * 3 + 2];
+        continue;
+      }
+      const r = data[at];
+      const g = data[at + 1];
+      const b = data[at + 2];
+      colours[i * 3] = r / 255;
+      colours[i * 3 + 1] = g / 255;
+      colours[i * 3 + 2] = b / 255;
       painted += 1;
-      const key = `${data[i] >> 3}/${data[i + 1] >> 3}/${data[i + 2] >> 3}`;
+      const key = `${r >> 3}/${g >> 3}/${b >> 3}`;
       const band = bands.get(key);
       if (band) band.pixels += 1;
-      else bands.set(key, { r: data[i], g: data[i + 1], b: data[i + 2], pixels: 1 });
+      else bands.set(key, { r, g, b, pixels: 1 });
     }
-    if (!painted) return [];
-    return [...bands.values()]
-      .filter((band) => band.pixels / painted > 0.005)
-      .sort((a, b) => warmth(a) - warmth(b))
-      .slice(0, 12)
-      .map((band) => `rgb(${band.r} ${band.g} ${band.b})`);
+    if (!painted) return empty;
+    return {
+      colours,
+      bands: [...bands.values()]
+        .filter((band) => band.pixels / painted > 0.005)
+        .sort((a, b) => warmth(a) - warmth(b))
+        .slice(0, 12)
+        .map((band) => `rgb(${band.r} ${band.g} ${band.b})`),
+    };
   } catch {
-    return [];
+    return empty;
   }
 }
