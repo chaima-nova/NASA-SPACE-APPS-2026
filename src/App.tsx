@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { BootScreen } from './components/layout/BootScreen';
 import { DistanceFilter } from './components/layout/DistanceFilter';
-import { TravelDialog } from './components/layout/TravelDialog';
 import { TripPlanner } from './components/layout/TripPlanner';
 import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
@@ -125,8 +124,6 @@ export default function App() {
   /** Radius of the distance filter, in kilometres. */
   const [radiusKm, setRadiusKm] = useState(5000);
   const [distanceOpen, setDistanceOpen] = useState(false);
-  /** Which logistics dialog is open, if any. */
-  const [travelOpen, setTravelOpen] = useState(false);
   /** The Plan My Trip route planner, opened from the dossier. */
   const [tripOpen, setTripOpen] = useState(false);
   /** When on, only sites commercial travel can reach are listed. */
@@ -717,7 +714,7 @@ export default function App() {
         onRadius={setRadiusKm}
         onOpenDistance={() => setDistanceOpen(true)}
         travelOnly={travelOnly}
-        onOpenTravel={() => setTravelOpen(true)}
+        onTravelOnly={setTravelOnly}
       />
 
       {error ? <p className="error">⚠ {error}</p> : null}
@@ -1088,18 +1085,6 @@ export default function App() {
           onPick={setOrigin}
           onClear={() => setOrigin(null)}
           onClose={() => setDistanceOpen(false)}
-        />
-      ) : null}
-
-      {travelOpen ? (
-        <TravelDialog
-          site={selected}
-          origin={origin}
-          onPick={setOrigin}
-          onClear={() => setOrigin(null)}
-          travelOnly={travelOnly}
-          onTravelOnly={setTravelOnly}
-          onClose={() => setTravelOpen(false)}
         />
       ) : null}
 

@@ -5004,6 +5004,37 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--signal);
 }
 
+/* The travel facet is one checkbox in the row itself. It filters the list, so a
+   click should be the whole interaction — no dialog to read first. */
+.logistics-check {
+  justify-content: flex-start;
+}
+
+.logistics-check input {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  accent-color: var(--signal);
+  cursor: pointer;
+}
+
+.logistics-check:hover {
+  border-color: var(--line-2);
+  background: rgb(255 255 255 / 0.03);
+}
+
+.logistics-check:focus-within {
+  border-color: var(--signal);
+  outline: 1px solid var(--signal);
+  outline-offset: 1px;
+}
+
+.logistics-check.is-on {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
 .logistics-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5127,18 +5158,6 @@ html[data-a11y-motion='reduced'] *::after {
   margin: 0;
   flex: 1;
   min-width: 200px;
-}
-
-.travel-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font-size: 0.68rem;
-  color: var(--ink-2);
-  cursor: pointer;
 }
 
 /* ---- Export checklist ---------------------------------------------------- */
