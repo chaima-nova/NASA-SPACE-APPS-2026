@@ -22,30 +22,65 @@ logger = logging.getLogger(__name__)
 
 def compute_slope_degrees(
     elevation: np.ndarray,
-    pixel_size_x_m: float,
+    pixel_size_x_m: float | np.ndarray,
     pixel_size_y_m: float,
 ) -> np.ndarray:
     """
     Compute terrain slope in degrees using central differences.
 
+    Properly handles NaNs: cells next to nodata/voids or grid edges
+    do not receive false steep gradients. Boundary and nodata-adjacent
+    cells are safely masked as NaN.
+
+    Supports latitude-dependent pixel size along rows:
+    pixel_size_x_m may be a single float or a 1D array of shape (nrows,)
+    giving the longitudinal ground spacing per row.
+
     Args:
         elevation: 2D float array with NaN for nodata
-        pixel_size_x_m: Horizontal pixel size in metres (along columns)
+        pixel_size_x_m: Horizontal pixel size in metres (along columns) - float or 1D array
         pixel_size_y_m: Vertical pixel size in metres (along rows)
 
     Returns:
-        slope: 2D float32 array of slope in degrees (NaN where elevation is NaN)
+        slope: 2D float32 array of slope in degrees (NaN where elevation or its stencil is NaN)
     """
-    # Replace NaN with 0 for gradient computation (will mask back after)
-    e = np.where(np.isnan(elevation), 0.0, elevation)
-    nodata_mask = np.isnan(elevation)
+    elev = elevation.astype(np.float64, copy=True)
+    nodata_mask = np.isnan(elev)
 
-    # Central differences (padded at edges)
-    dz_dy, dz_dx = np.gradient(e, pixel_size_y_m, pixel_size_x_m)
+    # Identify cells where the 3x3 stencil touches a NaN to prevent artificial cliffs
+    # A central difference at (i, j) requires valid neighbors at (i-1, j), (i+1, j), (i, j-1), (i, j+1)
+    invalid_stencil = np.zeros_like(nodata_mask, dtype=bool)
+    if np.any(nodata_mask):
+        invalid_stencil |= nodata_mask
+        # Shift along rows
+        invalid_stencil[1:, :] |= nodata_mask[:-1, :]
+        invalid_stencil[:-1, :] |= nodata_mask[1:, :]
+        # Shift along cols
+        invalid_stencil[:, 1:] |= nodata_mask[:, :-1]
+        invalid_stencil[:, :-1] |= nodata_mask[:, 1:]
+
+    # For finite gradient execution, replace NaNs with median of valid cells
+    valid_vals = elev[~nodata_mask]
+    fill_val = float(np.median(valid_vals)) if len(valid_vals) > 0 else 0.0
+    elev_filled = np.where(nodata_mask, fill_val, elev)
+
+    # Vertical gradient dz/dy (along rows / axis 0)
+    dz_dy = np.gradient(elev_filled, pixel_size_y_m, axis=0)
+
+    # Horizontal gradient dz/dx (along cols / axis 1)
+    if isinstance(pixel_size_x_m, np.ndarray) and pixel_size_x_m.ndim == 1:
+        # Latitude-varying pixel size per row
+        dz_dx_pixels = np.gradient(elev_filled, axis=1)  # dz per pixel
+        px_col = pixel_size_x_m[:, np.newaxis]
+        # Avoid division by zero at exact poles (cos(90) = 0)
+        px_col = np.where(px_col > 0.0, px_col, np.nan)
+        dz_dx = dz_dx_pixels / px_col
+    else:
+        dz_dx = np.gradient(elev_filled, float(pixel_size_x_m), axis=1)
 
     slope_rad = np.arctan(np.sqrt(dz_dx**2 + dz_dy**2))
     slope_deg = np.degrees(slope_rad).astype(np.float32)
-    slope_deg[nodata_mask] = np.nan
+    slope_deg[invalid_stencil] = np.nan
     return slope_deg
 
 
@@ -96,6 +131,45 @@ def compute_roughness_tri(
     return tri.astype(np.float32)
 
 
+def compute_roughness_residual_std(
+    elevation: np.ndarray,
+    window: int = 3,
+) -> np.ndarray:
+    """
+    Compute surface roughness as standard deviation of elevation in a local window.
+    Matches Zehra's framework definition for residual terrain roughness.
+
+    Args:
+        elevation: 2D float array
+        window: kernel size (must be odd, >= 3)
+
+    Returns:
+        roughness_std: 2D float32 array of elevation std within kernel
+    """
+    assert window % 2 == 1 and window >= 3, "window must be odd and >= 3"
+
+    try:
+        from scipy.ndimage import generic_filter  # type: ignore
+    except ImportError:
+        logger.warning("scipy not available; roughness std computation skipped")
+        return np.full_like(elevation, np.nan, dtype=np.float32)
+
+    def _std_kernel(values: np.ndarray) -> float:
+        valid = values[~np.isnan(values)]
+        if len(valid) < (window * window) // 2:
+            return np.nan
+        return float(np.std(valid))
+
+    r_std = generic_filter(
+        elevation.astype(np.float64),
+        _std_kernel,
+        size=window,
+        mode="constant",
+        cval=np.nan,
+    )
+    return r_std.astype(np.float32)
+
+
 # ---------------------------------------------------------------------------
 # Pixel size calculator for geographic (degree) grids
 # ---------------------------------------------------------------------------
@@ -119,7 +193,7 @@ def pixel_size_meters(
     """
     RADII_M = {
         "earth": 6_371_000.0,
-        "mars": 3_389_500.0,
+        "mars": 3_396_190.0,  # IAU 2000 Mars sphere (cylindrical MOLA MEGDR reference)
         "moon": 1_737_400.0,
     }
     R = RADII_M.get(planet.lower(), 6_371_000.0)

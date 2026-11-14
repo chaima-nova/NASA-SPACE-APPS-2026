@@ -1,7 +1,7 @@
 {
   "_comment": "Master dataset registry for the NASA Space Apps pipeline. Edit this file to add, remove, or reconfigure datasets.",
-  "_schema_version": "1.0",
-  "_last_updated": "2024-10-18",
+  "_schema_version": "1.1",
+  "_last_updated": "2026-11-14",
 
   "datasets": [
 
@@ -17,7 +17,7 @@
       "download_endpoint": "https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/",
       "access_method": "earthdata_https",
       "format": "HGT / GeoTIFF",
-      "units": {"elevation": "meters above WGS84 ellipsoid"},
+      "units": {"elevation": "meters above EGM96 geoid (orthometric height)"},
       "spatial_resolution": "~30m at equator",
       "temporal_coverage": "February 2000 (single acquisition)",
       "crs": "EPSG:4326 (WGS84 geographic)",
@@ -109,7 +109,7 @@
       "units": {"elevation": "meters relative to Mars areoid (MOLA datum)"},
       "spatial_resolution": "~463 m/pixel at equator (128 pixels/degree)",
       "temporal_coverage": "1997-2001 (MGS mission)",
-      "crs": "IAU 2015 Mars body-fixed; PROJ: +proj=eqc +a=3396190 +b=3376200",
+      "crs": "IAU 2015 Mars body-fixed spherical; PROJ: +proj=eqc +a=3396190 +b=3396190",
       "authentication_required": false,
       "expected_size": "~224 MB (full global IMG) or smaller regional subsets",
       "license": "NASA PDS open data – attribution required",

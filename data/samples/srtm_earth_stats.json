@@ -1,0 +1,32 @@
+{
+  "dataset_id": "srtm_gl1",
+  "planet": "earth",
+  "tile": "S24W069",
+  "region": "Atacama Desert (Chile)",
+  "data_type": "REAL_SCIENTIFIC_MEASUREMENT",
+  "bbox": [
+    -69.0,
+    -24.0,
+    -68.0,
+    -23.0
+  ],
+  "grid_resolution_m": "~180m (downsampled from native 30m)",
+  "elevation_m": {
+    "min": 2202.0,
+    "max": 4263.0,
+    "mean": 2630.1,
+    "std": 347.2
+  },
+  "slope_deg": {
+    "min": 0.0,
+    "max": 34.37,
+    "mean": 3.12
+  },
+  "roughness_tri_m": {
+    "min": 0.0,
+    "max": 309.78,
+    "mean": 27.43
+  },
+  "sample_rows": 25000,
+  "source_citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+}

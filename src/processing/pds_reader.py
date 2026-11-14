@@ -345,10 +345,11 @@ def img_to_geotiff(
     if planet.lower() == "earth":
         crs = CRS.from_epsg(4326)
     elif planet.lower() == "mars":
-        # Mars areocentric equirectangular (IAU 2015)
+        # Mars areocentric spherical equirectangular (IAU 2000 Mars sphere)
+        # Note: 3376.2 km polar radius applies only to polar stereographic projection
         crs = CRS.from_proj4(
             "+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 "
-            "+x_0=0 +y_0=0 +a=3396190 +b=3376200 +units=m +no_defs"
+            "+x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
         )
     elif planet.lower() == "moon":
         # Moon selenocentric equirectangular (IAU 2015)
@@ -388,6 +389,96 @@ def img_to_geotiff(
         result["shape"] = arr.shape
         result["crs"] = str(crs)
         logger.info("Wrote GeoTIFF: %s (%dx%d)", out_path.name, ncols, nrows)
+    except Exception as exc:  # noqa: BLE001
+        result["error"] = str(exc)
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# TES Thermal Inertia Binary Reader (Putzig et al. 2005)
+# ---------------------------------------------------------------------------
+
+def read_tes_thermal_inertia(
+    bin_path: Path,
+    mask_path: Optional[Path] = None,
+    header_bytes: int = 7200,
+    rows: int = 3600,
+    cols: int = 7200,
+) -> dict:
+    """
+    Read Putzig et al. (2005) MGS TES Thermal Inertia binary (e.g. nmap2003.bin).
+
+    The file was written on a Sun workstation (big-endian 16-bit integer)
+    with a 7200-byte ASCII header. Shape is 3600 rows x 7200 cols (20 ppd, ~3 km/pix).
+    Units: J m^-2 K^-1 s^-1/2 (tiu).
+
+    If mask_path is provided, real TES measurements are retained where mask == 1,
+    while interpolated/unmeasured cells (mask == 0) are converted to NaN.
+
+    Returns dict with keys:
+      data: 2D float32 numpy array with thermal inertia in SI units (NaN for unmeasured)
+      raw_data: 2D int16 numpy array
+      mask: 2D uint8 numpy array (or None)
+      shape: (rows, cols)
+      resolution_deg: 0.05
+      units: 'J m^-2 K^-1 s^-1/2'
+      error: None or str
+    """
+    result = {
+        "data": None,
+        "raw_data": None,
+        "mask": None,
+        "shape": (rows, cols),
+        "resolution_deg": 180.0 / rows,
+        "units": "J m^-2 K^-1 s^-1/2",
+        "header": None,
+        "error": None,
+    }
+
+    bin_path = Path(bin_path)
+    if not bin_path.exists():
+        result["error"] = f"TES binary file not found: {bin_path}"
+        return result
+
+    try:
+        with open(bin_path, "rb") as fh:
+            header_raw = fh.read(header_bytes)
+            result["header"] = header_raw.decode("ascii", errors="replace").strip()
+            # Read remainder as big-endian int16
+            raw_bytes = fh.read()
+            expected_bytes = rows * cols * 2
+            if len(raw_bytes) < expected_bytes:
+                result["error"] = (
+                    f"TES binary truncated: got {len(raw_bytes)} bytes, expected {expected_bytes}"
+                )
+                return result
+
+            # Parse Sun big-endian 16-bit integers
+            arr = np.frombuffer(raw_bytes[:expected_bytes], dtype=">i2").reshape((rows, cols))
+            result["raw_data"] = arr
+
+            # Convert to float32
+            data_ti = arr.astype(np.float32)
+
+            # Apply interpolation mask if available
+            if mask_path and Path(mask_path).exists():
+                with open(mask_path, "rb") as mfh:
+                    # Mask can be raw bytes or have a header
+                    m_bytes = mfh.read()
+                    if len(m_bytes) >= rows * cols:
+                        mask_arr = np.frombuffer(m_bytes[-rows * cols:], dtype=np.uint8).reshape((rows, cols))
+                        result["mask"] = mask_arr
+                        # 1 = real TES observation, 0 = interpolated or unmeasured
+                        data_ti[mask_arr == 0] = np.nan
+                    else:
+                        logger.warning("Mask file size smaller than expected grid: %d bytes", len(m_bytes))
+            else:
+                # Standard nodata for unmasked: values <= 0 or flag values
+                data_ti[data_ti <= 0] = np.nan
+
+            result["data"] = data_ti
+            logger.info("Successfully read TES thermal inertia: shape=%s, valid=%d", (rows, cols), np.count_nonzero(~np.isnan(data_ti)))
     except Exception as exc:  # noqa: BLE001
         result["error"] = str(exc)
 
