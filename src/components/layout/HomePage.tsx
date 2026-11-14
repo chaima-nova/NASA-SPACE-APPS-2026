@@ -418,13 +418,6 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           </li>
         </ol>
       </section>
-
-      <section className="home-close" aria-labelledby="home-close-title">
-        <h3 id="home-close-title">See which Earth sites made the cut.</h3>
-        <a className="home-cta" href={routeHref('solution')}>
-          Open the solution
-        </a>
-      </section>
     </main>
   );
 }
