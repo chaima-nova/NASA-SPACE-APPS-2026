@@ -135,7 +135,7 @@ function LogisticsComparison({
       <p className="cmp-basis-note">
         {origin
           ? 'Access and the gate are read from the airports on file. No fare or timetable is shown here: Plan My Trip hands over to live searches for the flight, the bus and rail, and the last leg.'
-          : 'Access and the gate are read from the airports on file. Set a location under Mission constraints › Distance from me to compare door-to-door routes.'}
+          : 'Access and the gate are read from the airports on file. Set a location under Mission constraints › Distance From Me to compare door-to-door routes.'}
       </p>
     </>
   );
