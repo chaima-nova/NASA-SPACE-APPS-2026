@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { OriginPrompt } from './OriginPrompt';
 import type { Origin } from '../../lib/geo';
@@ -22,6 +22,13 @@ interface TripPlannerProps {
   onClose: () => void;
 }
 
+/** The three lines the loading beat cycles through. Short, and about the work. */
+const LOADING_LINES = [
+  'Reading the gate airports…',
+  'Timing the cheap route…',
+  'Timing the fast route…',
+];
+
 const money = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
 
 /**
@@ -40,6 +47,29 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
   /** Which trade-off the reader asked for; null until they choose. */
   const [choice, setChoice] = useState<'cheapest' | 'fastest' | null>(null);
 
+  /**
+   * A short beat of travel before the routes appear. Nothing is being fetched —
+   * the itineraries are computed on render — so this is theatre to make the
+   * moment of choosing feel like leaving. Reduced motion gets a brief flash
+   * rather than a plane crossing the screen.
+   */
+  const [loading, setLoading] = useState(true);
+  const [leg, setLeg] = useState(0);
+
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const total = reduced ? 450 : 1500;
+    const ticks = [
+      window.setTimeout(() => setLeg(1), total / 3),
+      window.setTimeout(() => setLeg(2), (total * 2) / 3),
+    ];
+    const done = window.setTimeout(() => setLoading(false), total);
+    return () => {
+      ticks.forEach((tick) => window.clearTimeout(tick));
+      window.clearTimeout(done);
+    };
+  }, []);
+
   const access = travelAccessOf(site);
   const pair = origin ? itinerariesFor(origin, site) : null;
   const itinerary: Itinerary | null =
@@ -53,6 +83,27 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
       onClose={onClose}
       className="travel-modal"
     >
+      {loading ? (
+        <div className="trip-loading" role="status" aria-live="polite">
+          <div className="trip-sky" aria-hidden="true">
+            <span className="trip-cloud is-a" />
+            <span className="trip-cloud is-b" />
+            <span className="trip-cloud is-c" />
+            <span className="trip-track" />
+            <span className="trip-plane">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M2 12.4 22 3l-6.3 18-3.3-6.6L2 12.4Zm9.4 3.1 2.2 4.4 4.2-12-10.4 6.6 4 1Z" />
+              </svg>
+            </span>
+          </div>
+          <p className="trip-loading-line">{LOADING_LINES[leg]}</p>
+          <span className="trip-loading-hint">
+            {site.siteName} · gate {access.gateway?.code ?? 'unmapped'}
+          </span>
+        </div>
+      ) : (
+        <>
+
       {!origin ? (
         <>
           <p className="distance-note">
@@ -199,6 +250,8 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
           while you decide.
         </p>
       ) : null}
+        </>
+      )}
     </Modal>
   );
 }

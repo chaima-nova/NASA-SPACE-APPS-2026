@@ -5704,6 +5704,132 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-3);
 }
 
+/* The loading beat: a paper plane crossing a strip of sky while the two routes
+   are put together. It is decorative — the status line is what is read out —
+   and it exists only to make a short wait feel like leaving. */
+.trip-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  padding: 4px 0 2px;
+}
+
+.trip-sky {
+  position: relative;
+  width: 100%;
+  height: 104px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #06121d 0%, #0a2233 60%, #0b2c3c 100%);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+/* The dashed route the plane follows. */
+.trip-track {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 56%;
+  border-top: 1px dashed rgba(120, 220, 240, 0.4);
+}
+
+.trip-plane {
+  position: absolute;
+  top: 56%;
+  left: 6%;
+  width: 26px;
+  height: 26px;
+  margin-top: -19px;
+  color: var(--signal);
+  animation: trip-fly 1.5s cubic-bezier(0.42, 0.05, 0.35, 1) infinite;
+}
+
+.trip-plane svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.5));
+}
+
+/* The contrail, so the plane is travelling rather than sliding. */
+.trip-plane::after {
+  content: '';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 60px;
+  height: 2px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0), rgba(34, 211, 238, 0.55));
+}
+
+@keyframes trip-fly {
+  0% { left: 4%; transform: translateY(7px) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+  100% { left: 92%; transform: translateY(7px) rotate(-3deg); }
+}
+
+/* Clouds drift the other way so the sky has depth. */
+.trip-cloud {
+  position: absolute;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(148, 210, 230, 0.16);
+  animation: trip-drift 3.4s linear infinite;
+}
+
+.trip-cloud.is-a {
+  top: 22%;
+  width: 64px;
+  animation-delay: -0.4s;
+}
+
+.trip-cloud.is-b {
+  top: 40%;
+  width: 96px;
+  animation-delay: -1.6s;
+}
+
+.trip-cloud.is-c {
+  top: 74%;
+  width: 48px;
+  animation-delay: -2.4s;
+}
+
+@keyframes trip-drift {
+  from { left: 104%; }
+  to { left: -18%; }
+}
+
+.trip-loading-line {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.trip-loading-hint {
+  font-size: 0.62rem;
+  color: var(--ink-3);
+}
+
+/* No plane for a reader who asked for less motion: the line still says what
+   is happening, and the wait is shorter. */
+@media (prefers-reduced-motion: reduce) {
+  .trip-plane,
+  .trip-cloud {
+    animation: none;
+  }
+
+  .trip-plane {
+    left: 50%;
+  }
+}
+
 .trip-links {
   display: flex;
   flex-direction: column;
