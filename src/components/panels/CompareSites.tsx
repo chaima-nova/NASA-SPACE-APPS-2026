@@ -146,7 +146,7 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
 
       <div className="cmp-table">
         <div className="cmp-row cmp-head-row">
-          <span className="cmp-label">Fact</span>
+          <span className="cmp-label">Aspect</span>
           <span className="cmp-value">Current</span>
           <span className="cmp-value">Comparison</span>
           <span className="cmp-delta" aria-hidden="true" />
