@@ -5880,3 +5880,237 @@ a.compare-thumb {
 .compare-fields a {
   color: var(--signal);
 }
+
+/* ---- Fit summary page ---------------------------------------------------- */
+
+.summary-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.summary-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 2px;
+}
+
+.summary-kicker {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--signal);
+}
+
+.summary-head h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  letter-spacing: -0.02em;
+}
+
+.summary-lede {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+}
+
+.summary-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.summary-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.summary-tile b {
+  font-size: 1.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.summary-tile span {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.summary-wide {
+  grid-column: 1 / -1;
+}
+
+.summary-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 190px;
+  padding: 4px 2px 0;
+}
+
+.summary-histogram-column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.summary-histogram-count {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--ink-2);
+}
+
+.summary-histogram-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+}
+
+.summary-histogram-label {
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  color: var(--ink-3);
+}
+
+.summary-bars,
+.summary-ranges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-bars li,
+.summary-ranges li {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.64rem;
+  color: var(--ink-2);
+}
+
+.summary-bars li b,
+.summary-ranges li b {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-align: right;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-bars-track,
+.summary-ranges-track {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.summary-bars-track span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.summary-ranges-span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.summary-ranges-dot {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+.summary-depth {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.summary-depth-ring {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  height: 92px;
+  border: 2px solid var(--signal);
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-depth-ring b {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.summary-depth-ring span {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  color: var(--ink-3);
+}
+
+.summary-depth-note {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.summary-empty {
+  margin: 0;
+  font-size: 0.66rem;
+  color: var(--ink-3);
+}
+
+@media (max-width: 640px) {
+  .summary-histogram {
+    height: 150px;
+    gap: 3px;
+  }
+
+  .summary-histogram-label {
+    font-size: 0.44rem;
+  }
+
+  .summary-bars li,
+  .summary-ranges li {
+    grid-template-columns: 78px minmax(0, 1fr) 26px;
+  }
+}
