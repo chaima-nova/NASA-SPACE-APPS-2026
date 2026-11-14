@@ -10,6 +10,7 @@
  * the numeric feature vectors are illustrative sample values, not measurements.
  */
 
+import { SCORE_BANDS } from './types';
 import type {
   DataSource,
   FocusArea,
@@ -254,17 +255,83 @@ function buildGeoPoints(): GeoPoint[] {
 
 export const mockGeoPoints: GeoPoint[] = buildGeoPoints();
 
-/** Weights for the analog-fit score (sum = 1). */
-const WEIGHTS = {
-  aridity: 0.2,
-  diurnalTempSwingC: 0.16,
-  regolithMatch: 0.18,
-  dustIndex: 0.12,
-  solarUvIndex: 0.1,
-  radiationAnalog: 0.1,
-  terrainRoughness: 0.06,
-  isolationIndex: 0.08,
-} as const;
+/**
+ * The eight scientific dimensions the score is built from.
+ *
+ * These replace the earlier four-pillar grouping. The brief's comparison table
+ * names eight measurable dimensions, and folding them into four hid exactly the
+ * distinctions a selection panel asks about: water and ice are not "thermal",
+ * and a lava tube is not "mineralogy".
+ */
+export const DIMENSION_KEYS = [
+  'terrain',
+  'surface',
+  'thermal',
+  'water',
+  'atmosphere',
+  'biology',
+  'subsurface',
+  'exploration',
+] as const;
+
+export type DimensionKey = (typeof DIMENSION_KEYS)[number];
+
+export const DIMENSION_LABELS: Record<DimensionKey, string> = {
+  terrain: 'Terrain & Topography',
+  surface: 'Surface & Geology',
+  thermal: 'Temperature & Environment',
+  water: 'Water & Ice',
+  atmosphere: 'Atmospheric Processes',
+  biology: 'Biology & Habitability',
+  subsurface: 'Subsurface Environments',
+  exploration: 'Exploration Relevance',
+};
+
+type Weights = Record<DimensionKey, number>;
+
+/** Analog fit: what makes a place usable as an analog at all. Sums to 1. */
+const WEIGHTS: Weights = {
+  terrain: 0.17,
+  surface: 0.17,
+  thermal: 0.17,
+  water: 0.11,
+  atmosphere: 0.13,
+  biology: 0.07,
+  subsurface: 0.07,
+  exploration: 0.11,
+};
+
+/** The Moon rewards regolith, vacuum-grade dryness, radiation and shelter. */
+const MOON_WEIGHTS: Weights = {
+  terrain: 0.15,
+  surface: 0.22,
+  thermal: 0.18,
+  water: 0.12,
+  atmosphere: 0.11,
+  biology: 0.05,
+  subsurface: 0.09,
+  exploration: 0.08,
+};
+
+/** Mars rewards dust, water ice, thermal swing and biological limits. */
+const MARS_WEIGHTS: Weights = {
+  terrain: 0.13,
+  surface: 0.16,
+  thermal: 0.15,
+  water: 0.18,
+  atmosphere: 0.18,
+  biology: 0.1,
+  subsurface: 0.04,
+  exploration: 0.06,
+};
+
+/** Weighted sum of one site's dimensions under one body's weighting. */
+const scoreOf = (dimensions: Weights, weights: Weights) =>
+  round3(
+    clamp01(
+      DIMENSION_KEYS.reduce((sum, key) => sum + weights[key] * dimensions[key], 0),
+    ),
+  );
 
 /**
  * Deterministic stand-in for Harshil's model output. The features feed a simple
@@ -275,63 +342,62 @@ function buildPredictions(points: GeoPoint[], specs: SiteSpec[]): Prediction[] {
   return points.map((point, i) => {
     const f = point.features;
     const tempSwingNorm = clamp01(f.diurnalTempSwingC / 40);
-
-    const analogScore = clamp01(
-      WEIGHTS.aridity * f.aridity +
-        WEIGHTS.diurnalTempSwingC * tempSwingNorm +
-        WEIGHTS.regolithMatch * f.regolithMatch +
-        WEIGHTS.dustIndex * f.dustIndex +
-        WEIGHTS.solarUvIndex * f.solarUvIndex +
-        WEIGHTS.radiationAnalog * f.radiationAnalog +
-        WEIGHTS.terrainRoughness * f.terrainRoughness +
-        WEIGHTS.isolationIndex * f.isolationIndex,
-    );
-
-    const marsFit = clamp01(
-      0.3 * f.aridity +
-        0.2 * f.dustIndex +
-        0.2 * f.regolithMatch +
-        0.15 * tempSwingNorm +
-        0.15 * f.solarUvIndex,
-    );
-
-    // The Moon rewards regolith match, vacuum-grade dryness and radiation,
-    // Mars rewards dust, aridity and thermal swing. Two scores, not one blob.
-    const moonFit = clamp01(
-      0.28 * f.regolithMatch +
-        0.2 * f.aridity +
-        0.18 * f.radiationAnalog +
-        0.14 * f.solarUvIndex +
-        0.1 * f.isolationIndex +
-        0.1 * f.terrainRoughness,
-    );
-
-    // Illustrative per-pillar breakdown for the dossier, following the
-    // proposal's four pillars. The real model may supply `factors` directly.
     const elevationNorm = clamp01((f.elevationM + 100) / 4500);
-    const factors = {
-      geomorphology: round3(clamp01(0.55 * f.terrainRoughness + 0.45 * elevationNorm)),
-      mineralogy: round3(clamp01(0.8 * f.regolithMatch + 0.2 * f.lavaTubePotential)),
-      environment: round3(
-        clamp01(
-          0.3 * f.aridity +
-            0.25 * tempSwingNorm +
-            0.2 * f.solarUvIndex +
-            0.15 * f.radiationAnalog +
-            0.1 * f.dustIndex,
-        ),
+    // Two dimensions depend on landform rather than on a measured feature.
+    const polar = point.terrainType === 'polar';
+    const volcanic = point.terrainType === 'volcanic';
+    const cave = point.terrainType === 'cave';
+
+    /**
+     * One value per scientific dimension, each in [0, 1]. Every term is a raw
+     * feature, so any dimension can be traced back to what produced it — which
+     * is the point of scoring on eight named axes instead of one opaque blob.
+     */
+    const dimensions: Weights = {
+      // Slope, relief, roughness and landform.
+      terrain: round3(clamp01(0.55 * f.terrainRoughness + 0.45 * elevationNorm)),
+      // Surface materials and mineralogy, plus the subsurface material hint.
+      surface: round3(clamp01(0.8 * f.regolithMatch + 0.2 * f.lavaTubePotential)),
+      // Thermal swing, illumination extremes and radiation load.
+      thermal: round3(
+        clamp01(0.5 * tempSwingNorm + 0.3 * f.solarUvIndex + 0.2 * f.radiationAnalog),
       ),
-      // Accessibility: remote, rough, dry sites are harder to support.
-      logistics: round3(
+      // Dryness, and whether the ground carries ice or permafrost.
+      water: round3(clamp01(0.55 * f.aridity + 0.45 * (polar ? 1 : cave ? 0.4 : 0.15))),
+      // Dust, wind-driven erosion, sedimentation and volcanism. A dry, dusty,
+      // volcanic site is the good analog here, not a still one.
+      atmosphere: round3(clamp01(0.8 * f.dustIndex + 0.2 * (volcanic ? 1 : 0))),
+      // Biological limits: how hard the site is on life. Dryness, radiation and
+      // unfiltered UV are what an extremophile study comes here for, so a
+      // hostile site scores high — this measures analogue relevance, not comfort.
+      biology: round3(
+        clamp01(0.5 * f.aridity + 0.3 * f.radiationAnalog + 0.2 * (1 - f.solarUvIndex)),
+      ),
+      // Lava tubes, caves and structural voids.
+      subsurface: round3(clamp01(0.8 * f.lavaTubePotential + 0.2 * (cave ? 1 : 0))),
+      // Fieldwork relevance: how reachable and how trafficable the site is.
+      exploration: round3(
         clamp01(
-          0.6 * (1 - f.isolationIndex) +
+          0.55 * (1 - f.isolationIndex) +
             0.25 * (1 - f.terrainRoughness) +
-            0.15 * (1 - f.aridity),
+            0.2 * (1 - f.aridity),
         ),
       ),
     };
 
-    const label = analogScore > 0.72 ? 'Strong' : analogScore > 0.55 ? 'Promising' : 'Weak';
+    // One dimension table, three weightings: the general analog fit plus a
+    // separate Moon and Mars score. Two worlds, not one blob.
+    const analogScore = scoreOf(dimensions, WEIGHTS);
+    const moonFit = scoreOf(dimensions, MOON_WEIGHTS);
+    const marsFit = scoreOf(dimensions, MARS_WEIGHTS);
+
+    // The same table the score was built from, carried to the dossier so the
+    // chart and the ranking cannot disagree. The real model may supply
+    // `factors` directly.
+    const factors = dimensions;
+
+    const label =
+      analogScore >= SCORE_BANDS.strong ? 'Strong' : analogScore >= SCORE_BANDS.promising ? 'Promising' : 'Weak';
 
     return {
       id: `pred-${i.toString().padStart(3, '0')}`,
@@ -352,16 +418,11 @@ function buildPredictions(points: GeoPoint[], specs: SiteSpec[]): Prediction[] {
       factors,
       label,
       confidence: round3(0.6 + 0.35 * ((Math.sin(i * 7.13) + 1) / 2)),
-      featureContributions: {
-        aridity: round3(WEIGHTS.aridity * f.aridity),
-        diurnalTempSwingC: round3(WEIGHTS.diurnalTempSwingC * tempSwingNorm),
-        regolithMatch: round3(WEIGHTS.regolithMatch * f.regolithMatch),
-        dustIndex: round3(WEIGHTS.dustIndex * f.dustIndex),
-        solarUvIndex: round3(WEIGHTS.solarUvIndex * f.solarUvIndex),
-        radiationAnalog: round3(WEIGHTS.radiationAnalog * f.radiationAnalog),
-        terrainRoughness: round3(WEIGHTS.terrainRoughness * f.terrainRoughness),
-        isolationIndex: round3(WEIGHTS.isolationIndex * f.isolationIndex),
-      },
+      // Weighted contribution of each dimension to the analog fit: what moved
+      // the score, named the way the comparison table names it.
+      featureContributions: Object.fromEntries(
+        DIMENSION_KEYS.map((key) => [DIMENSION_LABELS[key], round3(WEIGHTS[key] * dimensions[key])]),
+      ),
     };
   });
 }

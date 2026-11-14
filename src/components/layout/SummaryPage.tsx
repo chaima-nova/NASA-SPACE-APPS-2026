@@ -3,6 +3,7 @@ import { scoreColor } from '../../lib/colors';
 import { formatScore, TERRAIN_LABELS, terrainOf } from '../../lib/site';
 import { engineComparisons, measuredTerrain, pipelineDatasets } from '../../services/pipeline';
 import type { Prediction, TerrainType } from '../../data-contracts/types';
+import { SCORE_BANDS } from '../../data-contracts/types';
 
 interface SummaryPageProps {
   /** Every scored site the app holds. */
@@ -47,7 +48,9 @@ export function SummaryPage({ predictions, datasetCount }: SummaryPageProps) {
       ? 0
       : predictions.reduce((total, prediction) => total + prediction.analogScore, 0) /
         predictions.length;
-  const strong = predictions.filter((prediction) => prediction.analogScore > 0.72).length;
+  const strong = predictions.filter(
+    (prediction) => prediction.analogScore >= SCORE_BANDS.strong,
+  ).length;
 
   const familyCounts = new Map<TerrainType, number>();
   for (const prediction of predictions) {

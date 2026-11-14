@@ -6,6 +6,7 @@
  * the shell working against older `Prediction` payloads from the backend.
  */
 
+import { SCORE_BANDS } from '../data-contracts/types';
 import type {
   DataSource,
   Prediction,
@@ -98,73 +99,121 @@ export function fitFor(prediction: Prediction, target: Target): number {
   return prediction.moonFit ?? prediction.analogScore;
 }
 
+/**
+ * The eight scientific dimensions the fit is scored on. The keys match the
+ * brief's comparison table, so a score, its label and the parameter it stands
+ * for are always the same three things.
+ */
 export type SiteFactors = {
-  geomorphology: number;
-  mineralogy: number;
-  environment: number;
-  logistics: number;
+  terrain: number;
+  surface: number;
+  thermal: number;
+  water: number;
+  atmosphere: number;
+  biology: number;
+  subsurface: number;
+  exploration: number;
 };
 
 export const FACTOR_ORDER = [
-  'geomorphology',
-  'mineralogy',
-  'environment',
-  'logistics',
+  'terrain',
+  'surface',
+  'thermal',
+  'water',
+  'atmosphere',
+  'biology',
+  'subsurface',
+  'exploration',
 ] as const;
 
 export const FACTOR_LABELS: Record<keyof SiteFactors, string> = {
-  geomorphology: 'Geomorphology',
-  mineralogy: 'Mineralogy',
-  environment: 'Environment',
-  logistics: 'Logistics',
+  terrain: 'Terrain & Topography',
+  surface: 'Surface & Geology',
+  thermal: 'Temperature & Environment',
+  water: 'Water & Ice',
+  atmosphere: 'Atmospheric Processes',
+  biology: 'Biology & Habitability',
+  subsurface: 'Subsurface Environments',
+  exploration: 'Exploration Relevance',
 };
 
-/** What each pillar actually measures, shown on hover in the dossier. */
+/** The measurable parameters behind each dimension, shown in the dossier. */
 export const FACTOR_HINTS: Record<keyof SiteFactors, string> = {
-  geomorphology: 'Surface slope, roughness and crater density',
-  mineralogy: 'Sulfates, iron oxides and regolith match',
-  environment: 'UV index, aridity, dust and thermal swing',
-  logistics: 'Access to roads, power and resupply',
+  terrain: 'Elevation, slope, roughness, craters and landforms',
+  surface: 'Geological units, surface materials and mineralogy',
+  thermal: 'Surface temperature and illumination extremes',
+  water: 'Indicators of water, ice, snow and permafrost',
+  atmosphere: 'Dust, wind, erosion, sedimentation and volcanism',
+  biology: 'Extremophile habitats and biological limits',
+  subsurface: 'Caves, lava tubes and structural pits',
+  exploration: 'Fieldwork testing, robotics and mobility research',
 };
 
 /**
- * Per-axis scores for the dossier.
+ * Baseline feature weights, repeated here only so an older payload's signed
+ * contributions can be divided back out into the raw feature they came from.
+ */
+const FEATURE_WEIGHTS: Record<string, number> = {
+  aridity: 0.2,
+  diurnalTempSwingC: 0.16,
+  regolithMatch: 0.18,
+  dustIndex: 0.12,
+  solarUvIndex: 0.1,
+  radiationAnalog: 0.1,
+  terrainRoughness: 0.06,
+  isolationIndex: 0.08,
+};
+
+/**
+ * Per-dimension scores for the dossier.
  *
- * Uses the model's `factors` when present. Otherwise it groups the raw feature
- * contributions under the brief's four characterization axes and normalizes each
- * group by the largest value it could take (the feature weights in mock.ts).
+ * Uses the model's `factors` when present. Older payloads carry only signed
+ * feature contributions; those are divided by the weight the baseline model
+ * applies, which recovers the raw feature, and the same eight-dimension
+ * composition the fixtures use is applied on top. That is an approximation and
+ * the dossier says so — but it is derived, not invented.
  */
 export function factorsOf(prediction: Prediction): SiteFactors {
   if (prediction.factors) return prediction.factors;
 
-  const c = prediction.featureContributions;
-  const get = (key: string) => Math.abs(c[key] ?? 0);
-  const clamp = (n: number) => Math.max(0, Math.min(1, n));
+  const contributions = prediction.featureContributions;
+  const clamp = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0);
+  const raw = (key: string) =>
+    clamp(Math.abs(contributions[key] ?? 0) / (FEATURE_WEIGHTS[key] ?? 1));
 
-  // Axis ceilings: sum of the weights that feed each group.
+  const terrain = prediction.terrainType;
+  const polar = terrain === 'polar';
+  const cave = terrain === 'cave';
+  const volcanic = terrain === 'volcanic';
+  const elevation = clamp(((prediction.elevationM ?? 0) + 100) / 4500);
+  const tempSwing = raw('diurnalTempSwingC');
+  const aridity = raw('aridity');
+  const uv = raw('solarUvIndex');
+  const radiation = raw('radiationAnalog');
+  const tube = raw('lavaTubePotential');
+
   return {
-    geomorphology: clamp(get('terrainRoughness') / 0.06),
-    mineralogy: clamp(get('regolithMatch') / 0.18),
-    environment: clamp(
-      (get('aridity') +
-        get('diurnalTempSwingC') +
-        get('dustIndex') +
-        get('solarUvIndex') +
-        get('radiationAnalog')) /
-        0.56,
+    terrain: clamp(0.55 * raw('terrainRoughness') + 0.45 * elevation),
+    surface: clamp(0.8 * raw('regolithMatch') + 0.2 * tube),
+    thermal: clamp(0.5 * tempSwing + 0.3 * uv + 0.2 * radiation),
+    water: clamp(0.55 * aridity + 0.45 * (polar ? 1 : cave ? 0.4 : 0.15)),
+    atmosphere: clamp(0.65 * raw('dustIndex') + 0.2 * (1 - aridity) + 0.15 * (volcanic ? 1 : 0)),
+    biology: clamp(0.5 * (1 - uv) + 0.3 * (1 - radiation) + 0.2 * (1 - aridity)),
+    subsurface: clamp(0.8 * tube + 0.2 * (cave ? 1 : 0)),
+    exploration: clamp(
+      0.55 * (1 - raw('isolationIndex')) +
+        0.25 * (1 - raw('terrainRoughness')) +
+        0.2 * (1 - aridity),
     ),
-    // Isolation is the inverse of accessibility: remote sites are harder to
-    // resupply, so a high isolation contribution lowers the logistics score.
-    logistics: clamp(1 - get('isolationIndex') / 0.08),
   };
 }
 
-/** Strongest of the four axes, used by the plain-language verdict. */
+/** Strongest of the eight dimensions, used by the plain-language verdict. */
 export function topFactor(prediction: Prediction): { key: keyof SiteFactors; value: number } {
   const factors = factorsOf(prediction);
   return FACTOR_ORDER.reduce(
     (best, key) => (factors[key] > best.value ? { key, value: factors[key] } : best),
-    { key: 'mineralogy' as keyof SiteFactors, value: -1 },
+    { key: 'surface' as keyof SiteFactors, value: -1 },
   );
 }
 
@@ -178,7 +227,8 @@ export function verdictOf(prediction: Prediction, target: Target): string {
   const terrain = terrainLabel(prediction).toLowerCase();
   const { key, value } = topFactor(prediction);
   const score = fitFor(prediction, target);
-  const band = score > 0.72 ? 'Strong' : score > 0.55 ? 'Promising' : 'Marginal';
+  const band =
+    score >= SCORE_BANDS.strong ? 'Strong' : score >= SCORE_BANDS.promising ? 'Promising' : 'Marginal';
 
   return `${band} ${TARGET_LABELS[target]} analog: ${terrain} terrain, strongest on ${FACTOR_LABELS[
     key

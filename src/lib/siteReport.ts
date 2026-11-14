@@ -8,7 +8,7 @@
  * the HTML and in the spreadsheet cannot drift apart.
  *
  * Every comparison is derived from data the app already holds — the four
- * pillars, the feature contributions and the physical conditions of the target
+ * dimensions, the feature contributions and the physical conditions of the target
  * body. Nothing is invented for a site the model has not scored.
  */
 
@@ -34,7 +34,7 @@ import {
 /** One place the Earth analogue stops behaving like the target body. */
 export interface Mismatch {
   aspect: string;
-  /** What this site scores on the pillar, [0, 1]. */
+  /** What this site scores on the dimension, [0, 1]. */
   analogue: number;
   /** What a permanent base on the target body demands, [0, 1]. */
   required: number;
@@ -49,7 +49,7 @@ interface TargetProfile {
   dayLength: string;
   diurnalSwingC: number;
   radiation: string;
-  /** The pillar levels a permanent base on this body actually needs. */
+  /** The dimension levels a permanent base on this body actually needs. */
   demand: SiteFactors;
 }
 
@@ -61,7 +61,16 @@ const PROFILES: Record<Target, TargetProfile> = {
     diurnalSwingC: 280,
     radiation:
       'No atmosphere and no global magnetic field, so the full solar and galactic cosmic ray flux reaches the ground.',
-    demand: { geomorphology: 0.8, mineralogy: 0.85, environment: 0.95, logistics: 0.45 },
+    demand: {
+      terrain: 0.8,
+      surface: 0.9,
+      thermal: 0.9,
+      water: 0.7,
+      atmosphere: 0.6,
+      biology: 0.3,
+      subsurface: 0.7,
+      exploration: 0.5,
+    },
   },
   mars: {
     gravityG: 0.379,
@@ -70,14 +79,23 @@ const PROFILES: Record<Target, TargetProfile> = {
     diurnalSwingC: 80,
     radiation:
       'A CO2 atmosphere at 0.6% of Earth pressure and no global field: surface dose is many times the terrestrial level.',
-    demand: { geomorphology: 0.7, mineralogy: 0.75, environment: 0.8, logistics: 0.4 },
+    demand: {
+      terrain: 0.7,
+      surface: 0.75,
+      thermal: 0.6,
+      water: 0.8,
+      atmosphere: 0.8,
+      biology: 0.6,
+      subsurface: 0.5,
+      exploration: 0.6,
+    },
   },
 };
 
 /**
  * Pillars where this site falls short of what the target body demands, worst
  * first. A shortfall is what a mission planner has to engineer around, so those
- * rows lead; a pillar that meets demand is not listed as a mismatch.
+ * rows lead; a dimension that meets demand is not listed as a mismatch.
  */
 export function mismatchesOf(prediction: Prediction, target: Target): Mismatch[] {
   const factors = factorsOf(prediction);
@@ -97,7 +115,7 @@ export function mismatchesOf(prediction: Prediction, target: Target): Mismatch[]
 /** One sentence naming the biggest gap, for the top of the page. */
 function shortfallSentence(rows: Mismatch[], target: Target): string {
   if (rows.length === 0) {
-    return `This site meets the modelled demand on every pillar for ${TARGET_LABELS[target]}, so the remaining differences are physical rather than terrain.`;
+    return `This site meets the modelled demand on every dimension for ${TARGET_LABELS[target]}, so the remaining differences are physical rather than terrain.`;
   }
   const worst = rows[0];
   const others = rows
@@ -200,7 +218,7 @@ function detailTable(prediction: Prediction, target: Target): Table {
     ['score', 'Model confidence', prediction.confidence.toFixed(2), '—', '—', '—'],
     ['score', 'Verdict', verdictOf(prediction, target), '—', '—', '—'],
     ...FACTOR_ORDER.map((key) => [
-      'pillar',
+      'dimension',
       FACTOR_LABELS[key],
       factors[key].toFixed(3),
       profile.demand[key].toFixed(3),
@@ -235,10 +253,10 @@ function detailTable(prediction: Prediction, target: Target): Table {
     [
       'condition',
       'Diurnal swing',
-      `${Math.round(factorsOf(prediction).environment * 100)}% matched`,
+      `${Math.round(factorsOf(prediction).thermal * 100)}% matched`,
       `${profile.diurnalSwingC} °C`,
       '—',
-      'Environment pillar, measured against the target body.',
+      'Temperature & environment, measured against the target body.',
     ],
     ['condition', 'Radiation environment', 'shielded', 'unshielded', '—', profile.radiation],
     ...Object.entries(prediction.featureContributions).map(([key, value]) => [
@@ -360,7 +378,7 @@ ${scoreRing(score, `${TARGET_LABELS[target]} fit`)}
       shortfallSentence(mismatch, target),
     )}</p>
 
-    <h2>Four pillars against ${escapeXml(TARGET_LABELS[target])}</h2>
+    <h2>Eight dimensions against ${escapeXml(TARGET_LABELS[target])}</h2>
     <div class="bars">
 ${pillarRows}
     </div>
@@ -374,7 +392,7 @@ ${pillarRows}
         <tr><th scope="col">Pillar</th><th scope="col">Site</th><th scope="col">Required</th><th scope="col">Gap</th><th scope="col">Why it matters</th></tr>
       </thead>
       <tbody>
-${mismatchRows || '        <tr><td colspan="5">No modelled pillar falls short of demand.</td></tr>'}
+${mismatchRows || '        <tr><td colspan="5">No modelled dimension falls short of demand.</td></tr>'}
       </tbody>
     </table>
 
@@ -494,10 +512,10 @@ export function siteReport(
     title: `${prediction.siteName} · ${TARGET_LABELS[target]} analysis`,
     filename: `site-analysis-${slug(prediction.siteName)}-${target}`,
     subtitle: worst
-      ? `${verdictOf(prediction, target)} Weakest pillar: ${worst.aspect.toLowerCase()} (${Math.round(
+      ? `${verdictOf(prediction, target)} Weakest dimension: ${worst.aspect.toLowerCase()} (${Math.round(
           worst.gap * 100,
         )}% below what ${TARGET_LABELS[target]} demands).`
-      : `${verdictOf(prediction, target)} No modelled pillar falls short of ${TARGET_LABELS[target]} demand.`,
+      : `${verdictOf(prediction, target)} No modelled dimension falls short of ${TARGET_LABELS[target]} demand.`,
     table: detailTable(prediction, target),
     html: reportHtml(prediction, target, plate),
     plate,

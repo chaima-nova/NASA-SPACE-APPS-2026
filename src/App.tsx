@@ -42,6 +42,7 @@ import type {
   ReportedSite,
   TerrainType,
 } from './data-contracts/types';
+import { SCORE_BANDS } from './data-contracts/types';
 import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
@@ -399,7 +400,7 @@ export default function App() {
   const stats = useMemo(() => {
     if (ranked.length === 0) return { meanFit: 0, strong: 0 };
     const meanFit = ranked.reduce((sum, item) => sum + item.fit, 0) / ranked.length;
-    return { meanFit, strong: ranked.filter((item) => item.fit > 0.72).length };
+    return { meanFit, strong: ranked.filter((item) => item.fit >= SCORE_BANDS.strong).length };
   }, [ranked]);
 
   const terrainCounts = useMemo(() => {

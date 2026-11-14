@@ -21,6 +21,13 @@ export type FocusArea =
   | 'mars-base-analog'
   | 'dual-analog';
 
+/**
+ * Score bands, in one place. The model writes a site's label from these and the
+ * UI reads the same numbers, so a site cannot be "Strong" on the map and
+ * "Promising" in the dossier after the scoring changed underneath.
+ */
+export const SCORE_BANDS = { strong: 0.54, promising: 0.48 } as const;
+
 /** Terrain families named in the challenge brief. */
 export type TerrainType =
   | 'desert'
@@ -116,17 +123,22 @@ export interface Prediction {
    */
   targetSites?: Partial<Record<'moon' | 'mars', TargetSite>>;
   /**
-   * Optional per-axis scores for the proposal's four pillars, each in [0, 1]:
-   * geomorphology (slope, crater density), mineralogy (sulfates, iron oxides),
-   * environment (UV, aridity, thermal swing) and logistics (access to roads and
-   * power). When absent the dossier derives them from `featureContributions` so
-   * the UI is never blocked on the model.
+   * Optional per-axis scores for the eight scientific dimensions of the
+   * comparison table, each in [0, 1]: terrain and topography, surface and
+   * geology, temperature and environment, water and ice, atmospheric processes,
+   * biology and habitability, subsurface environments, and exploration
+   * relevance. When absent the dossier derives them from
+   * `featureContributions` so the UI is never blocked on the model.
    */
   factors?: {
-    geomorphology: number;
-    mineralogy: number;
-    environment: number;
-    logistics: number;
+    terrain: number;
+    surface: number;
+    thermal: number;
+    water: number;
+    atmosphere: number;
+    biology: number;
+    subsurface: number;
+    exploration: number;
   };
   /** Optional provenance links into DataSource[]. */
   datasetIds?: string[];

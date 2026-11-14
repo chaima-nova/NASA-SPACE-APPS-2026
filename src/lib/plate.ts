@@ -4,7 +4,7 @@
  * The reference figure for this page is the multi-panel kind scientific
  * reporting uses — a map, a loop, a scatter, a deconvolution — read as a single
  * plate rather than four separate pictures. The same idea here, with the panels
- * this app can actually populate: how the pillar scores compare to the peers,
+ * this app can actually populate: how the dimension scores compare to the peers,
  * what moved the score, where the site sits in the distribution, and how the
  * two target fits trade off against each other.
  *
@@ -17,9 +17,9 @@
 
 export interface PlateAxis {
   label: string;
-  /** This site's pillar score, [0, 1]. */
+  /** This site's score on the dimension, [0, 1]. */
   site: number;
-  /** Mean pillar score across the peer sites, [0, 1]. */
+  /** Mean score across the peer sites, [0, 1]. */
   peers: number;
   /** What a permanent base on the target body demands, [0, 1]. */
   demand: number;
@@ -131,7 +131,7 @@ function radarPanel(
     )
     .join('');
 
-  return `${card(x, y, w, h, 'a', 'Pillar profile against peers and demand')}
+  return `${card(x, y, w, h, 'a', 'Dimension profile against peers and demand')}
     ${[0.25, 0.5, 0.75, 1].map(ring).join('')}
     ${spokes}
     ${polygon('demand', AMBER, 'rgba(201,123,26,0.10)')}
@@ -308,7 +308,7 @@ export function plateSvg(input: PlateInput): string {
     ${scatterPanel(margin + panelWidth + 18, secondRow, panelWidth, panelHeight, input.scatter)}
     <text x="${margin}" y="${height - 16}" font-size="9.5" font-style="italic" fill="${SUB}">Figure 1 — Model evidence for ${esc(
       input.siteName,
-    )}: pillar scores, score drivers, position in the field and the Moon/Mars trade-off. Model estimates, not measurements.</text>
+    )}: dimension scores, score drivers, position in the field and the Moon/Mars trade-off. Model estimates, not measurements.</text>
   </svg>`;
 }
 

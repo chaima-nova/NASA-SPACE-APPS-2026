@@ -157,7 +157,7 @@ const TRACKS: Track[] = [
       },
       {
         question: 'Would a mineralogy claim rest on a sample or on a score?',
-        evidence: `Mineralogy in this app is derived from the model's feature contributions, so it is an inference about the site, not a measurement of it. A material claim should cite a sample and its spectrum; until one exists, the pillar is a prioritisation aid.`,
+        evidence: `Mineralogy in this app is derived from the model's feature contributions, so it is an inference about the site, not a measurement of it. A material claim should cite a sample and its spectrum; until one exists, the dimension is a prioritisation aid.`,
       },
     ],
   },
