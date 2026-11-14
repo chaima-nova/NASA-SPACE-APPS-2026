@@ -648,66 +648,73 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         </button>
       </div>
 
-      {/* A scale on the left for whichever overlay is drawn. Both are fitted to
-          this patch: the altitude ramp spans the ground's own relief, and the
-          temperature ramp spans only the bands this frame carries. A scale fixed
-          to the planet is what made every site read the same. */}
-      {overlay !== 'none' && patch ? (
-        <div className="terrain-scale">
-          <span className="terrain-scale-title">
-            {overlay === 'altitude' ? 'Height' : 'Surface temp'}
-          </span>
-          <div className="terrain-scale-body">
-            {overlay === 'altitude' ? (
-              <>
-                <div
-                  className="terrain-scale-bar"
-                  style={{ background: altitudeGradient() }}
-                  role="img"
-                  aria-label={`Height, from ${Math.round(
-                    patch.minElevation,
-                  )} to ${Math.round(patch.maxElevation)} metres above sea level`}
-                />
-                <div className="terrain-scale-ticks">
-                  {altitudeTicks(patch.minElevation, patch.maxElevation).map((tick, index) => (
-                    <span key={`${tick}-${index}`}>{formatElevation(tick)}</span>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  className="terrain-scale-bar"
-                  style={{
-                    background: tempBands?.length
-                      ? `linear-gradient(to top, ${tempBands.join(', ')})`
-                      : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
-                  }}
-                  role="img"
-                  aria-label="Relative surface temperature: cooler at the bottom, warmer at the top"
-                />
-                <div className="terrain-scale-ticks">
-                  <span>Warmer</span>
-                  <span>Cooler</span>
-                </div>
-              </>
-            )}
+      {/* The left rail holds the readouts for the drawn layer: what the layer
+          is, in a box at the top left, and the scale fitted to this patch under
+          it. Kept in one column so a long caption cannot land on the scale. */}
+      <div className="terrain-rail">
+        {tempNote ? <p className="terrain-overlay-note">{tempNote}</p> : null}
+
+        {/* A scale on the left for whichever overlay is drawn. Both are fitted to
+            this patch: the altitude ramp spans the ground's own relief, and the
+            temperature ramp spans only the bands this frame carries. A scale fixed
+            to the planet is what made every site read the same. */}
+        {overlay !== 'none' && patch ? (
+          <div className="terrain-scale">
+            <span className="terrain-scale-title">
+              {overlay === 'altitude' ? 'Height' : 'Surface temp'}
+            </span>
+            <div className="terrain-scale-body">
+              {overlay === 'altitude' ? (
+                <>
+                  <div
+                    className="terrain-scale-bar"
+                    style={{ background: altitudeGradient() }}
+                    role="img"
+                    aria-label={`Height, from ${Math.round(
+                      patch.minElevation,
+                    )} to ${Math.round(patch.maxElevation)} metres above sea level`}
+                  />
+                  <div className="terrain-scale-ticks">
+                    {altitudeTicks(patch.minElevation, patch.maxElevation).map((tick, index) => (
+                      <span key={`${tick}-${index}`}>{formatElevation(tick)}</span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div
+                    className="terrain-scale-bar"
+                    style={{
+                      background: tempBands?.length
+                        ? `linear-gradient(to top, ${tempBands.join(', ')})`
+                        : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
+                    }}
+                    role="img"
+                    aria-label="Relative surface temperature: cooler at the bottom, warmer at the top"
+                  />
+                  <div className="terrain-scale-ticks">
+                    <span>Warmer</span>
+                    <span>Cooler</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <p className="terrain-scale-note">
+              {overlay === 'altitude'
+                ? `Ramp fitted to this ground: ${Math.round(
+                    patch.maxElevation - patch.minElevation,
+                  ).toLocaleString('en-US')} m of relief.`
+                : tempBands === null
+                  ? 'Waiting on the temperature frame.'
+                  : tempBands.length === 0
+                    ? 'The colours in this frame could not be read off the image.'
+                    : tempBands.length > 1
+                      ? `${tempBands.length} bands here, stretched across the full ramp.`
+                      : 'One band here: this ground sits inside a single step of NASA’s ramp.'}
+            </p>
           </div>
-          <p className="terrain-scale-note">
-            {overlay === 'altitude'
-              ? `Ramp fitted to this ground: ${Math.round(
-                  patch.maxElevation - patch.minElevation,
-                ).toLocaleString('en-US')} m of relief.`
-              : tempBands === null
-                ? 'Waiting on the temperature frame.'
-                : tempBands.length === 0
-                  ? 'The colours in this frame could not be read off the image.'
-                  : tempBands.length > 1
-                    ? `${tempBands.length} bands here, stretched across the full ramp.`
-                    : 'One band here: this ground sits inside a single step of NASA’s ramp.'}
-          </p>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       {/* The same control as the globe's live cloud toggle, so both 3D views
           are read the same way: a dot lights when that layer is drawn. */}
@@ -733,8 +740,6 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           Altitude Map
         </button>
       </div>
-
-      {tempNote ? <p className="terrain-overlay-note">{tempNote}</p> : null}
 
       <div className="terrain-stats">
         <div>
