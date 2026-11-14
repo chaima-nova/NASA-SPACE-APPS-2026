@@ -38,7 +38,7 @@ function Row({ label, a, b }: { label: string; a: string; b: string }) {
   );
 }
 
-/** The scored axes, in radar order: the four pillars first, then the fits. */
+/** The scored axes, in radar order: the eight dimensions first, then the fits. */
 const RADAR_AXES = [
   ...FACTOR_ORDER.map((key) => ({ id: key as string, label: FACTOR_LABELS[key] })),
   { id: 'moon', label: 'Moon fit' },
@@ -50,10 +50,7 @@ const RADAR_AXES = [
 function radarValues(prediction: Prediction): number[] {
   const factors = factorsOf(prediction);
   return [
-    factors.geomorphology,
-    factors.mineralogy,
-    factors.environment,
-    factors.logistics,
+    ...FACTOR_ORDER.map((key) => factors[key]),
     fitFor(prediction, 'moon'),
     fitFor(prediction, 'mars'),
     prediction.confidence,
@@ -89,7 +86,7 @@ export function CompareSites({ current, options, target, onClose }: CompareSites
     <Modal
       kicker="Compare"
       title="Compare Analogue Sites"
-      subtitle={`Both sites scored against ${TARGET_LABELS[target]} on the four pillars, both fits and model confidence — with the facts behind the shape underneath.`}
+      subtitle={`Both sites scored against ${TARGET_LABELS[target]} on the eight scientific dimensions, both fits and model confidence — with the facts behind the shape underneath.`}
       onClose={onClose}
       size="lg"
       className="compare-sites-modal"

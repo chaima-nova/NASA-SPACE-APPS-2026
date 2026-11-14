@@ -259,7 +259,7 @@ export function ExportDialog({
               <span className="export-option-text">
                 <span className="export-option-label">Export to HTML</span>
                 <span className="export-option-hint">
-                  A standalone report: score ring, pillar charts, mismatch table, prints cleanly.
+                  A standalone report: score ring, evidence plate, mismatch table, prints cleanly.
                 </span>
               </span>
             </button>

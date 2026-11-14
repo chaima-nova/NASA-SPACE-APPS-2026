@@ -3,8 +3,8 @@ import { formatScore } from '../../lib/site';
 /**
  * The comparison as a shape rather than a table.
  *
- * Seven measured axes — the brief's four pillars, both fits and the model's own
- * confidence — are drawn as one polygon per site, so the question "which of
+ * One axis per scientific dimension, plus both fits and the model's own
+ * confidence, drawn as one polygon per site, so the question "which of
  * these two is better, and on what" is answered by the silhouette before any
  * number is read. Values are [0, 1] and are printed beside each axis, so the
  * chart is a summary and not the only record.
