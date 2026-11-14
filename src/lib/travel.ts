@@ -250,10 +250,155 @@ export function travelExport(
     .join(String.fromCharCode(10));
 
   const html = `    <h2>Getting there from ${escapeXml(start.label)}</h2>
-    <p class="hint">${escapeXml(access.note)} No fare or duration is quoted here: the searches are live, so the price and the schedule are whatever the site shows today.</p>
+    <p class="hint">${escapeXml(access.note)} The costs in the app are modelled ranges: the searches are live, so the price and the schedule are whatever the site shows today.</p>
     <ol>
 ${items}
     </ol>`;
 
   return { available: true, note: access.note, table: { header, rows }, html };
+}
+
+/* ---- Trip estimates ------------------------------------------------------
+ *
+ * The brief asks what a field party's options look like, and a party plans
+ * around a total. There is still no flight API in the bundle, so the figures
+ * below are modelled from distances the app really holds — the great-circle
+ * route to the gate airport and the measured last leg — and every place they
+ * appear says so.
+ *
+ * The rates are round and deliberately cautious. A number that looks precise
+ * invites trust it has not earned, so the UI shows a range, names it an
+ * estimate, and keeps the live search beside it as the only quote.
+ */
+
+/** Air leg: cruise speed, the hours an airport adds, and a fare curve. */
+const AIR = { speedKmh: 760, overheadHours: 2.2, baseFare: 55, farePerKm: 0.105 };
+
+/** Road: average speed including stops, and the cost of a hired vehicle and
+ *  its fuel for a party of four, per kilometre. */
+const ROAD = { speedKmh: 72, costPerKm: 0.14, detour: 1.27 };
+
+/**
+ * The rougher ways on from the gate, priced per kilometre because they are
+ * chartered rather than bought seat by seat. A road transfer is the fallback:
+ * an unmapped mode must not silently cost nothing.
+ */
+function onwardRates(mode: string): { speedKmh: number; costPerKm: number } {
+  if (mode === 'Off-road transfer') return { speedKmh: 32, costPerKm: 0.85 };
+  if (mode === 'Charter flight') return { speedKmh: 210, costPerKm: 4.2 };
+  if (mode === 'Ice flight or ship') return { speedKmh: 190, costPerKm: 5.6 };
+  return { speedKmh: ROAD.speedKmh, costPerKm: ROAD.costPerKm };
+}
+
+export interface TripOption {
+  id: 'faster' | 'cheaper';
+  /** What the reader is choosing: the card lead. */
+  headline: string;
+  /** The legs it is made of. */
+  mode: string;
+  km: number;
+  hours: number;
+  costLow: number;
+  costHigh: number;
+}
+
+export interface TripEstimate {
+  /** Great-circle route from the reader to the gate airport, in kilometres. */
+  airKm: number;
+  options: TripOption[];
+  /** True when an overland-only trip is plausible from where the reader is. */
+  groundPossible: boolean;
+  /** What a party should budget for, across the options offered. */
+  totalLow: number;
+  totalHigh: number;
+}
+
+/** Fares are quoted to the nearest ten: a modelled number should not pretend
+ *  to the dollar. */
+const roundTen = (value: number) => Math.round(value / 10) * 10;
+
+/** A modelled figure, as the range it deserves. */
+const band = (value: number) => {
+  const low = roundTen(value * 0.78);
+  const high = roundTen(value * 1.32);
+  return { low, high };
+};
+
+/** Past this, a vehicle stops being the cheaper way to arrive. */
+const GROUND_LIMIT_KM = 1500;
+
+/**
+ * The two ways a party can make this trip, with a total cost for each.
+ *
+ * "Faster" is the itinerary the rest of the planner builds: fly to the gate,
+ * then the measured last leg. "Cheaper" exists only when the site is reachable
+ * overland from the reader at all, and it is one long road with the vehicle
+ * and fuel carried by the party. Neither is offered when the app cannot build
+ * it, rather than being padded with a guess.
+ */
+export function tripEstimate(origin: Origin, site: Place): TripEstimate {
+  const access = travelAccessOf(site);
+  const options: TripOption[] = [];
+  let airKm = 0;
+
+  if (access.gateway) {
+    airKm = distanceKm(origin, access.gateway);
+    const airHours = airKm / AIR.speedKmh + AIR.overheadHours;
+    const airCost = AIR.baseFare + airKm * AIR.farePerKm;
+
+    const rates = onwardRates(access.transferMode);
+    const legHours = access.transferKm / rates.speedKmh;
+    const legCost = access.transferKm * rates.costPerKm;
+
+    // Half an hour of handover covers the change at the gate: bags, the hire
+    // desk, the charter briefing.
+    const hours = airHours + legHours + 0.5;
+    const { low, high } = band(airCost + legCost);
+
+    options.push({
+      id: 'faster',
+      headline: 'Faster',
+      mode: `Fly to ${access.gateway.code}, then ${access.transferMode.toLowerCase()}`,
+      km: airKm + access.transferKm,
+      hours,
+      costLow: low,
+      costHigh: high,
+    });
+  }
+
+  const overland = distanceKm(origin, site) * ROAD.detour;
+  const groundPossible = overland <= GROUND_LIMIT_KM;
+  if (groundPossible) {
+    const { low, high } = band(overland * ROAD.costPerKm);
+    options.push({
+      id: 'cheaper',
+      headline: 'Cheaper',
+      mode: 'Road, with the vehicle and its fuel carried by the party',
+      km: overland,
+      hours: overland / ROAD.speedKmh,
+      costLow: low,
+      costHigh: high,
+    });
+  }
+
+  return {
+    airKm,
+    options,
+    groundPossible,
+    totalLow: options.length ? Math.min(...options.map((option) => option.costLow)) : 0,
+    totalHigh: options.length ? Math.max(...options.map((option) => option.costHigh)) : 0,
+  };
+}
+
+/** Hours as a reader reads them: "14 h 20 m". */
+export function formatHours(hours: number): string {
+  const total = Math.round(hours * 60);
+  const whole = Math.floor(total / 60);
+  const minutes = total % 60;
+  return minutes ? `${whole} h ${minutes} m` : `${whole} h`;
+}
+
+/** Dollars, without pretending to cents. */
+export function formatMoney(value: number): string {
+  return `$${roundTen(value).toLocaleString('en-US')}`;
 }
