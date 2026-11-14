@@ -5,6 +5,12 @@ import { loadTerrainPatch, TERRAIN_PALETTE, type TerrainPatch, type TerrainSite 
 import { formatCoords, formatElevation, terrainLabel } from '../../lib/site';
 import { reducedMotion } from '../../lib/accessibility';
 import { latestImageryDate } from '../../lib/earthImagery';
+import {
+  altitudeGradient,
+  altitudeTicks,
+  rampAt,
+  temperatureBands,
+} from '../../lib/terrainScale';
 
 interface SiteTerrainProps {
   /** A model prediction or a researcher's reported site — both are placeable. */
@@ -113,6 +119,8 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
   const [overlay, setOverlay] = useState<'none' | 'altitude' | 'temperature'>('none');
   /** What the temperature drape says for itself, once it knows. */
   const [tempNote, setTempNote] = useState<string | null>(null);
+  /** The bands the temperature frame really carries, coldest first. */
+  const [tempBands, setTempBands] = useState<string[] | null>(null);
   /** Set by the scene effect, so a toggle recolours without rebuilding it. */
   const overlayApi = useRef<((mode: 'none' | 'altitude' | 'temperature') => void) | null>(null);
 
@@ -292,23 +300,8 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
     // mid slopes sand, summits white. Built once, then swapped in as the colour
     // attribute, so switching overlay costs no geometry rebuild.
     const altitudeColors = new Float32Array(n * n * 3);
-    const rampStops: Array<[number, [number, number, number]]> = [[0, [26, 62, 122]], [0.22, [42, 132, 138]], [0.42, [104, 162, 88]], [0.62, [206, 186, 96]], [0.8, [190, 118, 74]], [1, [246, 244, 240]]];
-    const rampAt = (value: number): [number, number, number] => {
-      const clamped = Math.min(1, Math.max(0, value));
-      for (let i = 1; i < rampStops.length; i += 1) {
-        const [right, rightRgb] = rampStops[i];
-        const [left, leftRgb] = rampStops[i - 1];
-        if (clamped <= right) {
-          const k = (clamped - left) / Math.max(1e-6, right - left);
-          return [
-            (leftRgb[0] + (rightRgb[0] - leftRgb[0]) * k) / 255,
-            (leftRgb[1] + (rightRgb[1] - leftRgb[1]) * k) / 255,
-            (leftRgb[2] + (rightRgb[2] - leftRgb[2]) * k) / 255,
-          ];
-        }
-      }
-      return [1, 1, 1];
-    };
+    // The ramp lives in lib/terrainScale, so the scale drawn beside the ground
+    // uses the very stops the vertices are painted with.
     for (let i = 0; i < n * n; i += 1) {
       const level = Math.min(1, Math.max(0, (patch.heights[i] - patch.minElevation) / relief));
       const [r, g, b] = rampAt(Math.pow(level, 0.85));
@@ -349,6 +342,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       if (tempState === 'loading' || tempState === 'ready') return;
       tempState = 'loading';
       setTempNote('Loading the MODIS surface temperature layer…');
+      setTempBands(null);
       const start = new Date(latestImageryDate() + 'T00:00:00Z').getTime();
       // An 8-day composite always lags: step back in whole composites and take the
       // first frame that carries paint rather than assuming the newest one does.
@@ -369,6 +363,9 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           tempMaterial.map = texture;
           tempMaterial.needsUpdate = true;
           tempState = 'ready';
+          // Read the colours this frame puts on the ground, so the scale spans
+          // the patch rather than the planet.
+          setTempBands(temperatureBands(texture.image));
           setTempNote(
             'MODIS Terra land surface temperature · 8-day composite to ' +
               day +
@@ -386,8 +383,14 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       const colours = mode === 'altitude' ? altitudeAttr : baseAttr;
       geometry.setAttribute('color', colours);
       colours.needsUpdate = true;
-      tempMesh.visible = mode === 'temperature';
-      tempMaterial.opacity = mode === 'temperature' ? 0.66 : 0;
+      // The drape is translucent and the ground beneath it is already painted
+      // in the terrain family's palette, so at 0.66 the two averaged into one
+      // tone and every patch looked alike. Grey the ground and let the product's
+      // own colours carry the map.
+      const heat = mode === 'temperature';
+      tempMesh.visible = heat;
+      groundMaterial.color.setRGB(heat ? 0.46 : 1, heat ? 0.48 : 1, heat ? 0.54 : 1);
+      tempMaterial.opacity = heat ? 0.9 : 0;
       if (mode === 'temperature') void loadTemperature();
       if (mode !== 'temperature') setTempNote(null);
     };
@@ -644,6 +647,67 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           <span aria-hidden="true">←</span> Back to Globe
         </button>
       </div>
+
+      {/* A scale on the left for whichever overlay is drawn. Both are fitted to
+          this patch: the altitude ramp spans the ground's own relief, and the
+          temperature ramp spans only the bands this frame carries. A scale fixed
+          to the planet is what made every site read the same. */}
+      {overlay !== 'none' && patch ? (
+        <div className="terrain-scale">
+          <span className="terrain-scale-title">
+            {overlay === 'altitude' ? 'Height' : 'Surface temp'}
+          </span>
+          <div className="terrain-scale-body">
+            {overlay === 'altitude' ? (
+              <>
+                <div
+                  className="terrain-scale-bar"
+                  style={{ background: altitudeGradient() }}
+                  role="img"
+                  aria-label={`Height, from ${Math.round(
+                    patch.minElevation,
+                  )} to ${Math.round(patch.maxElevation)} metres above sea level`}
+                />
+                <div className="terrain-scale-ticks">
+                  {altitudeTicks(patch.minElevation, patch.maxElevation).map((tick, index) => (
+                    <span key={`${tick}-${index}`}>{formatElevation(tick)}</span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className="terrain-scale-bar"
+                  style={{
+                    background: tempBands?.length
+                      ? `linear-gradient(to top, ${tempBands.join(', ')})`
+                      : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
+                  }}
+                  role="img"
+                  aria-label="Relative surface temperature: cooler at the bottom, warmer at the top"
+                />
+                <div className="terrain-scale-ticks">
+                  <span>Warmer</span>
+                  <span>Cooler</span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="terrain-scale-note">
+            {overlay === 'altitude'
+              ? `Ramp fitted to this ground: ${Math.round(
+                  patch.maxElevation - patch.minElevation,
+                ).toLocaleString('en-US')} m of relief.`
+              : tempBands === null
+                ? 'Waiting on the temperature frame.'
+                : tempBands.length === 0
+                  ? 'The colours in this frame could not be read off the image.'
+                  : tempBands.length > 1
+                    ? `${tempBands.length} bands here, stretched across the full ramp.`
+                    : 'One band here: this ground sits inside a single step of NASA’s ramp.'}
+          </p>
+        </div>
+      ) : null}
 
       {/* The same control as the globe's live cloud toggle, so both 3D views
           are read the same way: a dot lights when that layer is drawn. */}

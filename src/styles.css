@@ -6755,3 +6755,74 @@ a.compare-thumb {
     grid-template-columns: 1fr;
   }
 }
+
+/* The scale for whichever overlay is drawn, parked on the left edge where the
+   ground is not. Fitted to the patch in view rather than to the planet: a
+   planet-wide ramp put a 7 km site inside one colour, so the legend names the
+   metres or the bands this ground actually occupies. */
+.terrain-scale {
+  position: absolute;
+  left: 15px;
+  top: 96px;
+  bottom: 126px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 138px;
+  padding: 9px 10px;
+  background: rgba(6, 10, 16, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  backdrop-filter: blur(6px);
+  /* A readout, not a control: it must not swallow a drag meant for the terrain. */
+  pointer-events: none;
+}
+
+.terrain-scale-title {
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.terrain-scale-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.terrain-scale-bar {
+  width: 13px;
+  flex: none;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+}
+
+.terrain-scale-ticks {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  color: var(--ink-2);
+}
+
+.terrain-scale-note {
+  margin: 0;
+  font-size: 0.52rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+/* On a phone the stats strip owns the bottom left, so the scale stops higher. */
+@media (max-width: 720px) {
+  .terrain-scale {
+    top: 88px;
+    bottom: 152px;
+    width: 116px;
+  }
+}
