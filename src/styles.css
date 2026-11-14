@@ -704,6 +704,28 @@ body::before {
   border-color: var(--line-2);
 }
 
+/* The globe and the investigation prompts share the middle column: the prompts
+   are about the ground the globe is showing, so they belong under it rather
+   than in a full-width band at the foot of the page. The column scrolls, the
+   way the ranked list and the dossier do. */
+.globe-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: auto;
+}
+
+.globe-column .globe-card {
+  flex: 0 0 auto;
+}
+
+.globe-column .investigations {
+  margin-top: 0;
+}
+
 .globe-stage {
   position: relative;
   flex: 1;
@@ -1496,6 +1518,11 @@ body::before {
     grid-template-columns: 1fr;
     height: auto;
     min-height: 0;
+  }
+  /* One column on narrow screens: let the globe and the prompts become grid
+     items again, so the globe can keep its "first" order. */
+  .globe-column {
+    display: contents;
   }
   .globe-card {
     order: -1;

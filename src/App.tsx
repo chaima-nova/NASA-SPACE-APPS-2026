@@ -804,7 +804,11 @@ export default function App() {
           </footer>
         </section>
 
-        <section className="card globe-card" aria-label="Site globe">
+        {/* The globe and the "what could it be used for" prompts share the
+            middle column, so the prompts sit under the ground they describe
+            instead of in a band at the foot of the page. */}
+        <div className="globe-column">
+          <section className="card globe-card" aria-label="Site globe">
           {/* Blind mode: to a listener the globe is decoration, so say what it
               carries and where the same information lives in text. */}
           <p className="sr-only">
@@ -922,7 +926,10 @@ export default function App() {
               )}
             </div>
           </div>
-        </section>
+          </section>
+
+          <InvestigationPrompts />
+        </div>
 
         <div className="dossier-column">
           {/* The reference globe follows the selected target: Moon phase on
@@ -977,10 +984,6 @@ export default function App() {
           </section>
         </div>
       </main>
-
-      {/* The three applications the proposal names, framed as questions a field
-          campaign could answer at any site in the list above. */}
-      <InvestigationPrompts />
 
       <section className="evidence">
         <button
