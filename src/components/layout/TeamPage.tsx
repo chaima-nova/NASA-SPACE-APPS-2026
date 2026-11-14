@@ -60,7 +60,7 @@ export function TeamPage({ still }: TeamPageProps) {
                   <p className="team-role">{member.role}</p>
                 </div>
               </div>
-              <ul className="team-tasks" aria-label={`${member.name}: tasks`}>
+              <ul className="team-tasks" aria-label={`${member.name}: responsibilities`}>
                 {member.tasks.map((task) => (
                   <li key={task}>{task}</li>
                 ))}
