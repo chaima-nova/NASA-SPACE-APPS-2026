@@ -5583,10 +5583,11 @@ html[data-a11y-motion='reduced'] *::after {
 
 /* ---- Plan my trip -------------------------------------------------------- */
 
-/* Sits above Export/Copy Link: getting there is the bigger decision. */
+/* Sits above Export/Copy Link: getting there is the bigger decision. The
+   gap below it comes from .dossier-actions, which spaces every row in this
+   stack at 7px; a margin here would add to that and break the rhythm. */
 .dossier-trip {
   width: 100%;
-  margin-bottom: 6px;
 }
 
 .trip-choices {
