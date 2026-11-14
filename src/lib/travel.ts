@@ -183,6 +183,31 @@ export function flightsUrl(code: string): string {
   return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights to ${code}`)}`;
 }
 
+/** Google Maps directions between two coordinates, in one travel mode. */
+function mapsDirections(from: Place, to: Place, mode: 'transit' | 'driving'): string {
+  const point = (place: Place) => `${place.lat.toFixed(5)},${place.lon.toFixed(5)}`;
+  return `https://www.google.com/maps/dir/?api=1&origin=${point(from)}&destination=${point(
+    to,
+  )}&travelmode=${mode}`;
+}
+
+/**
+ * Bus and rail options from the reader to the gate airport. Google Maps transit
+ * is the one link that indexes coach and train operators without an API key and
+ * without steering the reader to a single carrier.
+ */
+export function transitUrl(origin: Place, gateway: Place): string {
+  return mapsDirections(origin, gateway, 'transit');
+}
+
+/**
+ * The last leg: from the reader's start point to the site's own coordinates,
+ * so the route ends on the ground rather than in an arrivals hall.
+ */
+export function siteDirectionsUrl(origin: Place, site: Place): string {
+  return mapsDirections(origin, site, 'driving');
+}
+
 /**
  * The two itineraries a field party actually chooses between: the quickest way
  * there, and the cheapest. One air leg each (the cheapest one stops, and pays
