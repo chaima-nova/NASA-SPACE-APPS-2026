@@ -28,6 +28,8 @@ interface SiteInspectorProps {
   /** Community writes already bound to this prediction's id. */
   actions: CommunityActions;
   onExport: () => void;
+  /** Opens the side-by-side comparison against another scored site. */
+  onCompareSites: () => void;
   onCopyLink: () => void;
   onSeeSite: () => void;
   onCompare: () => void;
@@ -82,6 +84,7 @@ export function SiteInspector({
   community,
   actions,
   onExport,
+  onCompareSites,
   onCopyLink,
   onSeeSite,
   onCompare,
@@ -272,9 +275,16 @@ export function SiteInspector({
       <div className="divider" />
 
       <div className="dossier-actions">
-        <button type="button" className="btn btn-primary" onClick={onExport}>
-          Export
-        </button>
+        {/* Export first, then the question that usually follows it: how does
+            this site compare with the one ranked above or below it? */}
+        <div className="dossier-export">
+          <button type="button" className="btn btn-primary" onClick={onExport}>
+            Export
+          </button>
+          <button type="button" className="btn" onClick={onCompareSites}>
+            Compare analogue sites
+          </button>
+        </div>
         <button type="button" className="btn" onClick={onCopyLink}>
           {copied ? 'Link copied' : 'Copy link'}
         </button>
