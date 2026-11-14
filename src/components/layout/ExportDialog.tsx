@@ -183,12 +183,7 @@ export function ExportDialog({
               checked={includeSite}
               onChange={(event) => setIncludeSite(event.target.checked)}
             />
-            <span>
-              <span className="export-check-name">Analogue site data</span>
-              <span className="export-check-hint">
-                Scores, pillar gaps, physical differences and features.
-              </span>
-            </span>
+            <span className="export-check-name">Analogue site data</span>
           </label>
 
           <label className="export-check">
@@ -198,18 +193,13 @@ export function ExportDialog({
               disabled={!travelReady}
               onChange={(event) => setIncludeTravel(event.target.checked)}
             />
-            <span>
-              <span className="export-check-name">Travel itinerary</span>
-              <span className="export-check-hint">
-                {travelReady
-                  ? 'Cheapest and fastest routes, one tab alongside the data.'
-                  : (travel?.note ?? 'Set a location to build an itinerary.')}
-              </span>
-            </span>
+            <span className="export-check-name">Travel itinerary</span>
           </label>
         </fieldset>
 
-        <div className="export-destinations">
+        <fieldset className="export-destinations">
+          <legend>File type</legend>
+
           <div className="export-options">
             <button type="button" className="export-option" disabled={nothingChosen} onClick={saveExcel}>
               <ExcelLogo />
@@ -248,7 +238,11 @@ export function ExportDialog({
               </span>
             </button>
           </div>
+        </fieldset>
 
+        {/* Status and the second-tab copy sit under the two panels: inside the
+            file-type box they would make it taller than the checklist. */}
+        <div className="export-foot">
           <p className={status ? 'export-status is-on' : 'export-status'} role="status">
             {status ?? ''}
           </p>

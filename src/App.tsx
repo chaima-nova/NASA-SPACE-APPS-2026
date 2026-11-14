@@ -11,6 +11,7 @@ import { TeamPage } from './components/layout/TeamPage';
 import { Panel } from './components/layout/Panel';
 import { SiteBackdrop } from './components/layout/SiteBackdrop';
 import { DataSourceList } from './components/panels/DataSourceList';
+import { InvestigationPrompts } from './components/panels/InvestigationPrompts';
 import { PipelineEvidence } from './components/panels/PipelineEvidence';
 import { ReportedDossier } from './components/panels/ReportedDossier';
 import { ReportedSitesPanel } from './components/panels/ReportedSitesPanel';
@@ -952,6 +953,10 @@ export default function App() {
           </section>
         </div>
       </main>
+
+      {/* The three applications the proposal names, framed as questions a field
+          campaign could answer at any site in the list above. */}
+      <InvestigationPrompts />
 
       <section className="evidence">
         <button

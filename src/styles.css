@@ -2467,17 +2467,21 @@ body::before {
 /* One destination per row, logo on the left: the column reads as a list of
    places to send the table rather than a list of file extensions. */
 .export-modal {
-  width: min(460px, 100%);
+  width: min(560px, 100%);
 }
 
 .export-options {
+  /* The boxes share whatever height the checklist panel sets, so the two
+     columns end on the same line. */
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 8px;
 }
 
 .export-option {
   display: flex;
+  flex: 1 1 0;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -5071,7 +5075,9 @@ html[data-a11y-motion='reduced'] *::after {
   display: grid;
   grid-template-columns: minmax(180px, 215px) 1fr;
   gap: 16px;
-  align-items: start;
+  /* Both columns stretch to the taller of the two, so the checklist box and
+     the file-type box above it read as one row rather than two loose stacks. */
+  align-items: stretch;
 }
 
 @media (max-width: 640px) {
@@ -5080,14 +5086,20 @@ html[data-a11y-motion='reduced'] *::after {
   }
 }
 
-.export-include {
+/* Two boxes with a legend: what you are taking, and what it is written to. */
+.export-include,
+.export-destinations {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   margin: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
 }
 
-.export-include legend {
+.export-include legend,
+.export-destinations legend {
   padding: 0 4px;
   font-family: var(--mono);
   font-size: 0.56rem;
@@ -5101,7 +5113,7 @@ html[data-a11y-motion='reduced'] *::after {
   align-items: flex-start;
   gap: 8px;
   padding: 8px 0;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   border-bottom: 1px solid var(--line);
   cursor: pointer;
 }
@@ -5120,20 +5132,22 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink);
 }
 
-.export-check-hint {
-  display: block;
-  margin-top: 2px;
-  font-size: 0.6rem;
-  line-height: 1.45;
-  color: var(--ink-3);
+.export-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.export-destinations {
-  min-width: 0;
+.export-foot .export-status {
+  flex: 1;
+  min-width: 180px;
+  margin: 0;
 }
 
 .export-copy-tab {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 /* ---- Comparison target above the dossier --------------------------------- */
@@ -5432,3 +5446,155 @@ html[data-a11y-motion='reduced'] *::after {
 
 .pipeline-terrain th { color: var(--ink-3); font-weight: 600; }
 .pipeline-terrain td { color: var(--ink-2); }
+
+/* ---- Investigation prompts ---------------------------------------------- */
+
+/* The bridge between the ranked workbench and the evidence drawer: what an
+   analogue site is *for*. It sits inside .app's 22px gutter, so it carries no
+   horizontal padding of its own. */
+.investigations {
+  margin-top: 16px;
+}
+
+.investigations-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 2px 10px;
+}
+
+.investigations-kicker {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+}
+
+.investigations-head h2 {
+  margin: 0;
+  font-size: 1.04rem;
+  letter-spacing: -0.01em;
+}
+
+.investigations-lede {
+  margin: 0;
+  max-width: 82ch;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.investigations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.investigation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.investigation-kind {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--signal);
+}
+
+.investigation-head h3 {
+  margin: 2px 0 4px;
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+}
+
+.investigation-aim {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+.investigation-prompts {
+  counter-reset: prompt;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.investigation-prompts li {
+  position: relative;
+  padding: 10px 10px 10px 26px;
+  border-top: 1px solid var(--line);
+}
+
+.investigation-prompts li::before {
+  counter-increment: prompt;
+  content: counter(prompt);
+  position: absolute;
+  top: 11px;
+  left: 6px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  color: var(--ink-3);
+}
+
+.investigation-question {
+  margin: 0 0 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.investigation-evidence {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.investigation-tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-2);
+  vertical-align: 1px;
+}
+
+.investigations-foot {
+  margin: 10px 0 0;
+  padding: 0 2px;
+  font-size: 0.64rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+@media (max-width: 1180px) {
+  .investigations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .investigations-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -213,6 +213,8 @@ export interface TerrainSample {
   rows: number;
   elevationMeanM: number;
   slopeMeanDeg: number;
+  /** Steepest cell in the grid: what stops a traverse, not what averages out. */
+  slopeMaxDeg: number;
   roughnessMeanM: number;
   citation: string;
 }
@@ -225,6 +227,7 @@ const toSample = (raw: RawStats): TerrainSample => ({
   rows: raw.sample_rows,
   elevationMeanM: raw.elevation_m.mean,
   slopeMeanDeg: raw.slope_deg.mean,
+  slopeMaxDeg: raw.slope_deg.max,
   roughnessMeanM: raw.roughness_tri_m.mean,
   citation: raw.source_citation,
 });
