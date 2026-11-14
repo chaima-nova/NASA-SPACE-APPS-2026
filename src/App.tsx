@@ -1000,7 +1000,7 @@ export default function App() {
           it they took the height the globe needed, so the globe stopped short of
           the ranked list and the dossier beside it. */}
       <section className="investigations-band">
-        <InvestigationPrompts />
+        <InvestigationPrompts prediction={selected} />
       </section>
 
       <section className="evidence">
