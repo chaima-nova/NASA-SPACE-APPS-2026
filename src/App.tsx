@@ -1141,16 +1141,6 @@ export default function App() {
       </p>
 
       <AccessibilityDock settings={a11y} onMode={chooseMode} onChange={updateA11y} />
-
-      <footer className="app-foot">
-        <span>
-          Challenge: identify Earth locations that analog the permanent Moon base locations and Mars.
-        </span>
-        <span className="foot-note">
-          Scores are model estimates, not measurements. Coordinates are real analog sites; feature
-          values are illustrative sample data.
-        </span>
-      </footer>
     </div>
   );
 }
