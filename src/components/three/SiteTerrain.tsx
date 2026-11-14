@@ -645,13 +645,28 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         </button>
       </div>
 
-      <div className="terrain-overlays" role="group" aria-label="Terrain overlays">
-        <span className="terrain-overlays-label">Overlay</span>
-        <button type="button" className="terrain-toggle" aria-pressed={overlay === 'temperature'} onClick={() => setOverlay((current) => (current === 'temperature' ? 'none' : 'temperature'))}>
-          Surface Temperature
+      {/* The same control as the globe's live cloud toggle, so both 3D views
+          are read the same way: a dot lights when that layer is drawn. */}
+      <div className="terrain-actions" role="group" aria-label="Terrain overlays">
+        <button
+          type="button"
+          className={overlay === 'temperature' ? 'terrain-toggle is-on' : 'terrain-toggle'}
+          aria-pressed={overlay === 'temperature'}
+          onClick={() => setOverlay((current) => (current === 'temperature' ? 'none' : 'temperature'))}
+          title="Show NASA's land surface temperature over this ground"
+        >
+          <span className="overlay-dot" aria-hidden="true" />
+          Heat Map
         </button>
-        <button type="button" className="terrain-toggle" aria-pressed={overlay === 'altitude'} onClick={() => setOverlay((current) => (current === 'altitude' ? 'none' : 'altitude'))}>
-          Altitude
+        <button
+          type="button"
+          className={overlay === 'altitude' ? 'terrain-toggle is-on' : 'terrain-toggle'}
+          aria-pressed={overlay === 'altitude'}
+          onClick={() => setOverlay((current) => (current === 'altitude' ? 'none' : 'altitude'))}
+          title="Colour the terrain by height above sea level"
+        >
+          <span className="overlay-dot" aria-hidden="true" />
+          Altitude Map
         </button>
       </div>
 
