@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
+import { BootScreen } from './components/layout/BootScreen';
 import { DistanceFilter } from './components/layout/DistanceFilter';
 import { TravelDialog } from './components/layout/TravelDialog';
 import { TripPlanner } from './components/layout/TripPlanner';
@@ -86,6 +87,9 @@ type SortKey = 'fit' | 'moon' | 'mars' | 'name';
 const readParam = (key: string) =>
   typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get(key);
 
+/** How long the boot overlay holds at minimum, even on an instant reply. */
+const BOOT_HOLD_MS = 1600;
+
 /** Stable empty list for the marker-free Moon reference scene. */
 const NO_PREDICTIONS: Prediction[] = [];
 
@@ -104,6 +108,10 @@ export default function App() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [datasets, setDatasets] = useState<DataSource[]>([]);
   const [error, setError] = useState<string | null>(null);
+  /** The boot overlay, dropped once it has faded and handed the window back. */
+  const [bootExited, setBootExited] = useState(false);
+  /** False until the overlay has been on screen long enough to read. */
+  const [bootHeld, setBootHeld] = useState(false);
 
   const [target, setTarget] = useState<Target>(() => (readParam('target') === 'mars' ? 'mars' : 'moon'));
   const [terrain, setTerrain] = useState<TerrainType | 'all'>(() => {
@@ -180,6 +188,19 @@ export default function App() {
       alive = false;
     };
   }, []);
+
+  // The overlay covers the window rather than sitting in a card, so the
+  // workbench is never seen half-built. It is held for a beat even when the
+  // reply is instant: a 60 ms localhost fetch would otherwise flash the whole
+  // screen on and off, which reads as a glitch rather than as a launch.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBootHeld(true), BOOT_HOLD_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // An error ends the wait as surely as a payload does: an overlay that
+  // outlived the failure would sit on top of the message it is waiting for.
+  const bootReady = bootHeld && (predictions.length > 0 || error !== null);
 
   // The VIIRS archive can lag the calendar, and a gap day paints the globe
   // black while the caption claims success. Ask the archive which day it
@@ -593,6 +614,17 @@ export default function App() {
       ) : null}
 
       {route === 'solution' ? <SiteBackdrop url={backdropUrl} enabled={backdrop} /> : null}
+
+      {/* First paint: the whole window, until the dataset is in hand. */}
+      {bootExited ? null : (
+        <BootScreen
+          ready={bootReady}
+          siteCount={predictions.length}
+          datasetCount={datasets.length}
+          still={a11y.reduceMotion}
+          onExited={() => setBootExited(true)}
+        />
+      )}
 
       <header className="topbar">
         <div className="brand">
