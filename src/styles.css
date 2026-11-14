@@ -5747,3 +5747,16 @@ html[data-a11y-motion='reduced'] *::after {
   height: 9px;
   border-radius: 50%;
 }
+
+.pipeline-range {
+  margin-left: 4px;
+  font-size: 0.58rem;
+  color: var(--ink-3);
+}
+
+.pipeline-note {
+  margin: 8px 0 0;
+  font-size: 0.6rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
