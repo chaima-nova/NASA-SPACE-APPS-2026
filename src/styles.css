@@ -4450,7 +4450,7 @@ html[data-a11y-motion='reduced'] *::after {
 .team-hero {
   position: relative;
   overflow: hidden;
-  padding: clamp(38px, 6.5vw, 78px) clamp(20px, 5vw, 64px) clamp(26px, 4vw, 40px);
+  padding: clamp(38px, 6.5vw, 78px) clamp(20px, 5vw, 64px);
   background:
     radial-gradient(760px 360px at 82% 8%, rgba(125, 211, 252, 0.13), transparent 66%),
     radial-gradient(620px 340px at 6% 96%, rgba(251, 146, 60, 0.07), transparent 62%),
@@ -4653,7 +4653,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 @media (max-width: 640px) {
   .team-hero {
-    padding: 30px 18px 26px;
+    padding: 30px 18px;
     border-radius: 10px;
   }
   .team-grid {
