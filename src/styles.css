@@ -5694,3 +5694,66 @@ html[data-a11y-motion='reduced'] *::after {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Comparison radar ---------------------------------------------------- */
+
+.radar {
+  margin: 16px 0 4px;
+}
+
+.radar-svg {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  overflow: visible;
+  font-family: var(--mono);
+}
+
+.radar-ring {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.radar-ring.is-outer {
+  stroke: var(--line-3);
+}
+
+.radar-spoke {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.radar-axis {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--ink-2);
+}
+
+.radar-values {
+  font-size: 8.5px;
+  fill: var(--ink-3);
+}
+
+.radar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 4px;
+  font-size: 0.66rem;
+  color: var(--ink-2);
+}
+
+.radar-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radar-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
