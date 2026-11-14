@@ -76,7 +76,7 @@ export function SummaryPage({ predictions, datasetCount }: SummaryPageProps) {
     <main className="summary-page">
       <header className="summary-head">
         <p className="summary-kicker">Fit summary</p>
-        <h2>The collection at a glance</h2>
+        <h2>The collection at a glance.</h2>
         <p className="summary-lede">
           Every site this build holds, and every measurement the pipeline published for it.
         </p>
