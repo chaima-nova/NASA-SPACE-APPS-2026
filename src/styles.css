@@ -6114,3 +6114,9 @@ a.compare-thumb {
     grid-template-columns: 78px minmax(0, 1fr) 26px;
   }
 }
+/* The trip strip: a full-width row above the export pair, never beside it. */
+.dossier-actions .dossier-trip {
+  flex: 1 1 100%;
+  width: 100%;
+  justify-content: center;
+}
