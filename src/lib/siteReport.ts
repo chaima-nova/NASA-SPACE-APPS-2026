@@ -14,6 +14,7 @@
 
 import type { Prediction } from '../data-contracts/types';
 import type { Table } from './export';
+import { plateSvg, type PlateInput } from './plate';
 import {
   FACTOR_HINTS,
   FACTOR_LABELS,
@@ -256,7 +257,7 @@ function detailTable(prediction: Prediction, target: Target): Table {
   };
 }
 
-function reportHtml(prediction: Prediction, target: Target): string {
+function reportHtml(prediction: Prediction, target: Target, plate = ''): string {
   const profile = PROFILES[target];
   const factors = factorsOf(prediction);
   const mismatch = mismatchesOf(prediction, target);
@@ -310,6 +311,8 @@ function reportHtml(prediction: Prediction, target: Target): string {
       .ring-fill { fill: none; stroke: #0f766e; stroke-width: 12; stroke-linecap: round; }
       .ring-value { text-anchor: middle; font-size: 26px; font-weight: 650; fill: #16202c; }
       .ring-label { text-anchor: middle; font-size: 10px; fill: #5b6b7c; text-transform: uppercase; letter-spacing: 0.05em; }
+      .plate { margin: 0; }
+      .plate svg { width: 100%; height: auto; border: 1px solid #dbe2ea; border-radius: 6px; }
       .bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; }
       .bar { margin: 0; }
       .bar figcaption { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 5px; }
@@ -398,6 +401,9 @@ ${mismatchRows || '        <tr><td colspan="5">No modelled pillar falls short of
       </tbody>
     </table>
 
+    <h2>Evidence plate</h2>
+    <figure class="plate">${plate}</figure>
+
     <h2>What drove the score</h2>
 ${contributionBars(prediction.featureContributions)}
 
@@ -428,12 +434,62 @@ export interface SiteReport {
   table: Table;
   /** Standalone page with the charts. */
   html: string;
+  /** The four-panel figure, as SVG, for the workbook to rasterise. */
+  plate: string;
+}
+
+/**
+ * The evidence plate for one site.
+ *
+ * Peers default to the site itself, so a lone call still draws; the app passes
+ * the whole ranked field, which is what gives the distribution and the scatter
+ * something to compare against.
+ */
+export function sitePlate(
+  prediction: Prediction,
+  target: Target,
+  peers: Prediction[] = [],
+): string {
+  const field = peers.length > 0 ? peers : [prediction];
+  const factors = factorsOf(prediction);
+  const demand = PROFILES[target].demand;
+
+  const input: PlateInput = {
+    siteName: prediction.siteName,
+    targetLabel: TARGET_LABELS[target],
+    axes: FACTOR_ORDER.map((key) => ({
+      label: FACTOR_LABELS[key],
+      site: factors[key],
+      peers: field.reduce((sum, peer) => sum + factorsOf(peer)[key], 0) / field.length,
+      demand: demand[key],
+    })),
+    contributions: Object.entries(prediction.featureContributions)
+      .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+      .map(([label, value]) => ({ label, value })),
+    distribution: {
+      values: field.map((peer) => fitFor(peer, target)),
+      site: fitFor(prediction, target),
+    },
+    scatter: field.map((peer) => ({
+      moon: fitFor(peer, 'moon'),
+      mars: fitFor(peer, 'mars'),
+      name: peer.siteName,
+      current: peer.siteName === prediction.siteName,
+    })),
+  };
+
+  return plateSvg(input);
 }
 
 /** Everything the export dialog needs for one site, on the active target. */
-export function siteReport(prediction: Prediction, target: Target): SiteReport {
+export function siteReport(
+  prediction: Prediction,
+  target: Target,
+  peers: Prediction[] = [],
+): SiteReport {
   const mismatch = mismatchesOf(prediction, target);
   const worst = mismatch[0];
+  const plate = sitePlate(prediction, target, peers);
   return {
     title: `${prediction.siteName} · ${TARGET_LABELS[target]} analysis`,
     filename: `site-analysis-${slug(prediction.siteName)}-${target}`,
@@ -443,6 +499,7 @@ export function siteReport(prediction: Prediction, target: Target): SiteReport {
         )}% below what ${TARGET_LABELS[target]} demands).`
       : `${verdictOf(prediction, target)} No modelled pillar falls short of ${TARGET_LABELS[target]} demand.`,
     table: detailTable(prediction, target),
-    html: reportHtml(prediction, target),
+    html: reportHtml(prediction, target, plate),
+    plate,
   };
 }

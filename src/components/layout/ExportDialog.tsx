@@ -8,7 +8,9 @@ import {
   tableTsv,
   workbookXlsx,
   type Table,
+  type WorkbookFigure,
 } from '../../lib/export';
+import { PLATE_HEIGHT, PLATE_WIDTH, platePng } from '../../lib/plate';
 import type { TravelExport } from '../../lib/travel';
 
 interface ExportDialogProps {
@@ -25,6 +27,12 @@ interface ExportDialogProps {
    * analysis, with its charts. Falls back to a table page when absent.
    */
   html?: string;
+  /**
+   * The evidence plate as SVG, when the page has one. Excel cannot hold a
+   * vector, so it is rasterised on the way into the workbook; the HTML page
+   * embeds the same drawing untouched.
+   */
+  plate?: string | null;
   /** The itinerary the reader can add as a second tab, when one can be built. */
   travel?: TravelExport | null;
   subtitle: string;
@@ -102,6 +110,7 @@ export function ExportDialog({
   sheet = 'Sites',
   table,
   html,
+  plate = null,
   travel = null,
   subtitle,
   onClose,
@@ -121,14 +130,31 @@ export function ExportDialog({
   const chosen = (includeSite ? 1 : 0) + (withTravel ? 1 : 0);
   const nothingChosen = chosen === 0;
 
-  function saveExcel() {
+  async function saveExcel() {
     const sheets = [
       ...(includeSite ? [{ name: sheet, title, note, table }] : []),
       ...(withTravel && travel
         ? [{ name: 'Travel itinerary', title: `${title} · travel`, note: travel.note, table: travel.table }]
         : []),
     ];
-    downloadBlob(`${filename}.xlsx`, workbookXlsx(title, sheets));
+
+    // The plate is rasterised at twice its drawn size and placed at 720 px
+    // wide, so it stays sharp when the reader zooms the sheet but still fits
+    // beside a normal spreadsheet window. A browser that cannot draw it leaves
+    // the workbook without the figure rather than failing the download.
+    let figure: WorkbookFigure | null = null;
+    if (includeSite && plate) {
+      const png = await platePng(plate, PLATE_WIDTH, PLATE_HEIGHT);
+      if (png) {
+        figure = {
+          bytes: png.bytes,
+          width: 720,
+          height: Math.round((720 * PLATE_HEIGHT) / PLATE_WIDTH),
+        };
+      }
+    }
+
+    downloadBlob(`${filename}.xlsx`, workbookXlsx(title, sheets, figure));
     onClose();
   }
 
