@@ -344,7 +344,6 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           />
           <canvas ref={sandRef} className="home-photo-sand" aria-hidden="true" />
         </div>
-        <span className="home-photo-credit">Cover photographs: team-supplied</span>
 
         <div className="home-hero-inner">
           <span className="kicker">NASA Space Apps Challenge 2026</span>

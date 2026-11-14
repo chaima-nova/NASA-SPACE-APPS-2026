@@ -4205,18 +4205,6 @@ html[data-a11y-motion='reduced'] *::after {
   pointer-events: none;
 }
 
-.home-photo-credit {
-  position: absolute;
-  right: 14px;
-  bottom: 10px;
-  z-index: 1;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-  color: rgba(219, 233, 251, 0.5);
-  pointer-events: none;
-}
-
 /* The sky. Absolute and inert: it never intercepts a click or a tab stop. */
 .starfield {
   position: absolute;
@@ -4432,12 +4420,7 @@ html[data-a11y-motion='reduced'] *::after {
       linear-gradient(180deg, rgba(5, 8, 12, 0.88) 0%, rgba(5, 8, 12, 0.68) 58%, rgba(5, 8, 12, 0.9)),
       linear-gradient(92deg, rgba(5, 8, 12, 0.55), transparent);
   }
-  .home-photo-credit {
-    right: 12px;
-    bottom: 8px;
-    font-size: 0.54rem;
-  }
-  .home-stats {
+    .home-stats {
     gap: 22px;
   }
   .home-stats dd {
