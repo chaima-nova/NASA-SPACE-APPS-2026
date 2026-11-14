@@ -6,6 +6,9 @@
  * responsibilities are the remit as the team defined it, written as statements
  * so a reader sees what each person is answerable for rather than a note
  * addressed to them.
+ *
+ * The team owner is listed first, because the owner is the one answerable for
+ * the whole; the rest follow in the order the work reaches them.
  */
 
 export interface TeamMember {
@@ -19,6 +22,17 @@ export interface TeamMember {
 }
 
 export const TEAM: readonly TeamMember[] = [
+  {
+    name: 'Chaima',
+    role: 'Product Direction & System Integration',
+    owner: true,
+    tasks: [
+      'Set the product architecture: what the finder is for, and how its parts fit.',
+      'Own the discovery workflow a reader moves through.',
+      'Coordinate across the data, science, ML and interface threads.',
+      'Integrate the modules into one running system, and tell its story.',
+    ],
+  },
   {
     name: 'Abid',
     role: 'Geospatial Data & GIS',
@@ -57,17 +71,6 @@ export const TEAM: readonly TeamMember[] = [
       'Design the Analog Quest flow, from the first question to a shortlist.',
       'Render the Analog DNA profiles that explain a site at a glance.',
       'Own the candidate-investigation experience: dossier, comparison and export.',
-    ],
-  },
-  {
-    name: 'Chaima',
-    role: 'Product Direction & System Integration',
-    owner: true,
-    tasks: [
-      'Set the product architecture: what the finder is for, and how its parts fit.',
-      'Own the discovery workflow a reader moves through.',
-      'Coordinate across the data, science, ML and interface threads.',
-      'Integrate the modules into one running system, and tell its story.',
     ],
   },
 ];
