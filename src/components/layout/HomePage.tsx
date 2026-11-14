@@ -11,7 +11,7 @@ import { routeHref } from '../../lib/route';
  * is a file replacement — no code change.
  */
 const ARCTIC_PHOTO = `${import.meta.env.BASE_URL}home/arctic.jpg`;
-const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
+const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert-aligned.webp`;
 
 interface HomePageProps {
   /** Live counts, so the page never advertises numbers the app does not have. */
@@ -350,10 +350,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           <span className="kicker">NASA Space Apps Challenge 2026</span>
           <h2 id="home-title">Some places on Earth already behave like the Moon or Mars.</h2>
           <p className="home-lede">
-            Earth Analogue Site Finder scores real terrestrial ground — deserts, lava
-            tubes, impact craters, polar valleys — against what a permanent lunar or Mars
-            base has to survive, using NASA datasets. Every score shows its features, its
-            evidence and where it came from.
+            TerraNexus starts with Earth. Rather than requiring users to provide a specific planetary target before searching, the system analyzes geographic areas across a defined Earth coverage using available open datasets and scientifically relevant characteristics.
           </p>
           <div className="home-actions">
             <a className="home-cta" href={routeHref('solution')}>

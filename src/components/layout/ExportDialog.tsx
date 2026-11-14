@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { downloadBlob, downloadFile } from '../../lib/download';
-import { copyText, tableHtml, tableTsv, tableXlsx, type Table } from '../../lib/export';
+import { copyText, tableHtml, tableTsv, workbookXlsx, type Table } from '../../lib/export';
+import type { TravelExport } from '../../lib/travel';
 
 interface ExportDialogProps {
   /** Heading for the file, e.g. "Lunar analog sites · Moon". */
@@ -17,6 +18,8 @@ interface ExportDialogProps {
    * analysis, with its charts. Falls back to a table page when absent.
    */
   html?: string;
+  /** The itinerary the reader can add as a second tab, when one can be built. */
+  travel?: TravelExport | null;
   subtitle: string;
   onClose: () => void;
 }
@@ -72,13 +75,19 @@ function HtmlLogo() {
 }
 
 /**
- * The export step, shared by every "Export" button: one row per destination,
- * each with its own logo, so the choice reads as "where do you want this?"
- * rather than "which file format do you want?".
+ * The export step: a checklist of what to include on the left, a destination on
+ * the right.
+ *
+ * Picking the destination first made the reader commit a file before deciding
+ * whether the itinerary belonged in it. Now both choices are visible at once,
+ * and the workbook writes one tab per checked item — the analysis on one, the
+ * cheapest and fastest journeys on the other — because a field party hands on a
+ * single file, not one download per subject.
  *
  * The Google Sheets row copies the table to the clipboard before opening a new
- * sheet. That is the one path that works with no OAuth client and no API key,
- * and it lands the data as real cells rather than one long string.
+ * sheet: that is the one path that works with no OAuth client and no API key,
+ * and it lands the data as real cells. Where two tabs are asked for, a second
+ * copy button appears, since a paste fills one tab at a time.
  */
 export function ExportDialog({
   title,
@@ -86,32 +95,55 @@ export function ExportDialog({
   sheet = 'Sites',
   table,
   html,
+  travel = null,
   subtitle,
   onClose,
 }: ExportDialogProps) {
+  const [includeSite, setIncludeSite] = useState(true);
+  const [includeTravel, setIncludeTravel] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  const travelReady = Boolean(travel?.available);
+  const withTravel = includeTravel && travelReady && travel !== null;
+  const chosen = (includeSite ? 1 : 0) + (withTravel ? 1 : 0);
+  const nothingChosen = chosen === 0;
+
   function saveExcel() {
-    downloadBlob(`${filename}.xlsx`, tableXlsx(title, table, sheet));
+    const sheets = [
+      ...(includeSite ? [{ name: sheet, table }] : []),
+      ...(withTravel && travel ? [{ name: 'Travel itinerary', table: travel.table }] : []),
+    ];
+    downloadBlob(`${filename}.xlsx`, workbookXlsx(title, sheets));
     onClose();
   }
 
   function sendToSheets() {
+    const primary = includeSite ? table : travel && withTravel ? travel.table : null;
+    if (!primary) return;
     // The tab is opened inside the click, before the clipboard write is
     // awaited: a window opened after an await is treated as a popup and
     // blocked. The copy then finishes behind the new tab.
     window.open('https://sheets.new', '_blank', 'noopener');
-    void copyText(tableTsv(table)).then((copied) =>
+    void copyText(tableTsv(primary)).then((copied) =>
       setStatus(
         copied
-          ? 'Table copied. Paste it into the new sheet with Ctrl+V (⌘V on a Mac).'
+          ? `Table copied. Paste it into the new sheet with Ctrl+V (⌘V on a Mac).${
+              includeSite && withTravel ? ' Then use "Copy travel tab" for the second one.' : ''
+            }`
           : 'New sheet opened. Copy the table from the app and paste it in with Ctrl+V.',
       ),
     );
   }
 
   function saveHtml() {
-    downloadFile(`${filename}.html`, html ?? tableHtml(title, table), 'text/html');
+    const page = includeSite
+      ? (html ?? tableHtml(title, table))
+      : travel
+        ? tableHtml(title, travel.table)
+        : tableHtml(title, table);
+    const withItinerary =
+      includeSite && withTravel && travel ? page.replace('</body>', `${travel.html}\n  </body>`) : page;
+    downloadFile(`${filename}.html`, withItinerary, 'text/html');
     onClose();
   }
 
@@ -121,43 +153,108 @@ export function ExportDialog({
       title="Take this analysis with you"
       subtitle={subtitle}
       onClose={onClose}
+      size="lg"
       className="export-modal"
     >
-      <div className="export-options">
-        <button type="button" className="export-option" onClick={saveExcel}>
-          <ExcelLogo />
-          <span className="export-option-text">
-            <span className="export-option-label">Export to Excel</span>
-            <span className="export-option-hint">
-              One sheet: every metric, the target's demand and the gap, plus the raw features.
-            </span>
-          </span>
-        </button>
+      <div className="export-layout">
+        <fieldset className="export-include">
+          <legend>Include</legend>
 
-        <button type="button" className="export-option" onClick={sendToSheets}>
-          <SheetsLogo />
-          <span className="export-option-text">
-            <span className="export-option-label">Export to Google Sheets</span>
-            <span className="export-option-hint">
-              Copies the same metric-by-metric table, then opens a blank sheet.
+          <label className="export-check">
+            <input
+              type="checkbox"
+              checked={includeSite}
+              onChange={(event) => setIncludeSite(event.target.checked)}
+            />
+            <span>
+              <span className="export-check-name">Analogue site data</span>
+              <span className="export-check-hint">
+                Scores, pillar gaps, physical differences and features.
+              </span>
             </span>
-          </span>
-        </button>
+          </label>
 
-        <button type="button" className="export-option" onClick={saveHtml}>
-          <HtmlLogo />
-          <span className="export-option-text">
-            <span className="export-option-label">Export to HTML</span>
-            <span className="export-option-hint">
-              A standalone report: score ring, pillar charts, mismatch table, prints cleanly.
+          <label className="export-check">
+            <input
+              type="checkbox"
+              checked={includeTravel && travelReady}
+              disabled={!travelReady}
+              onChange={(event) => setIncludeTravel(event.target.checked)}
+            />
+            <span>
+              <span className="export-check-name">Travel itinerary</span>
+              <span className="export-check-hint">
+                {travelReady
+                  ? 'Cheapest and fastest routes, one tab alongside the data.'
+                  : (travel?.note ?? 'Set a location to build an itinerary.')}
+              </span>
             </span>
-          </span>
-        </button>
+          </label>
+        </fieldset>
+
+        <div className="export-destinations">
+          <div className="export-options">
+            <button type="button" className="export-option" disabled={nothingChosen} onClick={saveExcel}>
+              <ExcelLogo />
+              <span className="export-option-text">
+                <span className="export-option-label">Export to Excel</span>
+                <span className="export-option-hint">
+                  {chosen > 1
+                    ? 'One workbook, two tabs: the analysis and the itinerary.'
+                    : 'One sheet: every metric, the target\'s demand and the gap, plus the raw features.'}
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="export-option"
+              disabled={nothingChosen}
+              onClick={sendToSheets}
+            >
+              <SheetsLogo />
+              <span className="export-option-text">
+                <span className="export-option-label">Export to Google Sheets</span>
+                <span className="export-option-hint">
+                  Copies the same table, then opens a blank sheet.
+                </span>
+              </span>
+            </button>
+
+            <button type="button" className="export-option" disabled={nothingChosen} onClick={saveHtml}>
+              <HtmlLogo />
+              <span className="export-option-text">
+                <span className="export-option-label">Export to HTML</span>
+                <span className="export-option-hint">
+                  A standalone report: score ring, pillar charts, mismatch table, prints cleanly.
+                </span>
+              </span>
+            </button>
+          </div>
+
+          <p className={status ? 'export-status is-on' : 'export-status'} role="status">
+            {status ?? ''}
+          </p>
+
+          {includeSite && withTravel && travel ? (
+            <button
+              type="button"
+              className="btn btn-small export-copy-tab"
+              onClick={() =>
+                void copyText(tableTsv(travel.table)).then((copied) =>
+                  setStatus(
+                    copied
+                      ? 'Travel itinerary copied. Paste it into a second tab of the same sheet.'
+                      : 'Could not copy the itinerary; the Excel export carries both tabs.',
+                  ),
+                )
+              }
+            >
+              Copy travel tab
+            </button>
+          ) : null}
+        </div>
       </div>
-
-      <p className={status ? 'export-status is-on' : 'export-status'} role="status">
-        {status ?? ''}
-      </p>
     </Modal>
   );
 }

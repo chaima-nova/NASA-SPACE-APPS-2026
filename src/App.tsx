@@ -3,6 +3,7 @@ import { FeatureImportance } from './components/charts/FeatureImportance';
 import { ScoreDistribution } from './components/charts/ScoreDistribution';
 import { AccessibilityDock } from './components/layout/AccessibilityDock';
 import { DistanceFilter } from './components/layout/DistanceFilter';
+import { TravelDialog } from './components/layout/TravelDialog';
 import { ExportDialog } from './components/layout/ExportDialog';
 import { FilterBar } from './components/layout/FilterBar';
 import { HomePage } from './components/layout/HomePage';
@@ -13,6 +14,7 @@ import { DataSourceList } from './components/panels/DataSourceList';
 import { ReportedDossier } from './components/panels/ReportedDossier';
 import { ReportedSitesPanel } from './components/panels/ReportedSitesPanel';
 import { ReportSiteForm } from './components/panels/ReportSiteForm';
+import { CompareSites } from './components/panels/CompareSites';
 import { SiteCompare } from './components/panels/SiteCompare';
 import { SiteGallery } from './components/panels/SiteGallery';
 import { SiteInspector } from './components/panels/SiteInspector';
@@ -47,6 +49,7 @@ import { scoreColor } from './lib/colors';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
+import { travelAccessOf, travelExport } from './lib/travel';
 import { imageryWindow, latestImageryDate } from './lib/earthImagery';
 import {
   fitFor,
@@ -111,6 +114,10 @@ export default function App() {
   /** Radius of the distance filter, in kilometres. */
   const [radiusKm, setRadiusKm] = useState(5000);
   const [distanceOpen, setDistanceOpen] = useState(false);
+  /** Which logistics dialog is open, if any. */
+  const [travelOpen, setTravelOpen] = useState(false);
+  /** When on, only sites commercial travel can reach are listed. */
+  const [travelOnly, setTravelOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
   const [copied, setCopied] = useState(false);
@@ -133,6 +140,8 @@ export default function App() {
   /** The export destination picker, opened from the dossier. */
   const [exportOpen, setExportOpen] = useState(false);
   const [compare, setCompare] = useState<CompareRequest | null>(null);
+  /** True while two scored sites are open side by side. */
+  const [compareSitesOpen, setCompareSitesOpen] = useState(false);
   /** Ambient site photograph behind the surface; on until switched off. */
   const [backdrop, setBackdrop] = useState(true);
   /** Reading preferences, applied to the document root by the dock. */
@@ -199,6 +208,9 @@ export default function App() {
       // The distance facet is a hard cut, not a re-rank: a site outside the
       // radius is not "further down the list", it is out of scope for this pass.
       .filter((p) => !origin || distanceBetween(origin, p) <= radiusKm)
+      // Commercial access is a filter in the same sense: a site no airline
+      // reaches is not a worse candidate, it is one the reader cannot use.
+      .filter((p) => !travelOnly || travelAccessOf(p).access !== 'none')
       .map((prediction) => ({
         prediction,
         fit: fitFor(prediction, target),
@@ -216,7 +228,7 @@ export default function App() {
     };
 
     return items.sort(sorters[sort]);
-  }, [predictions, terrain, query, sort, target, origin, radiusKm]);
+  }, [predictions, terrain, query, sort, target, origin, radiusKm, travelOnly]);
 
   // Reported sites share the selection with model predictions: exactly one of
   // these two is ever non-null.
@@ -256,6 +268,12 @@ export default function App() {
   const exportReport = useMemo(
     () => (selected ? siteReport(selected, target) : null),
     [selected, target],
+  );
+
+  /** The itinerary tab the export can add, once an origin is known. */
+  const exportTravel = useMemo(
+    () => (selected ? travelExport(selected, origin) : null),
+    [selected, origin],
   );
 
   /**
@@ -633,6 +651,8 @@ export default function App() {
         radiusKm={radiusKm}
         onRadius={setRadiusKm}
         onOpenDistance={() => setDistanceOpen(true)}
+        travelOnly={travelOnly}
+        onOpenTravel={() => setTravelOpen(true)}
       />
 
       {error ? <p className="error">⚠ {error}</p> : null}
@@ -884,7 +904,26 @@ export default function App() {
           </div>
         </section>
 
-        <section className="card dossier-card" id="site-dossier" tabIndex={-1}>
+        <div className="dossier-column">
+          {/* The reference globe follows the selected target: Moon phase on
+              one side, Mars's real sub-solar point and season on the other.
+              It sits above the dossier because that is what the dossier is
+              about: the ground this site stands in for. */}
+          <Panel
+            title="Comparison target"
+            subtitle={
+              target === 'moon' ? 'Moon · real phase right now' : 'Mars · real sun angle right now'
+            }
+            className="target-panel"
+          >
+            {target === 'moon' ? (
+              <MoonMap predictions={NO_PREDICTIONS} showMarkers={false} highlight={moonReference} />
+            ) : (
+              <MarsMap highlight={marsReference} />
+            )}
+          </Panel>
+
+          <section className="card dossier-card" id="site-dossier" tabIndex={-1}>
           {selectedReported ? (
             <ReportedDossier
               site={selectedReported}
@@ -907,13 +946,15 @@ export default function App() {
               community={community}
               actions={communityActionsFor(selected?.id ?? '')}
               onExport={() => setExportOpen(true)}
+              onCompareSites={() => setCompareSitesOpen(true)}
               onCopyLink={copyLink}
               onSeeSite={() => selected && setGallerySite(selected)}
               onCompare={() => selected && openCompare(selected)}
               copied={copied}
             />
           )}
-        </section>
+          </section>
+        </div>
       </main>
 
       <section className="evidence">
@@ -937,24 +978,6 @@ export default function App() {
             </Panel>
             <Panel title="Feature influence" subtitle="Mean absolute contribution">
               <FeatureImportance predictions={visiblePredictions} />
-            </Panel>
-            {/* The reference globe follows the selected target: Moon phase on
-                one side, Mars's real sub-solar point and season on the other. */}
-            <Panel
-              title="Comparison target"
-              subtitle={
-                target === 'moon' ? 'Moon · real phase right now' : 'Mars · real sun angle right now'
-              }
-            >
-              {target === 'moon' ? (
-                <MoonMap
-                  predictions={NO_PREDICTIONS}
-                  showMarkers={false}
-                  highlight={moonReference}
-                />
-              ) : (
-                <MarsMap highlight={marsReference} />
-              )}
             </Panel>
             <Panel
               title="Data sources"
@@ -995,6 +1018,18 @@ export default function App() {
         />
       ) : null}
 
+      {travelOpen ? (
+        <TravelDialog
+          site={selected}
+          origin={origin}
+          onPick={setOrigin}
+          onClear={() => setOrigin(null)}
+          travelOnly={travelOnly}
+          onTravelOnly={setTravelOnly}
+          onClose={() => setTravelOpen(false)}
+        />
+      ) : null}
+
       {exportOpen && exportReport ? (
         <ExportDialog
           title={exportReport.title}
@@ -1003,7 +1038,18 @@ export default function App() {
           subtitle={exportReport.subtitle}
           table={exportReport.table}
           html={exportReport.html}
+          travel={exportTravel}
           onClose={() => setExportOpen(false)}
+        />
+      ) : null}
+
+      {compareSitesOpen && selected ? (
+        <CompareSites
+          key={selected.id}
+          current={selected}
+          options={ranked.map((item) => item.prediction)}
+          target={target}
+          onClose={() => setCompareSitesOpen(false)}
         />
       ) : null}
 

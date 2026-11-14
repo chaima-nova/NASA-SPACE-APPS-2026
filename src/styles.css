@@ -4890,3 +4890,494 @@ html[data-a11y-motion='reduced'] *::after {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---- Mission constraints popout ------------------------------------------ */
+
+.constraints {
+  position: relative;
+}
+
+.chip-constraints {
+  gap: 7px;
+}
+
+.constraints-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  width: min(430px, calc(100vw - 32px));
+  padding: 14px 16px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 0.42);
+}
+
+/* Click-anywhere-else to close, without any click landing behind the popout. */
+.constraints-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: default;
+}
+
+.constraints-title {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.constraints-title + .chips {
+  margin-bottom: 14px;
+}
+
+.logistics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.logistics-row,
+.logistics-range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--ink);
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.logistics-row {
+  cursor: pointer;
+}
+
+.logistics-row:hover {
+  border-color: var(--line-2);
+  background: rgb(255 255 255 / 0.03);
+}
+
+.logistics-row[aria-pressed='true'] {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.logistics-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logistics-value {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.57rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.logistics-range {
+  cursor: default;
+}
+
+/* ---- Travel dialog ------------------------------------------------------- */
+
+.travel-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.travel-badge {
+  flex: none;
+  padding: 3px 8px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+}
+
+.travel-badge.is-scheduled {
+  color: #8fe3c2;
+  border-color: rgb(143 227 194 / 0.45);
+}
+
+.travel-badge.is-charter {
+  color: #f0c48a;
+  border-color: rgb(240 196 138 / 0.45);
+}
+
+.travel-badge.is-none {
+  color: #f0a08a;
+  border-color: rgb(240 160 138 / 0.45);
+}
+
+.itinerary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.itinerary {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.02);
+}
+
+.itinerary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itinerary-kind {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.itinerary-total {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.itinerary-legs {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.itinerary-leg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.66rem;
+  color: var(--ink-3);
+}
+
+.itinerary-leg b {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.travel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.travel-actions .distance-note {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+.travel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 0.68rem;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+/* ---- Export checklist ---------------------------------------------------- */
+
+.export-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 215px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .export-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.export-include {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.export-include legend {
+  padding: 0 4px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.export-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.export-check:last-of-type {
+  border-bottom: 0;
+}
+
+.export-check input {
+  margin-top: 2px;
+  accent-color: var(--signal);
+}
+
+.export-check-name {
+  display: block;
+  color: var(--ink);
+}
+
+.export-check-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.export-destinations {
+  min-width: 0;
+}
+
+.export-copy-tab {
+  margin-top: 8px;
+}
+
+/* ---- Comparison target above the dossier --------------------------------- */
+
+.dossier-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The dossier keeps its own scroll; the globe above it never shrinks to a
+   sliver on a short laptop screen. */
+.dossier-column .dossier-card {
+  flex: 1 1 auto;
+  min-height: 200px;
+}
+
+.target-panel {
+  flex: none;
+}
+
+.target-panel .card-body {
+  padding: 8px 8px 0;
+}
+
+.target-panel .moon-map {
+  height: 190px;
+}
+
+@media (max-width: 1024px) {
+  .dossier-column {
+    order: 2;
+  }
+
+  .dossier-column .dossier-card {
+    min-height: 0;
+  }
+
+  .target-panel .moon-map {
+    height: 240px;
+  }
+}
+
+/* ---- Compare analogue sites ---------------------------------------------- */
+
+.dossier-export {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.cmp-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cmp-site h3 {
+  margin: 3px 0 2px;
+  font-size: 0.92rem;
+  letter-spacing: -0.01em;
+}
+
+.cmp-site-right {
+  text-align: right;
+}
+
+.cmp-meta {
+  font-size: 0.62rem;
+  color: var(--ink-3);
+}
+
+.cmp-pick select {
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.66rem;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+}
+
+.cmp-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.cmp-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr 56px;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+}
+
+.cmp-row:nth-child(even) {
+  background: rgb(255 255 255 / 0.02);
+}
+
+.cmp-head-row {
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.cmp-label {
+  color: var(--ink-2);
+}
+
+.cmp-value {
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmp-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmp-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.cmp-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.cmp-cell b {
+  font-size: 0.66rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cmp-delta {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-3);
+  text-align: right;
+}
+
+.cmp-delta.is-up {
+  color: #8fe3c2;
+}
+
+.cmp-delta.is-down {
+  color: #f0a08a;
+}
+
+.cmp-verdicts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.cmp-verdicts p {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+@media (max-width: 640px) {
+  .cmp-head {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-site-right {
+    text-align: left;
+  }
+
+  .cmp-verdicts {
+    grid-template-columns: 1fr;
+  }
+}
