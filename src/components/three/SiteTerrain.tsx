@@ -9,7 +9,7 @@ import {
   altitudeGradient,
   altitudeTicks,
   rampAt,
-  temperatureBands,
+  temperatureSurface,
 } from '../../lib/terrainScale';
 
 interface SiteTerrainProps {
@@ -337,7 +337,10 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       }
     };
     let tempState: 'idle' | 'loading' | 'ready' | 'missing' = 'idle';
-    let tempTexture: THREE.Texture | null = null;
+    /** Temperature colours baked onto the grid, once a frame has been read. */
+    let tempAttr: THREE.BufferAttribute | null = null;
+    /** Which overlay is drawn, so a frame that arrives late can apply itself. */
+    let current: 'none' | 'altitude' | 'temperature' = 'none';
     const loadTemperature = async () => {
       if (tempState === 'loading' || tempState === 'ready') return;
       tempState = 'loading';
@@ -358,14 +361,16 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
             texture.dispose();
             continue;
           }
-          texture.colorSpace = THREE.SRGBColorSpace;
-          tempTexture = texture;
-          tempMaterial.map = texture;
-          tempMaterial.needsUpdate = true;
           tempState = 'ready';
-          // Read the colours this frame puts on the ground, so the scale spans
-          // the patch rather than the planet.
-          setTempBands(temperatureBands(texture.image));
+          // Bake the frame into this grid's own vertex colours. A second mesh
+          // laid exactly on the ground was what broke: the two surfaces fought
+          // over the depth buffer, so whole slopes stayed in terrain palette and
+          // the map only appeared on some of them.
+          const surface = temperatureSurface(texture.image, n, colors);
+          texture.dispose();
+          if (surface.bands.length) tempAttr = new THREE.BufferAttribute(surface.colours, 3);
+          setTempBands(surface.bands);
+          if (current === 'temperature') applyOverlay('temperature');
           setTempNote(
             'MODIS Terra land surface temperature · 8-day composite to ' +
               day +
@@ -380,36 +385,24 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       setTempNote('NASA GIBS has no surface temperature for this ground in the last month.');
     };
     const applyOverlay = (mode: 'none' | 'altitude' | 'temperature') => {
-      const colours = mode === 'altitude' ? altitudeAttr : baseAttr;
+      current = mode;
+      // One surface, three colour sets: the terrain palette, the hypsometric
+      // ramp, or the temperature frame baked in. Until the frame arrives this
+      // falls back to the palette, and loadTemperature re-applies it.
+      const colours =
+        mode === 'altitude' ? altitudeAttr : mode === 'temperature' && tempAttr ? tempAttr : baseAttr;
       geometry.setAttribute('color', colours);
       colours.needsUpdate = true;
-      // The drape is translucent and the ground beneath it is already painted
-      // in the terrain family's palette, so at 0.66 the two averaged into one
-      // tone and every patch looked alike. Grey the ground and let the product's
-      // own colours carry the map.
-      const heat = mode === 'temperature';
-      tempMesh.visible = heat;
-      groundMaterial.color.setRGB(heat ? 0.46 : 1, heat ? 0.48 : 1, heat ? 0.54 : 1);
-      tempMaterial.opacity = heat ? 0.9 : 0;
       if (mode === 'temperature') void loadTemperature();
       if (mode !== 'temperature') setTempNote(null);
     };
     overlayApi.current = applyOverlay;
     const ground = new THREE.Mesh(geometry, groundMaterial);
-    // ---- Surface temperature drape ------------------------------------------
-    // The MODIS Terra 8-day land-surface-temperature layer, drawn on the same
-    // mesh as a translucent copy so the relief still reads through the colours.
-    // GIBS ships it colour-mapped, so no palette of ours is imposed on it.
-    const tempMaterial = new THREE.MeshBasicMaterial({
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-    });
-    const tempMesh = new THREE.Mesh(geometry, tempMaterial);
-    tempMesh.visible = false;
-    scene.add(tempMesh);
+    // ---- Surface temperature source -----------------------------------------
+    // The MODIS Terra 8-day land-surface-temperature layer. GIBS ships it
+    // already colour-mapped, so no palette of ours is imposed on it; it is
+    // painted into the grid's vertex colours rather than draped on top, which is
+    // what stopped the depth fight between the two surfaces.
     const halfLat = patch.widthMeters / 2 / 111_320;
     const halfLon =
       patch.widthMeters / 2 / (111_320 * Math.max(0.05, Math.cos((prediction.lat * Math.PI) / 180)));
@@ -600,7 +593,6 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       });
       disposed = true;
       overlayApi.current = null;
-      tempTexture?.dispose();
       skyMaterial.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
