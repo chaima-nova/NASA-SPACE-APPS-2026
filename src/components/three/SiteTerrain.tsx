@@ -718,20 +718,20 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
                 </>
               )}
             </div>
-            <p className="terrain-scale-note">
-              {overlay === 'altitude'
-                ? `Ramp fitted to this ground: ${Math.round(
-                    patch.maxElevation - patch.minElevation,
-                  ).toLocaleString('en-US')} m of relief.`
-                : tempScale === null
-                  ? 'Waiting on the temperature frame.'
-                  : tempScale.bands.length === 0
-                    ? 'The colours in this frame could not be read off the image.'
-                    : heatSpan
-                      ? `${heatSteps} of NASA’s ramp here, ${heatSpan}. Read off the frame’s colours.`
-                      : `${tempScale.bands.length} bands here, but their colours are not on NASA’s ramp, so no degrees.`}
-            </p>
           </div>
+        ) : null}
+        {/* The heat note sits under the panel rather than inside it: the panel
+            is narrow now, and this sentence is not. */}
+        {overlay === 'temperature' && patch ? (
+          <p className="terrain-scale-note">
+            {tempScale === null
+              ? 'Waiting on the temperature frame.'
+              : tempScale.bands.length === 0
+                ? 'The colours in this frame could not be read off the image.'
+                : heatSpan
+                  ? `${heatSteps} of NASA’s ramp here, ${heatSpan}. Read off the frame’s colours.`
+                  : `${tempScale.bands.length} bands here, but their colours are not on NASA’s ramp, so no degrees.`}
+          </p>
         ) : null}
       </div>
 
