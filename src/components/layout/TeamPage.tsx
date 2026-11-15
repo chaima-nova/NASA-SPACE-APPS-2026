@@ -60,7 +60,7 @@ export function TeamPage({ still }: TeamPageProps) {
       </section>
 
       <section className="team-flow" aria-labelledby="team-flow-title">
-        <h3 id="team-flow-title">The workflow we are aiming for</h3>
+        <h3 id="team-flow-title">Our Workflow</h3>
         <ol>
           {WORKFLOW.map((step, index) => (
             <li key={step.who}>
