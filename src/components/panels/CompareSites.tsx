@@ -39,6 +39,35 @@ interface CompareSitesProps {
   onClose: () => void;
 }
 
+/* The web's axes: the guide's three dimensions, in the order it classifies them.
+   Nothing else is plotted — the fits and the model confidence that once filled a
+   radar were the composite score under another name. */
+const SCIENTIFIC_AXES = DIMENSION_ORDER.map((id) => ({
+  id: id as string,
+  label: DIMENSION_LABELS[id],
+}));
+
+/* One verdict per rung of a stated ladder, so the polygon has a shape without
+   anything being weighed: a measured match at the rim, a measured mismatch
+   inside it, a data gap inside that, and a definitional barrier at the centre.
+   The axis caption prints the rung and the rows below print the state in full,
+   so no vertex has to be read as a score. */
+const STATE_POSITION: Record<EvidenceState, number> = {
+  similar: 1,
+  different: 0.62,
+  insufficient_evidence: 0.28,
+  not_comparable: 0,
+};
+
+/* Compact rungs for the axis captions, where the guide's wording would run past
+   the edge of the chart; the table below keeps the full labels. */
+const STATE_SHORT: Record<EvidenceState, string> = {
+  similar: 'Similar',
+  different: 'Different',
+  insufficient_evidence: 'No data',
+  not_comparable: 'N/A',
+};
+
 /** A plain row: same metric, two sites. */
 function Row({ label, a, b }: { label: string; a: string; b: string }) {
   return (
@@ -90,10 +119,11 @@ function StateRow({
  * column is fixed to the site already open, so the comparison is always against
  * what the reader is looking at; the right column is any other classified site.
  *
- * The science is read dimension by dimension rather than as a radar of weighted
- * scores, because the project does not compute weights at all: terrain, geology
+ * The science is read as a shape, then dimension by dimension: the web plots the
+ * guide's three dimensions and nothing else, and the rows beneath it print the
+ * state each vertex stands for. No weight is applied anywhere — terrain, geology
  * and thermal are independent, each carries one of four states, and a silhouette
- * over eight invented axes was the composite score in disguise.
+ * over eight scored axes was the composite score in disguise.
  */
 /** What the comparison is about: the science, or the journey. */
 type Basis = 'scientific' | 'logistics';
@@ -307,6 +337,12 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
   const stateOf = (index: number, side: 'a' | 'b') =>
     (side === 'a' ? classificationA : classificationB).dimensions[index].state;
 
+  /** The three verdicts as vertices, and the rung each one printed on. */
+  const stateValues = (side: 'a' | 'b') =>
+    DIMENSION_ORDER.map((_, index) => STATE_POSITION[stateOf(index, side)]);
+  const stateReadouts = (side: 'a' | 'b') =>
+    DIMENSION_ORDER.map((_, index) => STATE_SHORT[stateOf(index, side)]);
+
   return (
     <Modal
       kicker="Compare"
@@ -369,6 +405,27 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
 
       {basis === 'scientific' ? (
         <>
+          {/* The verdicts as a silhouette, over the same three axes as the rows
+              below: this is the shape of the classification, not a score. Each
+              vertex is one rung of the state ladder and each axis prints the rung
+              it sits on, so the web summarises the verdicts rather than
+              replacing them. */}
+          <AnalogueRadar
+            axes={SCIENTIFIC_AXES}
+            current={{
+              label: 'Current analogue',
+              color: '#22d3ee',
+              values: stateValues('a'),
+              readouts: stateReadouts('a'),
+            }}
+            other={{
+              label: 'Compared with',
+              color: '#fbbf24',
+              values: stateValues('b'),
+              readouts: stateReadouts('b'),
+            }}
+          />
+
           <div className="cmp-table">
             <div className="cmp-row cmp-head-row">
               <span className="cmp-label">Dimension</span>

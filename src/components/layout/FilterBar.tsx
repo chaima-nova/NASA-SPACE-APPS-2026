@@ -16,8 +16,6 @@ interface FilterBarProps {
   counts: Partial<Record<TerrainType, number>>;
   shown: number;
   total: number;
-  terrainSimilar: number;
-  unmeasured: number;
   datasetCount: number;
   /** Where distances are measured from, or null while the facet is off. */
   origin: Origin | null;
@@ -43,7 +41,7 @@ interface FilterBarProps {
  * popout on the left: terrain first, because it is about the ground; mission
  * purpose next, because it says what the reader is planning; then logistics,
  * because it is about the journey. The bar itself keeps only what a
- * reader needs at a glance: the target and the four numbers.
+ * reader needs at a glance: the target and the two counts.
  */
 export function FilterBar({
   target,
@@ -53,8 +51,6 @@ export function FilterBar({
   counts,
   shown,
   total,
-  terrainSimilar,
-  unmeasured,
   datasetCount,
   origin,
   radiusKm,
@@ -193,18 +189,6 @@ export function FilterBar({
                   </button>
                 ))}
               </div>
-              {/* Says what each purpose reads, so a chip that removes a site cannot
-                  be mistaken for a safety, trafficability or habitability verdict. */}
-              <p className="constraints-hint">
-                Choose as many as the mission needs; a site stays if it fits at least one of
-                them. Each purpose reads a signal this build already holds. Landing — a measured
-                slope window with scheduled service into the gate. Mobility — a measured slope
-                window, however the site is reached. Navigation — a named target-site crosswalk.
-                Robotic Operations — charter or expedition logistics, with no scheduled service.
-                Human Exploration — scheduled service into the gate. Construction — a geology
-                class shared with the target’s own crosswalk. None of them is a hazard,
-                trafficability or habitability assessment.
-              </p>
 
               <p className="constraints-title">Logistics</p>
               <div className="logistics">
@@ -287,14 +271,6 @@ export function FilterBar({
               a fraction nobody asked for, and the denominator only moves when a
               filter is on. The full sentence is kept for the tooltip. */}
           <dd title={`${shown} of ${total} sites shown`}>{shown}</dd>
-        </div>
-        <div>
-          <dt>Terrain similar</dt>
-          <dd>{terrainSimilar}</dd>
-        </div>
-        <div>
-          <dt>Unmeasured</dt>
-          <dd>{unmeasured}</dd>
         </div>
         <div>
           <dt>Datasets</dt>

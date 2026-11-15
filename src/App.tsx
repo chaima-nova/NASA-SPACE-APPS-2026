@@ -642,17 +642,6 @@ export default function App() {
     return counts;
   }, [predictions, target]);
 
-  /** Two honest counts instead of a mean fit and a "strong" count. */
-  const stats = useMemo(() => {
-    const similarTerrain = ranked.filter(
-      (item) => item.classification.dimensions[0].state === 'similar',
-    ).length;
-    const unmeasured = ranked.filter((item) =>
-      item.classification.dimensions.some((dimension) => dimension.state === 'insufficient_evidence'),
-    ).length;
-    return { similarTerrain, unmeasured };
-  }, [ranked]);
-
   const terrainCounts = useMemo(() => {
     const counts: Partial<Record<TerrainType, number>> = {};
     for (const prediction of predictions) {
@@ -911,8 +900,6 @@ export default function App() {
         counts={terrainCounts}
         shown={ranked.length}
         total={predictions.length}
-        terrainSimilar={stats.similarTerrain}
-        unmeasured={stats.unmeasured}
         datasetCount={datasets.length}
         origin={origin}
         radiusKm={radiusKm}
