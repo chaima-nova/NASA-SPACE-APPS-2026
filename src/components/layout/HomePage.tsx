@@ -428,7 +428,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       </section>
 
       <section className="home-steps" ref={stepsRef} aria-labelledby="home-steps-title">
-        <h3 id="home-steps-title">Three steps, no guesswork</h3>
+        <h3 id="home-steps-title">How It Works</h3>
         <ol>
           <li>
             <span className="home-step-n" aria-hidden="true">
@@ -462,6 +462,9 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           </li>
         </ol>
       </section>
+
+      {/* One bar between the two blocks: how the tool works, then what it does. */}
+      <hr className="home-sep" aria-hidden="true" />
 
       {/* The features, under the steps that reach them. A grid rather than a
           numbered list: these are parallel, not sequential. */}
