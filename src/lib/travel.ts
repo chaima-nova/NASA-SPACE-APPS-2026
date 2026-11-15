@@ -327,10 +327,11 @@ const GROUND_LIMIT_KM = 1500;
 /**
  * The two ways a party can make this trip, with a total cost for each.
  *
- * "Faster" is the itinerary the rest of the planner builds: fly to the gate,
- * then the measured last leg. "Cheaper" exists only when the site is reachable
- * overland from the reader at all, and it is one long road with the vehicle
- * and fuel carried by the party. Neither is offered when the app cannot build
+ * The fastest route is the itinerary the rest of the planner builds: fly to the
+ * gate, then the measured last leg. The cheapest exists only when the site is
+ * reachable overland from the reader at all, and it is one long road with the
+ * vehicle and fuel carried by the party. Both are named for the choice they
+ * offer rather than by an adjective, because a card has to say what it is. Neither is offered when the app cannot build
  * it, rather than being padded with a guess.
  */
 export function tripEstimate(origin: Origin, site: Place): TripEstimate {
@@ -354,7 +355,7 @@ export function tripEstimate(origin: Origin, site: Place): TripEstimate {
 
     options.push({
       id: 'faster',
-      headline: 'Faster',
+      headline: 'Fastest route',
       mode: `Fly to ${access.gateway.code}, then ${access.transferMode.toLowerCase()}`,
       km: airKm + access.transferKm,
       hours,
@@ -369,7 +370,7 @@ export function tripEstimate(origin: Origin, site: Place): TripEstimate {
     const { low, high } = band(overland * ROAD.costPerKm);
     options.push({
       id: 'cheaper',
-      headline: 'Cheaper',
+      headline: 'Cheapest route',
       mode: 'Road, with the vehicle and its fuel carried by the party',
       km: overland,
       hours: overland / ROAD.speedKmh,

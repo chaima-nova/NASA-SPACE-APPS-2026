@@ -169,10 +169,17 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
               it as the only quote. */}
           {estimate && estimate.options.length > 0 ? (
             <>
+              {/* The choice is the point of this block: everything under it —
+                  the total, the timeline, Book Trip — follows the card pressed. */}
+              <p className="distance-note">
+                Two ways to make this trip. Pick one: the total, the timeline and Book Trip
+                all follow the card you choose.
+              </p>
+
               <div
                 className={`trip-options${estimate.options.length > 1 ? '' : ' is-single'}`}
                 role="group"
-                aria-label="Choose how to make the trip"
+                aria-label="Choose between the cheapest route and the fastest route"
               >
                 {estimate.options.map((option) => (
                   <button
