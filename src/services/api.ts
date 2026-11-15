@@ -27,7 +27,12 @@ import {
   mockOrbitalObjects,
   mockPredictions,
 } from '../data-contracts/mock';
-import { engineComparisons, pipelineDatasets, screenedPredictions } from './pipeline';
+import {
+  engineComparisons,
+  engineComparisonsBySite,
+  pipelineDatasets,
+  screenedPredictions,
+} from './pipeline';
 import type {
   CommunityState,
   DimensionStates,
@@ -108,11 +113,18 @@ const ENGINE_BY_SITE = engineComparisons.map((comparison) => ({
 }));
 
 function withEngineState(prediction: Prediction): Prediction {
-  if (prediction.dimensionStates) return prediction;
+  // A screened row carries its own id, and the batch run keys its reports by
+  // that id, so this lookup is exact rather than a guess at a name. The two
+  // bundle verdicts predate the batch and are still matched on location name,
+  // which is how the curated Atacama row has always picked them up.
+  const batch = prediction.pointId ? engineComparisonsBySite.get(prediction.pointId) : undefined;
+  if (!batch && prediction.dimensionStates) return prediction;
   const name = normaliseName(prediction.siteName);
-  const hit = ENGINE_BY_SITE.find(
-    (entry) => name === entry.key || name.startsWith(entry.key) || entry.key.startsWith(name),
-  )?.comparison;
+  const hit =
+    batch ??
+    ENGINE_BY_SITE.find(
+      (entry) => name === entry.key || name.startsWith(entry.key) || entry.key.startsWith(name),
+    )?.comparison;
   if (!hit) return prediction;
 
   const states: DimensionStates = {};
@@ -133,10 +145,24 @@ function withEngineState(prediction: Prediction): Prediction {
     )
     .join(', ');
 
+  // The screening pass measured terrain from the SRTM grid itself, so an engine
+  // verdict fills only the dimensions the row has no state for. It never
+  // overwrites a measurement the ranking was built on, and the screening note
+  // stays put with the engine's reading appended after it.
+  const target: 'moon' | 'mars' = hit.target === 'moon' ? 'moon' : 'mars';
+  const existing = prediction.dimensionStates?.[target] ?? {};
+  const merged = { ...states, ...existing } as DimensionStates;
+
   return {
     ...prediction,
-    dimensionStates: { [hit.target]: states } as Partial<Record<'moon' | 'mars', DimensionStates>>,
-    evidenceNote: `Engine ${hit.engineVersion} against ${hit.targetRegion}: ${note}.`,
+    dimensionStates: {
+      ...(prediction.dimensionStates ?? {}),
+      [target]: merged,
+    } as Partial<Record<'moon' | 'mars', DimensionStates>>,
+    evidenceNote:
+      batch && prediction.evidenceNote
+        ? `${prediction.evidenceNote} Engine ${hit.engineVersion} against ${hit.targetRegion}: ${note}.`
+        : `Engine ${hit.engineVersion} against ${hit.targetRegion}: ${note}.`,
   };
 }
 

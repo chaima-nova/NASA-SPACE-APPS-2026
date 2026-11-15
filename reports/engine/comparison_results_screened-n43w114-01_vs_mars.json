@@ -1,0 +1,461 @@
+{
+  "candidate_id": "screened-n43w114-01",
+  "engine_version": "1.0.0",
+  "framework": "TERRANEXUS",
+  "location": {
+    "name": "Big Lost River valley, Idaho",
+    "coordinates": [
+      0.0,
+      0.0
+    ],
+    "bbox": [],
+    "analyzed_region": "Big Lost River valley, Idaho",
+    "source_dataset": "srtm_gl1_window",
+    "native_resolution_m": 26.55287307704726
+  },
+  "planetary_context": {
+    "target_body": "mars",
+    "target_region": "Jezero Crater",
+    "target_bbox": [
+      76.0,
+      17.0,
+      78.5,
+      19.5
+    ],
+    "target_source_dataset": "mola_megdr",
+    "target_native_resolution_m": 14800.0,
+    "target_grid_shape": [
+      10,
+      10
+    ]
+  },
+  "dimensions": {
+    "terrain_topography": {
+      "status": "DIFFERENT",
+      "similarities": [],
+      "mismatches": [
+        {
+          "parameter": "local_relief",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions overlap only 0.0% (below 40% threshold). Candidate median 2.0 m is 1072.0 m lower than target median 1074.0 m. Target grid is 10×10 = 100 pixels at 14.8 km/px — regional landscape context, not fine-scale terrain.",
+          "candidate_stats": {
+            "count": 4096,
+            "p10": 1.0,
+            "p25": 1.0,
+            "p50": 2.0,
+            "p75": 2.0,
+            "p90": 2.0,
+            "mean": 1.59,
+            "std": 0.529,
+            "unit": "m",
+            "source": "Windowed Δh (3×3 px window, 27 m/px)"
+          },
+          "target_stats": {
+            "count": 100,
+            "p10": 214.8,
+            "p25": 624.263,
+            "p50": 1074.0,
+            "p75": 1523.737,
+            "p90": 1933.2,
+            "mean": 1074.0,
+            "std": 671.25,
+            "unit": "m",
+            "source": "Estimated from elevation range in MOLA_MEGDR stats JSON (regional context only)"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Distributions overlap only 0.0% (below 40% threshold). Candidate median 2.0 m is 1072.0 m lower than target median 1074.0 m. Target grid is 10×10 = 100 pixels at 14.8 km/px — regional landscape context, not fine-scale terrain.",
+          "detail": "Target grid is 10×10 = 100 pixels at 14.8 km/px — regional landscape context, not fine-scale terrain."
+        },
+        {
+          "parameter": "slope_deg",
+          "state": "DIFFERENT",
+          "evidence_type": "model_derived",
+          "summary": "Distributions overlap only 33.9% (below 40% threshold). Candidate median 1.587 ° is 0.39 ° higher than target median 1.2 °. Resolution disparity: candidate slope reflects sub-km terrain at 180 m/px; target slope averages 14.8-km landscape tiles. Comparison is indicative only.",
+          "candidate_stats": {
+            "count": 4096,
+            "p10": 0.928,
+            "p25": 1.288,
+            "p50": 1.587,
+            "p75": 1.587,
+            "p90": 1.587,
+            "mean": 1.37,
+            "std": 0.536,
+            "unit": "°",
+            "source": "Pre-computed by terrain.py at 27 m/px"
+          },
+          "target_stats": {
+            "count": 100,
+            "p10": 0.23,
+            "p25": 0.691,
+            "p50": 1.2,
+            "p75": 1.709,
+            "p90": 2.173,
+            "mean": 1.2,
+            "std": 0.76,
+            "unit": "°",
+            "source": "Pre-computed by terrain.py at 14.8 km/px (regional context)"
+          },
+          "overlap_pct": 33.9,
+          "direction_note": "Distributions overlap only 33.9% (below 40% threshold). Candidate median 1.587 ° is 0.39 ° higher than target median 1.2 °. Resolution disparity: candidate slope reflects sub-km terrain at 180 m/px; target slope averages 14.8-km landscape tiles. Comparison is indicative only.",
+          "detail": "Resolution disparity: candidate slope reflects sub-km terrain at 180 m/px; target slope averages 14.8-km landscape tiles. Comparison is indicative only."
+        },
+        {
+          "parameter": "surface_roughness_tri",
+          "state": "DIFFERENT",
+          "evidence_type": "model_derived",
+          "summary": "TRI roughness cannot be validly compared across resolution scales. Candidate TRI median 0.5 m at 27 m/px; Target TRI mean 754 m at 14.8 km/px. Difference reflects pixel footprint, not terrain truth. Common-baseline resampling required for a valid comparison.",
+          "candidate_stats": {
+            "count": 4096,
+            "p10": 0.25,
+            "p25": 0.375,
+            "p50": 0.5,
+            "p75": 0.5,
+            "p90": 0.625,
+            "mean": 0.451,
+            "std": 0.128,
+            "unit": "m",
+            "source": "TRI pre-computed at 27 m/px"
+          },
+          "detail": "Resolution-scale artefact — not a scientific terrain mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "parameter": "absolute_elevation",
+          "state": "NOT_COMPARABLE",
+          "evidence_type": "datum_incompatibility",
+          "summary": "Absolute elevations cannot be compared across planetary bodies.",
+          "detail": "Candidate datum: EGM96 geoid (mean sea level = 0 m). Target datum: Gravitational areoid — equipotential surface at ~6.1 mbar pressure level. MOLA total vertical uncertainty ≥ 3 m; LOLA ≤ 1 m."
+        }
+      ]
+    },
+    "surface_geology": {
+      "status": "QUALITATIVE_MATCH",
+      "similarities": [
+        {
+          "parameter": "surface_material_rock_abundance",
+          "state": "SIMILAR",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions share 78.5% overlap across the p10-p90 range (≥40% threshold). Jezero Crater floor regolith and fractured bedrock blockiness (5.0-17.5% area, median 10.8%) closely tracks Atacama desert pavement (4.5-15.2%, median 9.5%). Rover hazard-avoidance geometry is directly comparable.",
+          "candidate_stats": {
+            "count": 500,
+            "p10": 4.5,
+            "p25": 6.8,
+            "p50": 9.5,
+            "p75": 12.4,
+            "p90": 15.2,
+            "mean": 9.8,
+            "std": 3.4,
+            "unit": "%",
+            "source": "Atacama Desert Pavement Surface Rock Fraction Photogrammetry"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 5.0,
+            "p25": 7.5,
+            "p50": 10.8,
+            "p75": 14.0,
+            "p90": 17.5,
+            "mean": 11.1,
+            "std": 3.8,
+            "unit": "%",
+            "source": "Perseverance Rover Navcam/Hazcam Boulder Surveys (Golombek et al. 2021)"
+          },
+          "overlap_pct": 78.5,
+          "direction_note": "Rock hazard frequency curves match within 1.6% median offset."
+        },
+        {
+          "parameter": "mineralogical_indicators",
+          "state": "SIMILAR",
+          "evidence_type": "qualitative_crosswalk",
+          "summary": "Shared aqueous alteration mineral suite: Perseverance SuperCam and CRISM detect Fe/Mg-smectite phyllosilicates, hydrated sulfates, and carbonate minerals in Jezero paleolake deposits. Atacama salar basins display an identical mineral paragenesis: smectite clays and hydrated calcium sulfates (gypsum CaSO₄·2H₂O) formed via evaporating standing bodies of water.",
+          "direction_note": "Paleolake evaporite and smectite clay alteration suites are directly analogous.",
+          "detail": "CRISM hyperspectral absorption bands align with Atacama salar clay-sulfate spectra."
+        }
+      ],
+      "mismatches": [
+        {
+          "parameter": "weathering_state",
+          "state": "DIFFERENT",
+          "evidence_type": "classification_based",
+          "summary": "Earth Atacama shows aeolian deflation and trace evaporite alteration (gypsum, halite). Target surface has no atmospheric weathering — only micrometeorite comminution (Moon) or aeolian perchlorate chemistry (Mars). Earth soil is weathered; target regolith is pristine or reactive."
+        }
+      ],
+      "evidence": [
+        {
+          "parameter": "geological_units",
+          "state": "INSUFFICIENT_EVIDENCE",
+          "evidence_type": "classification_based",
+          "summary": "Region not found in crosswalk. Manual classification required."
+        }
+      ]
+    },
+    "temperature_thermal": {
+      "status": "MIXED",
+      "similarities": [
+        {
+          "parameter": "thermal_inertia",
+          "state": "SIMILAR",
+          "evidence_type": "model_derived",
+          "summary": "Distributions share 70.5% overlap across the p10-p90 range (≥40% threshold). Jezero floor indurated regolith, duricrust, and gravel pavement (310-620 TIU, median 450 TIU) are an operational match for Atacama consolidated gravel desert pavement (280-720 TIU, median 460 TIU).",
+          "candidate_stats": {
+            "count": 500,
+            "p10": 280.0,
+            "p25": 350.0,
+            "p50": 460.0,
+            "p75": 580.0,
+            "p90": 720.0,
+            "mean": 480.0,
+            "std": 135.0,
+            "unit": "TIU",
+            "source": "Atacama Desert Pavement Soil & Gravel Thermal Inertia"
+          },
+          "target_stats": {
+            "count": 100,
+            "p10": 310.0,
+            "p25": 380.0,
+            "p50": 450.0,
+            "p75": 530.0,
+            "p90": 620.0,
+            "mean": 460.0,
+            "std": 95.0,
+            "unit": "TIU",
+            "source": "MGS TES & THEMIS Thermal Inertia at Jezero (Putzig & Mellon 2007)"
+          },
+          "overlap_pct": 70.5,
+          "direction_note": "Regolith grain consolidation and duricrust cohesion are thermally analogous."
+        }
+      ],
+      "mismatches": [
+        {
+          "parameter": "surface_temperature",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions overlap 9.1% across the p10-p90 range (<40% threshold). Mars Jezero reaches daytime highs near 275 K (+2°C), overlapping with Atacama winter mornings, but pre-dawn temperatures drop to 195 K (-78°C). Atacama median 288 K is 62 K warmer than Jezero median 226 K.",
+          "candidate_stats": {
+            "count": 8760,
+            "p10": 265.0,
+            "p25": 275.0,
+            "p50": 288.0,
+            "p75": 298.0,
+            "p90": 305.0,
+            "mean": 287.5,
+            "std": 14.2,
+            "unit": "K",
+            "source": "Atacama Surface Weather Station & MODIS Land Surface Temperature"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 195.0,
+            "p25": 208.0,
+            "p50": 226.0,
+            "p75": 255.0,
+            "p90": 275.0,
+            "mean": 231.0,
+            "std": 28.5,
+            "unit": "K",
+            "source": "Mars 2020 MEDA Ground Temperature Sensor & TES (Rodriguez-Manfredi 2021)"
+          },
+          "overlap_pct": 9.1,
+          "direction_note": "Distributions touch at warm midday peak but diverge by 70 K at night."
+        },
+        {
+          "parameter": "day_night_thermal_amplitude",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions share 0.0% overlap (completely disjoint). Perseverance MEDA measures massive diurnal swings of 76-92 K at Jezero due to rapid radiative cooling through the thin 6 hPa CO₂ atmosphere. Atacama diurnal swings are buffered to 22-36 K.",
+          "candidate_stats": {
+            "count": 365,
+            "p10": 22.0,
+            "p25": 25.0,
+            "p50": 28.0,
+            "p75": 32.0,
+            "p90": 36.0,
+            "mean": 28.5,
+            "std": 4.2,
+            "unit": "K",
+            "source": "Atacama Annual Diurnal Temperature Swing (Max - Min)"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 76.0,
+            "p25": 80.0,
+            "p50": 84.0,
+            "p75": 88.0,
+            "p90": 92.0,
+            "mean": 84.0,
+            "std": 5.5,
+            "unit": "K",
+            "source": "Perseverance MEDA Diurnal Surface Thermal Amplitude"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Martian diurnal thermal swing is ~3x wider than Earth desert swing."
+        },
+        {
+          "parameter": "atmospheric_thermal_physics",
+          "state": "NOT_COMPARABLE",
+          "evidence_type": "physics_incompatibility",
+          "summary": "Direct cross-body temperature comparison is subject to fundamental atmospheric physics disparity: Earth has a 1,013 hPa convective boundary layer; Mars has ~6 hPa CO₂ with weak convective coupling; Moon is hard vacuum (~10⁻¹² hPa) with purely radiative heat transfer."
+        }
+      ],
+      "evidence": []
+    },
+    "solar_illumination": {
+      "status": "SIMILAR",
+      "similarities": [
+        {
+          "parameter": "annual_illumination_fraction",
+          "state": "SIMILAR",
+          "evidence_type": "model_derived",
+          "summary": "Distributions overlap 66.7% across the p10-p90 range. Mars Jezero experiences an annual daylight fraction of ~0.50, operationally matching Atacama's ~0.51 daylight fraction.",
+          "candidate_stats": {
+            "count": 8760,
+            "p10": 0.49,
+            "p25": 0.5,
+            "p50": 0.51,
+            "p75": 0.52,
+            "p90": 0.53,
+            "mean": 0.51,
+            "std": 0.015,
+            "unit": "fraction",
+            "source": "Analytical Spherical Astronomy & Atacama Clear-Sky Solar Geometry"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 0.47,
+            "p25": 0.49,
+            "p50": 0.5,
+            "p75": 0.51,
+            "p90": 0.53,
+            "mean": 0.5,
+            "std": 0.018,
+            "unit": "fraction",
+            "source": "Mars Climate Database & Orbital Insolation Model (Jezero 18.4°N)"
+          },
+          "overlap_pct": 66.7,
+          "direction_note": "Diurnal daylight fractions match within 1.0% operational tolerance."
+        },
+        {
+          "parameter": "diurnal_illumination_cycle",
+          "state": "SIMILAR",
+          "evidence_type": "direct_measurement",
+          "summary": "Earth diurnal cycle (24.00h) closely matches Mars sol (24.66h). Operational day/night cadence, crew circadian scheduling, and solar battery charge/discharge cycles are directly analogous (offset: +39.6 min/sol).",
+          "candidate_stats": {
+            "count": 365,
+            "p10": 24.0,
+            "p25": 24.0,
+            "p50": 24.0,
+            "p75": 24.0,
+            "p90": 24.0,
+            "mean": 24.0,
+            "std": 0.0,
+            "unit": "hours",
+            "source": "Earth solar day"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 24.66,
+            "p25": 24.66,
+            "p50": 24.66,
+            "p75": 24.66,
+            "p90": 24.66,
+            "mean": 24.66,
+            "std": 0.0,
+            "unit": "hours",
+            "source": "Mars mean solar sol"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Mars sol is 39m 35s longer than Earth day (within 2.7% delta)."
+        }
+      ],
+      "mismatches": [
+        {
+          "parameter": "solar_irradiance_flux",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Solar constant at Mars is ~590 W/m² (~43% of Earth's 1361 W/m²). Surface solar irradiance peak at Jezero reaches ~450-550 W/m² under clear sky, compared to 1,050-1,250 W/m² at high-elevation Atacama. Solar arrays on Mars require >2.2x collector area for equivalent power output.",
+          "candidate_stats": {
+            "count": 365,
+            "p10": 600.0,
+            "p25": 850.0,
+            "p50": 1020.0,
+            "p75": 1150.0,
+            "p90": 1280.0,
+            "mean": 980.0,
+            "std": 220.0,
+            "unit": "W/m²",
+            "source": "Atacama Surface Solar GHI (clear sky)"
+          },
+          "target_stats": {
+            "count": 668,
+            "p10": 250.0,
+            "p25": 360.0,
+            "p50": 440.0,
+            "p75": 510.0,
+            "p90": 580.0,
+            "mean": 425.0,
+            "std": 110.0,
+            "unit": "W/m²",
+            "source": "Mars Insolation Model at Jezero (tau=0.5)"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Earth solar flux is ~2.3x higher due to 1/r² orbital distance offset."
+        }
+      ],
+      "evidence": []
+    }
+  },
+  "data_quality": {
+    "candidate_source": "NASA SRTM GL1 1-arcsecond window N43W114 at 43.9021, -113.4754 (64 x 64 cells, 27 m/px), measured by the screening pass",
+    "candidate_resolution_m": 26.55287307704726,
+    "candidate_grid_shape": [
+      64,
+      64
+    ],
+    "candidate_valid_pct": 100.0,
+    "target_source": "Smith et al. (2001). Mars Orbiter Laser Altimeter. JGR Planets.",
+    "target_resolution_m": 14800.0,
+    "target_grid_shape": [
+      10,
+      10
+    ],
+    "target_valid_pct": 100.0,
+    "common_baseline_applied": false,
+    "common_baseline_note": "No resampling performed. Resolution disparity documented in uncertainties.",
+    "slope_roughness_source": "Pre-computed by Abid T S terrain.py pipeline (commit ab3228f)"
+  },
+  "uncertainties": [
+    "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+    "Target grid (10×10 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+    "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+    "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+    "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+  ],
+  "limitations": [
+    {
+      "factor": "gravity",
+      "earth": "1.00 g (9.81 m/s²)",
+      "target": "0.38 g (3.72 m/s²)",
+      "impact": "Slope stability, avalanche dynamics, and rover traction differ fundamentally. Equal slope angles are NOT equally hazardous across bodies."
+    },
+    {
+      "factor": "atmospheric_pressure",
+      "earth": "1,013.25 hPa (N₂/O₂)",
+      "target": "~6 hPa CO₂ (< 1% of Earth)",
+      "impact": "No convective heat dissipation, no liquid water stability, no atmospheric pressure on suits or habitats."
+    },
+    {
+      "factor": "ionizing_radiation",
+      "earth": "Geomagnetically shielded",
+      "target": "Elevated UV and cosmic-ray flux; thin CO₂ atmosphere offers minimal shielding",
+      "impact": "Surface habitats require regolith berming or sub-surface siting. No Earth analogue preparation addresses this."
+    },
+    {
+      "factor": "biological_and_chemical_weathering",
+      "earth": "Active microbial, hydro-chemical, and aeolian weathering",
+      "target": "Aeolian dust transport; toxic perchlorate (ClO₄⁻) chemistry; no liquid water",
+      "impact": "Earth regolith contains organic binders. Target body regolith is mechanically abrasive or chemically hazardous."
+    }
+  ]
+}

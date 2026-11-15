@@ -1,7 +1,11 @@
 import type { CSSProperties } from 'react';
 import type { Prediction } from '../../data-contracts/types';
 import { photoPageUrl, photosFor, photoUrl } from '../../data/sitePhotos';
-import { engineComparisons, measuredTerrain } from '../../services/pipeline';
+import {
+  engineBundleComparisons,
+  engineComparisons,
+  measuredTerrain,
+} from '../../services/pipeline';
 
 /**
  * What an analogue site could be used for.
@@ -96,11 +100,11 @@ const jezero = mars
   : 'slope and roughness the pipeline has not published for Jezero';
 
 /** Every dimension check the reports still call INSUFFICIENT_EVIDENCE. */
-const thin = engineComparisons
+const thin = engineBundleComparisons
   .flatMap((comparison) => comparison.dimensions)
   .filter((dimension) => dimension.status === 'INSUFFICIENT_EVIDENCE');
 const thinLabels = [...new Set(thin.map((dimension) => dimension.label.toLowerCase()))];
-const dimensionTotal = engineComparisons.reduce(
+const dimensionTotal = engineBundleComparisons.reduce(
   (total, comparison) => total + comparison.dimensions.length,
   0,
 );

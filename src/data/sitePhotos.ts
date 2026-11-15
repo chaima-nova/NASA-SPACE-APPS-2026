@@ -1,26 +1,51 @@
 /**
  * Field photography for the "See Site" gallery.
  *
- * Real ground photography of each analog site, curated from Wikimedia Commons
- * (the site itself, its terrain, rocks and expedition work). Files are fetched
- * through Commons' Special:FilePath endpoint, so no local copies are shipped
- * and the licence/author stays attached to every frame.
+ * Two kinds of frame live here, and the gallery names which is which beside
+ * every caption, because the difference is a provenance claim and not just a
+ * credit line. The first kind is agency-hosted: a record in NASA's Image and
+ * Video Library, with the pixels served from images-assets.nasa.gov and a link
+ * back to the library record that carries NASA's own description. The second
+ * kind is Wikimedia Commons, fetched through Special:FilePath and kept for the
+ * sites where no agency publishes ground photography of the place.
  *
- * Photos are illustrative field references, not survey imagery; the caption
- * says so and every frame links back to its Commons file page. Captions,
- * authors and licences are read from the file metadata rather than written
- * here, so a credit that reads oddly is the uploader wording, not ours.
+ * Only frames that show the ground at or beside the site are included. NASA
+ * holds many satellite, radar and orbital views of these same places; those
+ * would be a different claim, so they are left out even where the library
+ * returns them for the search term.
+ *
+ * Photos are illustrative field references, not survey imagery. The gallery
+ * footer says so, every frame links to the page that publishes it, and a
+ * credit that reads oddly is the publisher's wording rather than ours.
  */
 
 export interface SitePhoto {
+  /**
+   * NASA Image and Video Library id. Present when the frame is served by NASA
+   * itself; absent means the frame is Commons-hosted and keyed by `file`.
+   */
+  nasaId?: string;
+  /**
+   * Which resized copy the library actually holds. Most items carry a "large";
+   * a handful of older uploads kept only the original scan, and asking the
+   * asset host for a large that was never made answers with AccessDenied.
+   */
+  rendition?: 'large' | 'orig';
+  /** Matching thumbnail rendition: "small" unless the item has none. */
+  thumb?: 'small' | 'thumb';
   /** Commons file name, without the "File:" prefix. */
-  file: string;
+  file?: string;
   caption: string;
   credit: string;
   license: string;
 }
 
-const PHOTOS: Record<string, SitePhoto[]> = {
+/**
+ * Commons-hosted frames, keyed by site. The agency frames that lead each
+ * gallery live in AGENCY below; this map holds the hand-picked Commons set
+ * that fills the rest of the rail.
+ */
+const COMMONS: Record<string, SitePhoto[]> = {
   'site-000': [
     {
       file: 'Miscanti Lagoon near San Pedro de Atacama Chile Luca Galuzzi 2006.jpg',
@@ -710,6 +735,30 @@ const PHOTOS: Record<string, SitePhoto[]> = {
       credit: 'BLMIdaho',
       license: 'CC BY 2.0',
     },
+    {
+      file: 'North Crater Flow (36929265721).jpg',
+      caption: 'North Crater flow, Craters of the Moon',
+      credit: 'Craters of the Moon National Monument & Preserve',
+      license: 'Public domain',
+    },
+    {
+      file: 'Basalt flow on craters of the moon idaho.jpg',
+      caption: 'Basalt flow at Craters of the Moon, Idaho',
+      credit: 'G.R. Mansfield',
+      license: 'Public domain',
+    },
+    {
+      file: 'Craters of the Moon National Monument and Preserve (49068270203).jpg',
+      caption: 'Craters of the Moon National Monument and Preserve',
+      credit: 'Matthew Dillon',
+      license: 'CC BY 2.0',
+    },
+    {
+      file: 'Craters of the Moon National Monument - Idaho (14377854028).jpg',
+      caption: 'Craters of the Moon National Monument, Idaho',
+      credit: 'Doug Kerr',
+      license: 'CC BY-SA 2.0',
+    },
   ],
   'site-009': [
     {
@@ -926,6 +975,36 @@ const PHOTOS: Record<string, SitePhoto[]> = {
       credit: 'Pierre Markuse from Hamm, Germany',
       license: 'CC BY 2.0',
     },
+    {
+      file: 'Askja (29237657682).jpg',
+      caption: 'Askja caldera',
+      credit: 'Luca Temporelli',
+      license: 'CC BY-SA 2.0',
+    },
+    {
+      file: 'Viti geothermal lake at Askja.jpg',
+      caption: 'Víti, the geothermal lake inside Askja',
+      credit: 'Boaworm',
+      license: 'CC BY 3.0',
+    },
+    {
+      file: 'Askja volcanic system7.jpg',
+      caption: 'The Askja volcanic system',
+      credit: 'Sergey Norin',
+      license: 'CC BY 2.0',
+    },
+    {
+      file: 'Luftbild Viti und Öskjuvatn - Vulkan Askja.jpg',
+      caption: 'Víti and Öskjuvatn from the air',
+      credit: 'Areuland',
+      license: 'CC BY 4.0',
+    },
+    {
+      file: 'Kvislahraun und Suðurbotnahraun.jpg',
+      caption: 'Kvíslahraun and Suðurbotnahraun lava fields',
+      credit: 'Areuland',
+      license: 'CC BY 4.0',
+    },
   ],
   'site-012': [
     {
@@ -1009,17 +1088,289 @@ const PHOTOS: Record<string, SitePhoto[]> = {
   ],
 };
 
-/** Commons' stable redirect for a file, with a server-side resize. */
+/**
+ * Agency-hosted frames, keyed by site.
+ *
+ * Each entry is an id in NASA's Image and Video Library, so the asset is served
+ * from images-assets.nasa.gov and the caption's link opens the library record
+ * that carries NASA's own description of the frame. Credit lines follow the
+ * library's own wording, including the photographer where the record names one.
+ *
+ * Only sites where NASA publishes ground photography appear here. Devon Island
+ * (the Haughton-Mars Project's K-10 rover trials), Death Valley (the 2025 Mars
+ * rotorcraft tests and the Scarecrow rover), Kilauea (a Goddard field campaign
+ * across the 1974 and 1978 flows) and Mauna Kea (the summit observatories) had
+ * enough to lead their galleries; the rest are left to Commons rather than
+ * padded with orbital views of the same coordinates.
+ */
+const AGENCY: Record<string, SitePhoto[]> = {
+  'site-000': [
+    {
+      nasaId: 'PIA16191',
+      rendition: 'orig',
+      caption: 'A dry streambed on an alluvial fan in the Atacama, its gravel and fines left in patches by past flow',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+  ],
+  'site-001': [
+    {
+      nasaId: 'ARC-2007-ACD07-0170-001',
+      caption: 'The K-10 rover “Black” driving on Drill Hill at Haughton Crater',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-002',
+      caption: 'The K-10 rover “Black” running ground-penetrating radar across the crater floor',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-003',
+      caption: 'The K-10 rover “Red” at base camp, Devon Island',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-004',
+      caption: 'Base camp on the floor of Haughton Crater, in the frost-rubble zone of the high Arctic',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-005',
+      caption: 'Both K-10 rovers running a systematic site survey across the crater',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-006',
+      caption: 'The K-10 rover “Red” descending Drill Hill towards base camp',
+      credit: 'Lorenzo Flueckiger / CMU West',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD07-0170-007',
+      rendition: 'orig',
+      caption: 'The K-10 rover “Red” parked at base camp',
+      credit: 'Matt Deans / NASA',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD09-0255-001',
+      rendition: 'orig',
+      caption: 'The K-10 rover “Red” beside the Fortress formation at Haughton Crater',
+      credit: 'NASA/Lorenzo Fluckiger',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-2007-ACD09-0255-002',
+      rendition: 'orig',
+      caption: 'The K-10 rover “Black” crossing a snow-melt channel on Devon Island',
+      credit: 'NASA/Lorenzo Fluckiger',
+      license: 'Public domain (NASA)',
+    },
+  ],
+  'site-002': [
+    {
+      nasaId: 'PIA26674',
+      caption: 'Researchers testing Mars rotorcraft software over the dunes of Death Valley',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA26675',
+      caption: 'Monitoring a drone test flight in Death Valley National Park',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA26676',
+      caption: 'A research drone over Mars Hill, the rubbly volcanic ground the tests were aimed at',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA26677',
+      caption: 'A researcher watching a drone over the sand dunes',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA26679',
+      caption: 'One of the three research drones, on the ground in front of Mars Hill',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA23265',
+      caption: 'An Airbus helicopter carrying the Lander Vision System over Death Valley on a test flight',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA15682',
+      caption: 'The Scarecrow test rover on dunes near Death Valley, trialling the mobility of Curiosity',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+  ],
+  'site-004': [
+    {
+      nasaId: 'PIA12504',
+      rendition: 'orig',
+      thumb: 'thumb',
+      caption: 'The NASA Infrared Telescope Facility on the summit of Mauna Kea',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA04493',
+      rendition: 'orig',
+      thumb: 'thumb',
+      caption: 'The two Keck 10-metre telescopes linked as the Keck Interferometer',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'PIA04494',
+      rendition: 'orig',
+      caption: 'The Keck Observatory domes at the summit of Mauna Kea',
+      credit: 'NASA/JPL',
+      license: 'Public domain (NASA)',
+    },
+  ],
+  'site-005': [
+    {
+      nasaId: 'GSFC_20171208_Archive_e000658',
+      caption: 'The full moon over the lava lake in Halemaʻumaʻu crater',
+      credit: 'NASA/GSFC/Kelsey Young',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000659',
+      caption: 'The field crew in protective suits before collecting samples',
+      credit: 'NASA/Goddard',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000660',
+      rendition: 'orig',
+      thumb: 'thumb',
+      caption: 'The team hiking across Kilauea’s pāhoehoe lava fields',
+      credit: 'NASA/Goddard',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000661',
+      caption: 'A kite carrying a camera, used to mosaic the study site from above',
+      credit: 'NASA/GSFC/Jacob Bleacher',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000662',
+      caption: 'The ropey, broken crust of the 1978 lava flow',
+      credit: 'NASA/Goddard',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000663',
+      caption: 'Pele’s hair: glass strands spun from droplets thrown out by bursting lava bubbles',
+      credit: 'NASA/Goddard',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000664',
+      rendition: 'orig',
+      thumb: 'thumb',
+      caption: 'A pāhoehoe flow being photographed up close',
+      credit: 'NASA/GSFC/Anthony Denicola',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000665',
+      caption: 'Respirators carried in case the volcanic plume shifted towards the party',
+      credit: 'NASA/GSFC/Andrea Jones',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000666',
+      caption: 'Leaders briefing the route down a scarp to the site of the 1974 eruption',
+      credit: 'NASA/Goddard',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'GSFC_20171208_Archive_e000667',
+      caption: 'The field party ready for a day on the lava',
+      credit: 'NASA/GSFC/Andrea Jones',
+      license: 'Public domain (NASA)',
+    },
+    {
+      nasaId: 'ARC-1995-AC95-0054-67',
+      caption: 'The Russian Marsokhod rover exploring Kilauea by telepresence for the Jason IV project',
+      credit: 'NASA/Ames',
+      license: 'Public domain (NASA)',
+    },
+  ],
+};
+
+/** Most frames a site's gallery will show, so the thumbnail rail stays a rail. */
+const MAX_PHOTOS = 14;
+
+const NASA_ASSETS = 'https://images-assets.nasa.gov/image';
+
+/** Stable identity for React keys, whichever host a frame comes from. */
+export function photoKey(photo: SitePhoto): string {
+  return photo.nasaId ?? photo.file ?? photo.caption;
+}
+
+/**
+ * Direct image URL at the requested width.
+ *
+ * NASA's library publishes fixed renditions, so the width is rounded to the
+ * nearest one it actually holds: the thumbnail for the rail and the inline
+ * strips, the large copy for the stage. Commons resizes server-side to
+ * whatever width is asked for.
+ */
 export function photoUrl(photo: SitePhoto, width = 1400): string {
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(photo.file)}?width=${width}`;
+  if (photo.nasaId) {
+    const rendition = width <= 480 ? photo.thumb ?? 'small' : photo.rendition ?? 'large';
+    return `${NASA_ASSETS}/${photo.nasaId}/${photo.nasaId}~${rendition}.jpg`;
+  }
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(photo.file ?? '')}?width=${width}`;
 }
 
-/** Human-readable Commons page for attribution and further reading. */
+/** The page that publishes the frame, for attribution and further reading. */
 export function photoPageUrl(photo: SitePhoto): string {
-  return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(photo.file)}`;
+  if (photo.nasaId) return `https://images.nasa.gov/details/${photo.nasaId}`;
+  return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(photo.file ?? '')}`;
 }
 
-/** Photos for a prediction; empty when the backend adds a site we have no art for. */
+/** Short host name, for the link that sits beside each credit. */
+export function photoSourceLabel(photo: SitePhoto): string {
+  return photo.nasaId ? 'NASA' : 'Wikimedia Commons';
+}
+
+/** Every host represented in a set of frames, named in reading order. */
+export function photoSourcesSummary(photos: SitePhoto[]): string {
+  const labels = [...new Set(photos.map(photoSourceLabel))];
+  if (labels.length === 0) return 'Wikimedia Commons';
+  if (labels.length === 1) return labels[0];
+  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+}
+
+/**
+ * Photos for a prediction, agency frames first.
+ *
+ * Agency frames lead because they are the ones the provenance claim rests on;
+ * Commons fills the rest of the rail. Empty when the backend adds a site we
+ * have no photography for yet.
+ */
 export function photosFor(prediction: { pointId?: string }): SitePhoto[] {
-  return (prediction.pointId && PHOTOS[prediction.pointId]) || [];
+  const id = prediction.pointId;
+  if (!id) return [];
+  const agency = AGENCY[id] ?? [];
+  const commons = COMMONS[id] ?? [];
+  return [...agency, ...commons].slice(0, MAX_PHOTOS);
 }
