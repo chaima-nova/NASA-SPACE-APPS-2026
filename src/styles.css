@@ -6861,3 +6861,51 @@ a.compare-thumb {
     height: 108px;
   }
 }
+
+/* The date the trip is for, and the one question the trip turns on: a flight,
+   or a drive. Both sit above the timeline, because they decide what it says. */
+.trip-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 14px;
+  flex-wrap: wrap;
+}
+
+.trip-date label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.trip-date input {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+}
+
+.trip-prompt {
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  background: var(--surface-2);
+}
+
+.trip-prompt-q {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.trip-prompt-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}

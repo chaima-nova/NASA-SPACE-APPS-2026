@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { OriginPrompt } from './OriginPrompt';
-import type { Origin } from '../../lib/geo';
+import { distanceKm, type Origin } from '../../lib/geo';
 import type { Prediction } from '../../data-contracts/types';
 import {
   ACCESS_LABELS,
+  datedFlightsUrl,
   formatHours,
   formatMoney,
+  LOCAL_ROAD_KM,
+  needsFlight,
   routeLinks,
   siteDirectionsUrl,
   travelAccessOf,
@@ -82,6 +85,31 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
    */
   const [pick, setPick] = useState<TripOption['id']>('faster');
   const selected = estimate?.options.find((option) => option.id === pick) ?? estimate?.options[0] ?? null;
+
+  /**
+   * The travel date, asked for next to the choice of route.
+   *
+   * A fare search without a day is a search for nothing in particular, so the
+   * date is part of the question — and `Today` is beside it because most of
+   * these trips are planned for the day the reader is standing in.
+   */
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
+
+  /**
+   * Whether a flight is part of this trip at all.
+   *
+   * This is the question the reader is really answering, so it is decided once,
+   * from the straight-line distance between start and site, and then it picks
+   * which live search to offer: a dated fare search past the threshold, a
+   * directions search inside it. The old code inferred it from which cost card
+   * was pressed, which made "cheaper" mean "no flight" and sent a party driving
+   * to a site on another continent.
+   */
+  const roadKm = origin ? distanceKm(origin, site) : 0;
+  const flightNeeded = origin ? needsFlight(origin, site) : false;
+  const flightUrl =
+    origin && links?.gatewayCode ? datedFlightsUrl(origin, links.gatewayCode, date, pick) : links?.flights ?? null;
   const byRoad = selected?.id === 'cheaper';
 
   /**
@@ -92,11 +120,12 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
    */
   const bookTrip = () => {
     if (!links) return;
-    // A road trip is one drive: there is no flight and no gate transfer to
-    // search, so opening those would send a party after tickets it will not use.
-    const targets = byRoad
-      ? [links.directions]
-      : [links.flights, links.transit, links.directions];
+    // A trip inside driving range is one drive: there is no flight and no gate
+    // transfer to search, so opening those would send a party after tickets it
+    // will not use. Past the threshold it is the dated fare search that leads.
+    const targets = flightNeeded
+      ? [flightUrl, links.transit, links.directions]
+      : [links.directions];
     for (const href of targets) {
       if (href) window.open(href, '_blank', 'noopener');
     }
@@ -160,6 +189,23 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
             <span className="itinerary-total">{byRoad && selected ? `${Math.round(selected.km).toLocaleString("en-US")} km by road from ${origin?.label ?? "your start point"}` : `${Math.round(access.transferKm).toLocaleString("en-US")} km from ${links.gatewayCode ?? "the gate"}`}</span>
           </div>
 
+          {/* The day the trip is for. Beside it, Today, because a field party
+              planning a site visit is usually planning it from here. */}
+          <div className="trip-date">
+            <label htmlFor="trip-date-input">Travel date</label>
+            <input
+              id="trip-date-input"
+              type="date"
+              value={date}
+              onChange={(event) => {
+                if (event.target.value) setDate(event.target.value);
+              }}
+            />
+            <button type="button" className="btn btn-small" onClick={() => setDate(today)}>
+              Today
+            </button>
+          </div>
+
           {/* Cost and time, as the two ways a party can make this trip — and a
               choice between them. The cards are buttons: pressing one re-costs
               the total, rewrites the timeline below and narrows Book Trip to the
@@ -218,6 +264,30 @@ export function TripPlanner({ site, origin, onPick, onClear, onClose }: TripPlan
               </p>
             </>
           ) : null}
+
+          {/* The one question the trip turns on, asked as a question: is a
+              flight part of it? Inside the driving threshold the answer is a
+              directions search ending at the site; past it, a dated fare search
+              for the gate. Either way the numbers come from the site that sells
+              the leg, not from this page. */}
+          <div className="trip-prompt" role="group" aria-label="Where to plan this trip">
+            <p className="trip-prompt-q">{flightNeeded ? 'Look at flights?' : 'Get directions?'}</p>
+            <p className="trip-prompt-note">
+              {flightNeeded
+                ? `${Math.round(roadKm).toLocaleString('en-US')} km from ${origin?.label ?? 'your start point'} — further than a party drives with kit. The search is dated ${date} and asks for ${pick === 'cheaper' ? 'the cheapest' : 'the fastest'} option; Google holds the prices and times.`
+                : `No flight needed: ${Math.round(roadKm).toLocaleString('en-US')} km is inside the ${LOCAL_ROAD_KM.toLocaleString('en-US')} km a party drives. The directions end at the site's own coordinates.`}
+            </p>
+            <div className="trip-actions">
+              <a
+                className="btn btn-primary"
+                href={flightNeeded ? flightUrl ?? links.directions : links.directions}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {flightNeeded ? 'Open Google Flights' : 'Open Google Maps'}
+              </a>
+            </div>
+          </div>
 
           {/* The route as a vertical timeline for the option picked above: the start, the leg or legs that option uses with the site that sells each, and the arrival. The hours and the total are modelled; the live search beside each leg is the only quote. */}
           <ol className="trip-timeline">
