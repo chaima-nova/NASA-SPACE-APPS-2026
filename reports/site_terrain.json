@@ -1,0 +1,426 @@
+{
+  "generated_by": "scripts/measure_sites.mjs",
+  "method": "Horn 3x3 slope, Riley TRI and elevation statistics over a 601 x 601 cell window (about 18.5 km across) centred on each curated site; SRTM GL1, one arc-second (about 30 m) cells, voids excluded and not counted.",
+  "window": {
+    "cells": 601,
+    "km": 18.5
+  },
+  "coverage": "10 of 13 curated sites measured over N19W156, N29W014, N35W116, N36W117, N37E094, N37W007, N41W122, N43W114, S24W070. 3 lie outside the SRTM flight band and keep their fixture values; each row carries the reason. Terrain only: aridity, thermal swing, dust, mineralogy and lava-tube potential are not measurable from a DEM and are still hand-set.",
+  "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics, 45(2).",
+  "source": {
+    "dataset_id": "srtm_gl1",
+    "resolution": "1 arc-second (~30 m)",
+    "catalogue": "https://s3.amazonaws.com/elevation-tiles-prod/skadi/",
+    "tiles": [
+      {
+        "tile": "N19W156",
+        "bbox": [
+          -156,
+          19,
+          -155,
+          20
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N29W014",
+        "bbox": [
+          -14,
+          29,
+          -13,
+          30
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N35W116",
+        "bbox": [
+          -116,
+          35,
+          -115,
+          36
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N36W117",
+        "bbox": [
+          -117,
+          36,
+          -116,
+          37
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N37E094",
+        "bbox": [
+          94,
+          37,
+          95,
+          38
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N37W007",
+        "bbox": [
+          -7,
+          37,
+          -6,
+          38
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N41W122",
+        "bbox": [
+          -122,
+          41,
+          -121,
+          42
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "N43W114",
+        "bbox": [
+          -114,
+          43,
+          -113,
+          44
+        ],
+        "grid": "3601 x 3601"
+      },
+      {
+        "tile": "S24W070",
+        "bbox": [
+          -70,
+          -24,
+          -69,
+          -23
+        ],
+        "grid": "3601 x 3601"
+      }
+    ]
+  },
+  "sites": [
+    {
+      "siteId": "site-000",
+      "siteName": "Atacama Desert, Chile",
+      "lat": -23.5,
+      "lon": -69.2,
+      "status": "measured",
+      "tile": "S24W070",
+      "windowCentre": {
+        "lat": -23.5,
+        "lon": -69.2,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 28.3
+      },
+      "measured": {
+        "slopeMeanDeg": 4.04,
+        "slopeMaxDeg": 37.83,
+        "triMeanM": 1.7,
+        "reliefM": 573,
+        "elevationMeanM": 2138,
+        "elevationStdM": 112.3,
+        "elevationMinM": 1853,
+        "elevationMaxM": 2426,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-001",
+      "siteName": "Haughton Crater, Devon Island, Canada",
+      "lat": 75.37,
+      "lon": -89.68,
+      "status": "outside_coverage",
+      "tile": "N75W090",
+      "reason": "SRTM covers 56°S to 60°N and this site is at 75.4°N, so no tile in the set reaches it. The fixture's hand-set values stand unmeasured for this site."
+    },
+    {
+      "siteId": "site-002",
+      "siteName": "Death Valley, California, USA",
+      "lat": 36.24,
+      "lon": -116.82,
+      "status": "measured",
+      "tile": "N36W117",
+      "windowCentre": {
+        "lat": 36.24,
+        "lon": -116.82,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 24.9
+      },
+      "measured": {
+        "slopeMeanDeg": 8.55,
+        "slopeMaxDeg": 68.48,
+        "triMeanM": 3.7,
+        "reliefM": 1736,
+        "elevationMeanM": 83,
+        "elevationStdM": 331.8,
+        "elevationMinM": -130,
+        "elevationMaxM": 1606,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-003",
+      "siteName": "McMurdo Dry Valleys, Antarctica",
+      "lat": -77.5,
+      "lon": 162,
+      "status": "outside_coverage",
+      "tile": "S78E162",
+      "reason": "SRTM covers 56°S to 60°N and this site is at 77.5°S, so no tile in the set reaches it. The fixture's hand-set values stand unmeasured for this site."
+    },
+    {
+      "siteId": "site-004",
+      "siteName": "Mauna Kea, Hawaii, USA",
+      "lat": 19.82,
+      "lon": -155.47,
+      "status": "measured",
+      "tile": "N19W156",
+      "windowCentre": {
+        "lat": 19.82,
+        "lon": -155.47,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 29
+      },
+      "measured": {
+        "slopeMeanDeg": 13.53,
+        "slopeMaxDeg": 51.25,
+        "triMeanM": 5.7,
+        "reliefM": 2577,
+        "elevationMeanM": 2969,
+        "elevationStdM": 566.4,
+        "elevationMinM": 1622,
+        "elevationMaxM": 4199,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-005",
+      "siteName": "Kilauea, Hawaii, USA",
+      "lat": 19.42,
+      "lon": -155.29,
+      "status": "measured",
+      "tile": "N19W156",
+      "windowCentre": {
+        "lat": 19.42,
+        "lon": -155.29,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 29.1
+      },
+      "measured": {
+        "slopeMeanDeg": 3.65,
+        "slopeMaxDeg": 72.62,
+        "triMeanM": 1.5,
+        "reliefM": 1187,
+        "elevationMeanM": 1176,
+        "elevationStdM": 212.8,
+        "elevationMinM": 830,
+        "elevationMaxM": 2017,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-006",
+      "siteName": "Río Tinto, Spain",
+      "lat": 37.69,
+      "lon": -6.56,
+      "status": "measured",
+      "tile": "N37W007",
+      "windowCentre": {
+        "lat": 37.69,
+        "lon": -6.56,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 24.4
+      },
+      "measured": {
+        "slopeMeanDeg": 10.13,
+        "slopeMaxDeg": 54.41,
+        "triMeanM": 4,
+        "reliefM": 560,
+        "elevationMeanM": 359,
+        "elevationStdM": 89.8,
+        "elevationMinM": 131,
+        "elevationMaxM": 691,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-007",
+      "siteName": "Timanfaya, Lanzarote, Spain",
+      "lat": 29,
+      "lon": -13.7,
+      "status": "measured",
+      "tile": "N29W014",
+      "windowCentre": {
+        "lat": 29.0836,
+        "lon": -13.7,
+        "offsetKm": 9.3
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 27
+      },
+      "measured": {
+        "slopeMeanDeg": 4.5,
+        "slopeMaxDeg": 73.04,
+        "triMeanM": 1.9,
+        "reliefM": 970,
+        "elevationMeanM": 76,
+        "elevationStdM": 173.2,
+        "elevationMinM": -432,
+        "elevationMaxM": 538,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-008",
+      "siteName": "Craters of the Moon, Idaho, USA",
+      "lat": 43.42,
+      "lon": -113.52,
+      "status": "measured",
+      "tile": "N43W114",
+      "windowCentre": {
+        "lat": 43.42,
+        "lon": -113.52,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 22.4
+      },
+      "measured": {
+        "slopeMeanDeg": 3.48,
+        "slopeMaxDeg": 55.9,
+        "triMeanM": 1.3,
+        "reliefM": 714,
+        "elevationMeanM": 1738,
+        "elevationStdM": 80.6,
+        "elevationMinM": 1628,
+        "elevationMaxM": 2342,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-009",
+      "siteName": "Qaidam Basin, Tibetan Plateau, China",
+      "lat": 37.5,
+      "lon": 94,
+      "status": "measured",
+      "tile": "N37E094",
+      "windowCentre": {
+        "lat": 37.5,
+        "lon": 94.0836,
+        "offsetKm": 7.4
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 24.5
+      },
+      "measured": {
+        "slopeMeanDeg": 2.03,
+        "slopeMaxDeg": 35.34,
+        "triMeanM": 0.8,
+        "reliefM": 111,
+        "elevationMeanM": 2697,
+        "elevationStdM": 13.4,
+        "elevationMinM": 2657,
+        "elevationMaxM": 2768,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-010",
+      "siteName": "Mojave Desert, California, USA",
+      "lat": 35,
+      "lon": -116,
+      "status": "measured",
+      "tile": "N35W116",
+      "windowCentre": {
+        "lat": 35.0836,
+        "lon": -115.9164,
+        "offsetKm": 12
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 25.3
+      },
+      "measured": {
+        "slopeMeanDeg": 6.46,
+        "slopeMaxDeg": 65.15,
+        "triMeanM": 2.7,
+        "reliefM": 997,
+        "elevationMeanM": 515,
+        "elevationStdM": 188.3,
+        "elevationMinM": 296,
+        "elevationMaxM": 1293,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    },
+    {
+      "siteId": "site-011",
+      "siteName": "Askja, Iceland",
+      "lat": 65.03,
+      "lon": -16.75,
+      "status": "outside_coverage",
+      "tile": "N65W017",
+      "reason": "SRTM covers 56°S to 60°N and this site is at 65.0°N, so no tile in the set reaches it. The fixture's hand-set values stand unmeasured for this site."
+    },
+    {
+      "siteId": "site-012",
+      "siteName": "Lava Beds National Monument, California, USA",
+      "lat": 41.71,
+      "lon": -121.51,
+      "status": "measured",
+      "tile": "N41W122",
+      "windowCentre": {
+        "lat": 41.71,
+        "lon": -121.51,
+        "offsetKm": 0
+      },
+      "cellMetres": {
+        "northSouth": 30.9,
+        "eastWest": 23
+      },
+      "measured": {
+        "slopeMeanDeg": 4.54,
+        "slopeMaxDeg": 46.16,
+        "triMeanM": 1.7,
+        "reliefM": 975,
+        "elevationMeanM": 1496,
+        "elevationStdM": 211.6,
+        "elevationMinM": 1250,
+        "elevationMaxM": 2225,
+        "validPct": 100,
+        "windowCells": 601
+      }
+    }
+  ]
+}
