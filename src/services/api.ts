@@ -81,9 +81,9 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
 const normaliseName = (value: string) =>
   value
     .toLowerCase()
-    .replace(/([^)]*)/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
     .replace(/[^a-z ]/g, ' ')
-    .replace(/s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 
 const ENGINE_BY_SITE = engineComparisons.map((comparison) => ({
