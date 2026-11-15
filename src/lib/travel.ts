@@ -182,6 +182,40 @@ export function flightsToUrl(origin: Origin, code: string): string {
   return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${origin.label} to ${code}`)}`;
 }
 
+/**
+ * Where a flight stops being optional.
+ *
+ * 900 km is about a long day and a half on the road for a party carrying kit,
+ * and it is roughly the point past which flying is the sane leg rather than the
+ * expensive one. It is a stated threshold, not a measurement, so the plan says
+ * which side of it the trip falls on instead of implying the road was priced.
+ */
+export const LOCAL_ROAD_KM = 900;
+
+/** True when the trip is a flight rather than a drive. */
+export function needsFlight(origin: Origin, site: Place): boolean {
+  return distanceKm(origin, site) > LOCAL_ROAD_KM;
+}
+
+/**
+ * The fare search, carrying the date and the reader's own preference.
+ *
+ * Google Flights is the quote; asking it about "cheapest" or "fastest" on a
+ * named day is as close as a link can get to the question a party is asking.
+ * Nothing here is a price — the page never claims one.
+ */
+export function datedFlightsUrl(
+  origin: Origin,
+  code: string,
+  date: string,
+  prefer: 'cheaper' | 'faster',
+): string {
+  const words = prefer === 'cheaper' ? 'Cheapest flights' : 'Fastest flights';
+  return `https://www.google.com/travel/flights?q=${encodeURIComponent(
+    `${words} from ${origin.label} to ${code} on ${date}`,
+  )}`;
+}
+
 export function routeLinks(origin: Origin, site: Place): RouteLinks {
   const access = travelAccessOf(site);
   const code = access.gateway?.code ?? null;
