@@ -111,6 +111,18 @@ export default function App() {
   const [bootHeld, setBootHeld] = useState(false);
 
   const [target, setTarget] = useState<Target>(() => (readParam('target') === 'mars' ? 'mars' : 'moon'));
+
+  /**
+   * The shell's palette follows the target.
+   *
+   * Moon runs on the cyan signal the interface was built around; Mars re-points
+   * the same tokens at the planet's own colours. Set on the document element so
+   * the body's background gradient and anything portalled outside the shell
+   * follow as well.
+   */
+  useEffect(() => {
+    document.documentElement.dataset.target = target;
+  }, [target]);
   const [terrain, setTerrain] = useState<TerrainType | 'all'>(() => {
     const value = readParam('terrain');
     const known = Object.keys(TERRAIN_LABELS) as TerrainType[];

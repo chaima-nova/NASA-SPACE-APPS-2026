@@ -23,7 +23,11 @@
   --ink-3: #64718a;
 
   --signal: #22d3ee;
+  /* The accent as channels, for the glows CSS writes as rgba(). Re-pointed with
+     the signal when the target changes, so every halo follows the palette. */
+  --signal-rgb: 34 211 238;
   --moon: #7dd3fc;
+  --moon-rgb: 125 211 252;
   --mars: #fb923c;
   --amber: #fbbf24;
   --danger: #f87171;
@@ -33,6 +37,38 @@
 
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-synthesis-weight: none;
+}
+
+/**
+ * Mars palette.
+ *
+ * The shell is tuned for the Moon: cyan signal, cool blue-black surfaces. When
+ * the target switches to Mars the same tokens are re-pointed at the planet's own
+ * colours — oxidised-iron accent, dustier black, warm hairlines — so the whole
+ * interface changes with the target rather than only the scores. Roles are
+ * unchanged (signal = interactive accent, line = hairline, ink = text) and each
+ * pairing keeps the contrast it had, so no layout needed touching.
+ *
+ * #fb923c is the catalogue's own Mars colour (--mars), so the accent is borrowed
+ * rather than invented; --moon stays blue on purpose, since Moon fit is still a
+ * live comparison on a Mars run.
+ */
+:root[data-target='mars'] {
+  --bg: #0b0705;
+  --surface: #120c09;
+  --surface-2: #1a110c;
+  --surface-3: #231610;
+
+  --line: #2b1a13;
+  --line-2: #3f2719;
+  --line-3: #5a3524;
+
+  --ink: #f7ece3;
+  --ink-2: #c2a692;
+  --ink-3: #8d7364;
+
+  --signal: #fb923c;
+  --signal-rgb: 251 146 60;
 }
 
 * {
@@ -49,7 +85,7 @@ body {
   color: var(--ink);
   background-color: var(--bg);
   background-image:
-    radial-gradient(1100px 620px at 16% -12%, rgba(34, 211, 238, 0.1), transparent 62%),
+    radial-gradient(1100px 620px at 16% -12%, rgba(var(--signal-rgb), 0.1), transparent 62%),
     radial-gradient(900px 520px at 92% -6%, rgba(251, 146, 60, 0.06), transparent 60%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
@@ -71,7 +107,7 @@ body::before {
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.28);
+  background: rgba(var(--signal-rgb), 0.28);
   color: #fff;
 }
 
@@ -120,7 +156,7 @@ body::before {
   margin: 0 -22px 16px;
   padding: 0 22px;
   background: rgba(5, 8, 12, 0.78);
-  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  border-bottom: 1px solid rgba(var(--signal-rgb), 0.2);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(18px) saturate(1.1);
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
@@ -138,9 +174,9 @@ body::before {
   height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: radial-gradient(circle at 32% 28%, #e4f4ff 0%, #7dd3fc 30%, #2f6f9f 64%, #081521 100%);
+  background: radial-gradient(circle at 32% 28%, #e4f4ff 0%, var(--moon) 30%, #2f6f9f 64%, #081521 100%);
   box-shadow:
-    0 0 20px rgba(125, 211, 252, 0.28),
+    0 0 20px rgba(var(--moon-rgb), 0.28),
     inset -7px -5px 12px rgba(3, 9, 16, 0.75);
 }
 
@@ -172,7 +208,7 @@ body::before {
 
 .search:focus-within {
   border-color: #2b6474;
-  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.22);
+  box-shadow: 0 0 0 1px rgba(var(--signal-rgb), 0.22);
 }
 
 .search-icon {
@@ -384,7 +420,7 @@ body::before {
 
 .chip-link:hover {
   color: var(--signal);
-  border-color: rgba(34, 211, 238, 0.45);
+  border-color: rgba(var(--signal-rgb), 0.45);
 }
 
 .chips-wrap {
@@ -612,8 +648,8 @@ body::before {
 }
 
 .site-row.is-selected {
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.11), rgba(34, 211, 238, 0.02) 62%, transparent);
-  border-color: rgba(34, 211, 238, 0.22);
+  background: linear-gradient(90deg, rgba(var(--signal-rgb), 0.11), rgba(var(--signal-rgb), 0.02) 62%, transparent);
+  border-color: rgba(var(--signal-rgb), 0.22);
 }
 
 .site-rank {
@@ -956,7 +992,7 @@ body::before {
 
 .globe-toggle.is-on {
   color: var(--signal);
-  border-color: rgba(34, 211, 238, 0.45);
+  border-color: rgba(var(--signal-rgb), 0.45);
 }
 
 /* Small dot that reads as a cloud when the layer is on. */
@@ -1059,7 +1095,7 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 0.13em;
   color: var(--signal);
-  border: 1px solid rgba(34, 211, 238, 0.32);
+  border: 1px solid rgba(var(--signal-rgb), 0.32);
   border-radius: 3px;
 }
 
@@ -1486,7 +1522,7 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--signal);
-  border: 1px solid rgba(34, 211, 238, 0.26);
+  border: 1px solid rgba(var(--signal-rgb), 0.26);
   border-radius: 3px;
 }
 
@@ -1776,7 +1812,7 @@ body::before {
 
 .terrain-toggle.is-on {
   color: var(--signal);
-  border-color: rgba(34, 211, 238, 0.45);
+  border-color: rgba(var(--signal-rgb), 0.45);
 }
 
 .overlay-dot {
@@ -1889,7 +1925,7 @@ body::before {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid rgba(34, 211, 238, 0.18);
+  border: 2px solid rgba(var(--signal-rgb), 0.18);
   border-top-color: var(--signal);
   animation: spin 0.9s linear infinite;
 }
@@ -1914,8 +1950,8 @@ body::before {
 .site-actions .compare-open {
   color: var(--ink);
   font-weight: 600;
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.16), rgba(34, 211, 238, 0.05));
-  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: linear-gradient(180deg, rgba(var(--signal-rgb), 0.16), rgba(var(--signal-rgb), 0.05));
+  border: 1px solid rgba(var(--signal-rgb), 0.35);
 }
 
 .btn.see-site {
@@ -1947,8 +1983,8 @@ body::before {
 .site-actions .compare-open:hover {
   color: #fff;
   border-color: var(--signal);
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.26), rgba(34, 211, 238, 0.08));
-  box-shadow: 0 6px 22px -12px rgba(34, 211, 238, 0.6);
+  background: linear-gradient(180deg, rgba(var(--signal-rgb), 0.26), rgba(var(--signal-rgb), 0.08));
+  box-shadow: 0 6px 22px -12px rgba(var(--signal-rgb), 0.6);
 }
 
 .btn.see-site:disabled {
@@ -2438,7 +2474,7 @@ body::before {
   width: 9px;
   height: 9px;
   border-radius: 2px;
-  background: linear-gradient(135deg, #2b4a63, #7dd3fc);
+  background: linear-gradient(135deg, #2b4a63, var(--moon));
   opacity: 0.4;
   transition: opacity 0.15s var(--ease);
 }
@@ -2895,7 +2931,7 @@ body::before {
 
 .chip-static.chip-moon {
   color: var(--moon);
-  border-color: rgba(125, 211, 252, 0.4);
+  border-color: rgba(var(--moon-rgb), 0.4);
 }
 
 .chip-static.chip-mars {
@@ -3515,7 +3551,7 @@ body::before {
 
 .compare-thumb.is-active {
   border-color: var(--signal);
-  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 0 1px rgba(var(--signal-rgb), 0.4);
 }
 
 /* Reported markers read as "not a score" wherever they appear. */
@@ -3660,7 +3696,7 @@ body::before {
    the panel once can see at a glance that a setting is still active. */
 .a11y-fab.has-active {
   box-shadow:
-    0 0 0 3px rgba(34, 211, 238, 0.3),
+    0 0 0 3px rgba(var(--signal-rgb), 0.3),
     0 14px 34px -14px #000;
 }
 
@@ -3782,7 +3818,7 @@ body::before {
 }
 
 .a11y-mode.is-on {
-  background: rgba(34, 211, 238, 0.1);
+  background: rgba(var(--signal-rgb), 0.1);
   border-color: var(--signal);
 }
 
@@ -3943,7 +3979,7 @@ body::before {
 }
 
 .a11y-switch.is-on .a11y-switch-track {
-  background: rgba(34, 211, 238, 0.24);
+  background: rgba(var(--signal-rgb), 0.24);
   border-color: var(--signal);
 }
 
@@ -4215,7 +4251,7 @@ html[data-a11y-motion='reduced'] *::after {
   height: 2px;
   border-radius: 2px;
   background: var(--signal);
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 10px rgba(var(--signal-rgb), 0.55);
 }
 
 /* =============================================================================
@@ -4233,7 +4269,7 @@ html[data-a11y-motion='reduced'] *::after {
   padding: clamp(38px, 6.5vw, 84px) clamp(20px, 5vw, 64px) clamp(32px, 5vw, 56px);
   /* Fallback while the photograph decodes, and what a failed request leaves. */
   background:
-    radial-gradient(900px 420px at 78% 10%, rgba(34, 211, 238, 0.14), transparent 66%),
+    radial-gradient(900px 420px at 78% 10%, rgba(var(--signal-rgb), 0.14), transparent 66%),
     radial-gradient(700px 380px at 10% 96%, rgba(251, 146, 60, 0.09), transparent 62%),
     linear-gradient(180deg, #070c12, #05080c);
   border: 1px solid var(--line-2);
@@ -4470,7 +4506,7 @@ html[data-a11y-motion='reduced'] *::after {
   height: 9px;
   background: var(--signal);
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+  box-shadow: 0 0 0 3px rgba(var(--signal-rgb), 0.18);
 }
 
 .home-step-n {
@@ -4645,7 +4681,7 @@ html[data-a11y-motion='reduced'] *::after {
   overflow: hidden;
   padding: clamp(38px, 6.5vw, 78px) clamp(20px, 5vw, 64px) calc(clamp(38px, 6.5vw, 78px) + 5px);
   background:
-    radial-gradient(760px 360px at 82% 8%, rgba(125, 211, 252, 0.13), transparent 66%),
+    radial-gradient(760px 360px at 82% 8%, rgba(var(--moon-rgb), 0.13), transparent 66%),
     radial-gradient(620px 340px at 6% 96%, rgba(251, 146, 60, 0.07), transparent 62%),
     linear-gradient(180deg, #070c12, #05080c);
   border: 1px solid var(--line-2);
@@ -5859,7 +5895,7 @@ html[data-a11y-motion='reduced'] *::after {
   width: 100%;
   height: 100%;
   fill: currentColor;
-  filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.5));
+  filter: drop-shadow(0 0 7px rgba(var(--signal-rgb), 0.5));
 }
 
 /* The contrail, so the plane is travelling rather than sliding. */
@@ -5871,7 +5907,7 @@ html[data-a11y-motion='reduced'] *::after {
   width: 60px;
   height: 2px;
   margin-top: -1px;
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0), rgba(34, 211, 238, 0.55));
+  background: linear-gradient(90deg, rgba(var(--signal-rgb), 0), rgba(var(--signal-rgb), 0.55));
 }
 
 @keyframes trip-fly {
@@ -6201,7 +6237,7 @@ a.compare-thumb {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(780px 440px at 50% 24%, rgba(34, 211, 238, 0.15), transparent 62%),
+    radial-gradient(780px 440px at 50% 24%, rgba(var(--signal-rgb), 0.15), transparent 62%),
     var(--bg);
   opacity: 1;
   transition: opacity 0.42s var(--ease);
@@ -6233,7 +6269,7 @@ a.compare-thumb {
 .boot-ring {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  border: 1px solid rgba(var(--signal-rgb), 0.3);
   border-radius: 50%;
   animation: boot-ring 2.8s var(--ease) infinite;
 }
@@ -6247,14 +6283,14 @@ a.compare-thumb {
   bottom: 20px;
   width: 2px;
   height: 64px;
-  background: linear-gradient(to top, transparent, rgba(34, 211, 238, 0.8));
+  background: linear-gradient(to top, transparent, rgba(var(--signal-rgb), 0.8));
   animation: boot-trail 1.7s linear infinite;
 }
 
 .boot-ship {
   width: 72px;
   height: 96px;
-  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.35));
+  filter: drop-shadow(0 0 14px rgba(var(--signal-rgb), 0.35));
   animation: boot-climb 2.4s var(--ease) infinite;
 }
 
@@ -6436,7 +6472,7 @@ a.compare-thumb {
 }
 
 .trip-option:hover {
-  border-color: rgba(34, 211, 238, 0.4);
+  border-color: rgba(var(--signal-rgb), 0.4);
 }
 
 .trip-option:focus-visible {
@@ -6445,9 +6481,9 @@ a.compare-thumb {
 }
 
 .trip-option[aria-pressed='true'] {
-  background: rgba(34, 211, 238, 0.09);
+  background: rgba(var(--signal-rgb), 0.09);
   border-color: var(--signal);
-  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(var(--signal-rgb), 0.4);
 }
 
 /* One option only, when the road is not plausible: the card keeps the full
