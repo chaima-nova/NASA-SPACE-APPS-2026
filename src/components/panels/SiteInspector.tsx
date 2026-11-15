@@ -4,7 +4,7 @@ import type {
   EvidenceState,
   Prediction,
 } from '../../data-contracts/types';
-import { photosFor } from '../../data/sitePhotos';
+import { photosFor, photoUrl } from '../../data/sitePhotos';
 import { terrainMeasurementFor } from '../../services/pipeline';
 import { SiteCommunity, type CommunityActions } from './SiteCommunity';
 import { scoreColor } from '../../lib/colors';
@@ -140,7 +140,8 @@ export function SiteInspector({
   const siteDatasets = datasetsFor(prediction, datasets);
   const moonFit = fitFor(prediction, 'moon');
   const marsFit = fitFor(prediction, 'mars');
-  const photoCount = photosFor(prediction).length;
+  const photos = photosFor(prediction);
+  const photoCount = photos.length;
   const terrain = terrainMeasurementFor(prediction.pointId);
 
   return (
@@ -285,20 +286,38 @@ export function SiteInspector({
       <div className="site-actions">
         <button
           type="button"
-          className="btn see-site"
+          className={photos.length > 0 ? 'btn see-site has-photo' : 'btn see-site'}
           onClick={onSeeSite}
           disabled={photoCount === 0}
+          /* The first frame is the card's background, faded behind the label,
+             so the row carries the ground itself rather than a picture icon
+             standing in for it. The gradient keeps the label readable over a
+             bright frame; the gallery prints the credit and licence in full,
+             and the tooltip names the photographer for the frame behind it. */
+          style={
+            photos.length > 0
+              ? {
+                  backgroundImage:
+                    'linear-gradient(90deg, rgba(6, 10, 18, 0.95), rgba(6, 10, 18, 0.82) 52%, rgba(6, 10, 18, 0.75)), ' +
+                    'url(' + photoUrl(photos[0], 640) + ')',
+                }
+              : undefined
+          }
           title={
             photoCount === 0
               ? 'No field photography catalogued for this site yet'
-              : `Open ${photoCount} field photos of ${prediction.siteName}`
+              : `Open ${photoCount} field photos of ${prediction.siteName} — first frame by ${photos[0].credit} (${photos[0].license})`
           }
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="see-site-icon">
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-            <circle cx="8.5" cy="10" r="1.6" />
-            <path d="M21 15.5 16 11l-5.5 5.5L8 14l-5 5" />
-          </svg>
+          {/* The glyph is the fallback, not the rule: with photography the frame
+              itself does this job and a second picture mark on top of it is noise. */}
+          {photos.length === 0 ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="see-site-icon">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <circle cx="8.5" cy="10" r="1.6" />
+              <path d="M21 15.5 16 11l-5.5 5.5L8 14l-5 5" />
+            </svg>
+          ) : null}
           <span className="see-site-label">See Site</span>
           <span className="see-site-meta">
             {photoCount > 0 ? `${photoCount} field photos` : 'No photos yet'}
