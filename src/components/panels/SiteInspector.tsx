@@ -1,5 +1,11 @@
-import type { CommunityState, DataSource, Prediction } from '../../data-contracts/types';
+import type {
+  CommunityState,
+  DataSource,
+  EvidenceState,
+  Prediction,
+} from '../../data-contracts/types';
 import { photosFor } from '../../data/sitePhotos';
+import { terrainMeasurementFor } from '../../services/pipeline';
 import { SiteCommunity, type CommunityActions } from './SiteCommunity';
 import { scoreColor } from '../../lib/colors';
 import { sourceUrl } from '../../lib/sourceLinks';
@@ -41,6 +47,20 @@ interface SiteInspectorProps {
   expanded: boolean;
   onToggleExpand: () => void;
 }
+
+/**
+ * The engine's four states as a reader should meet them.
+ *
+ * The data-contract words are kept verbatim in the payload and the interface
+ * says what they mean: `insufficient_evidence` is "incomplete", not "bad", and
+ * the difference is the whole point of carrying the state rather than a number.
+ */
+const EVIDENCE_LABELS: Record<EvidenceState, string> = {
+  similar: 'Evidence: similar',
+  different: 'Evidence: different',
+  insufficient_evidence: 'Evidence: incomplete',
+  not_comparable: 'Evidence: not comparable',
+};
 
 function Meter({
   label,
@@ -121,6 +141,7 @@ export function SiteInspector({
   const moonFit = fitFor(prediction, 'moon');
   const marsFit = fitFor(prediction, 'mars');
   const photoCount = photosFor(prediction).length;
+  const terrain = terrainMeasurementFor(prediction.pointId);
 
   return (
     <div className="dossier">
@@ -195,6 +216,71 @@ export function SiteInspector({
       </div>
 
       <p className="verdict">{verdictOf(prediction, target)}</p>
+
+      {/* The engine's state, where one exists. The rail carried this badge but
+          the opened dossier did not, so a reader who clicked through to make the
+          decision met the score without its qualifier. */}
+      {prediction.evidence ? (
+        <div className={`evidence-row is-${prediction.evidence}`}>
+          <span className="evidence-badge">{EVIDENCE_LABELS[prediction.evidence]}</span>
+          {prediction.evidenceNote ? (
+            <p className="evidence-text">{prediction.evidenceNote}</p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* The ground under the site, measured from SRTM rather than typed into a
+          fixture. Only the curated sites have a row; a screened cell carries its
+          own measurement in its evidence note instead. */}
+      {terrain ? (
+        terrain.status === 'measured' &&
+        terrain.measured &&
+        terrain.windowCentre &&
+        terrain.cellMetres ? (
+          <div>
+            <h3 className="section-title">
+              Measured ground <span className="section-count">SRTM {terrain.tile}</span>
+            </h3>
+            <dl className="facts">
+              <div>
+                <dt>Mean slope</dt>
+                <dd>{terrain.measured.slopeMeanDeg}°</dd>
+              </div>
+              <div>
+                <dt>Steepest cell</dt>
+                <dd>{terrain.measured.slopeMaxDeg}°</dd>
+              </div>
+              <div>
+                <dt>Roughness (TRI)</dt>
+                <dd>{terrain.measured.triMeanM} m</dd>
+              </div>
+              <div>
+                <dt>Relief</dt>
+                <dd>{Math.round(terrain.measured.reliefM).toLocaleString('en-US')} m</dd>
+              </div>
+            </dl>
+            <p className="measured-note">
+              {`Measured at ${terrain.cellMetres.northSouth} m over a ${((terrain.measured.windowCells * terrain.cellMetres.northSouth) / 1000).toFixed(1)} km window ` +
+                `${
+                  terrain.windowCentre.offsetKm >= 0.5
+                    ? `${terrain.windowCentre.offsetKm} km from the site coordinate`
+                    : 'centred on the site coordinate'
+                }. Slope, roughness and relief only — aridity, dust and mineralogy stay model assumptions.`}
+            </p>
+          </div>
+        ) : (
+          <p className="measured-note">{terrain.reason}</p>
+        )
+      ) : null}
+
+      {/* One honest sentence rather than a half-model. A south polar site lives
+          or dies on lighting, and nothing in this build can compute it. */}
+      {target === 'moon' ? (
+        <p className="dossier-caveat">
+          Illumination is not part of this score: a permanent south polar base depends on
+          horizon-scale sunlight and direct Earth visibility, and this build models neither.
+        </p>
+      ) : null}
 
       <div className="site-actions">
         <button
