@@ -47,6 +47,10 @@ export function TeamPage({ still }: TeamPageProps) {
                     {member.name}{' '}
                     {member.owner ? <span className="team-owner">Team Owner</span> : null}
                   </h4>
+                  {/* The discipline comes before the remit: it says what each
+                      person reads the problem through, which is what a judge
+                      scanning a mixed team looks for. */}
+                  <p className="team-field">{member.field}</p>
                   <p className="team-role">{member.role}</p>
                 </div>
               </div>

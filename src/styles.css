@@ -30,6 +30,11 @@
   --moon-rgb: 125 211 252;
   --mars: #fb923c;
   --amber: #fbbf24;
+  /* The same amber as channels. The screening tag draws its outline with
+     `rgb(var(--amber-rgb) / a)`, which needs channels rather than a hex, and
+     that keeps the badge inside the palette instead of carrying a colour of
+     its own. */
+  --amber-rgb: 251 191 36;
   --danger: #f87171;
 
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1190,8 +1195,18 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 0.13em;
   color: var(--signal);
-  border: 1px solid rgba(var(--signal-rgb), 0.32);
+  border: 1px solid rgb(var(--signal-rgb) / 0.32);
   border-radius: 3px;
+}
+
+/* The screening tag reads amber rather than the target accent: it marks who
+   found the window, not what the window scored, and amber is the palette's
+   provenance colour. The border is repeated in full here on purpose — the
+   shorthand on `.pill` above was written for a channels variable that this
+   rule cannot assume, and a colour alone would leave a border with no width. */
+.pill.site-found {
+  color: var(--amber);
+  border: 1px solid rgb(var(--amber-rgb) / 0.45);
 }
 
 .split,
@@ -7575,4 +7590,18 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 
 .dimension.is-muted .sim-value {
   color: var(--ink-2);
+}
+
+/* Field of study, directly under the name.
+
+   The role beneath it is the team's own wording for what each person owns;
+   this line is the discipline they bring to it. Mono at ink-2 keeps the name the
+   loudest thing in the card while still making the mix of aerospace, robotics,
+   control, geospatial and machine-learning work legible at a glance. */
+.team-field {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-2);
+  margin: 1px 0 0;
 }

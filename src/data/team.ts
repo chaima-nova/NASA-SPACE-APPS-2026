@@ -13,6 +13,15 @@
 
 export interface TeamMember {
   name: string;
+  /**
+   * The field each member studies, spelled out rather than abbreviated.
+   *
+   * The team wrote these as "CSE", "CSE (AI ML)", "Control (GNC)" and
+   * "Robotics (ST)" in the group chat, which is shorthand to anyone outside the
+   * course. Spelled out, a judge sees the mix of aerospace, robotics, control,
+   * geospatial and machine-learning work in one pass.
+   */
+  field: string;
   /** The role or domain, as the team names it. */
   role: string;
   /** Marks the team owner; the page badges the name rather than restating it. */
@@ -24,27 +33,32 @@ export interface TeamMember {
 export const TEAM: readonly TeamMember[] = [
   {
     name: 'Chaima Hafsi',
+    field: 'Robotics (Science and Technology)',
     role: 'Product Direction & System Integration',
     owner: true,
     description: 'Product architecture, discovery workflow, cross-team coordination, system integration, storytelling.',
   },
   {
     name: 'Abid T.S',
+    field: 'Computer Science and Engineering',
     role: 'Geospatial Data & GIS',
     description: 'Dataset availability, geographic coverage, spatial harmonisation, candidate mapping.',
   },
   {
     name: 'Zehra Merve Camci',
+    field: 'Guidance, Navigation and Control',
     role: 'Scientific Criteria & Validation',
     description: 'Planetary criteria, scientific comparability, reference literature, validation methodology.',
   },
   {
     name: 'Harshil P',
+    field: 'Computer Science and Engineering (Artificial Intelligence and Machine Learning)',
     role: 'Machine Learning & AI',
     description: 'Feature analysis, screening algorithms, candidate-detection models, performance evaluation.',
   },
   {
     name: 'Jasmine Jowahir',
+    field: 'Aerospace Engineering',
     role: 'Frontend & User Experience',
     description: 'Analog Atlas visual UI, Analog Quest flow, Analog DNA profiles, candidate investigation UX.',
   },
