@@ -2038,11 +2038,12 @@ body::before {
    one treatment: the comparison button used to read as a dull secondary
    control sitting under the vivid one. */
 .btn.see-site,
-.site-actions .compare-open {
+.site-actions .compare-open,
+.dossier-actions .compare-open {
   color: var(--ink);
   font-weight: 600;
-  background: linear-gradient(180deg, rgba(var(--signal-rgb), 0.16), rgba(var(--signal-rgb), 0.05));
-  border: 1px solid rgba(var(--signal-rgb), 0.35);
+  background: linear-gradient(180deg, rgb(var(--signal-rgb) / 0.16), rgb(var(--signal-rgb) / 0.05));
+  border: 1px solid rgb(var(--signal-rgb) / 0.35);
 }
 
 .btn.see-site {
@@ -2051,6 +2052,7 @@ body::before {
   display: flex;
   align-items: center;
   gap: 9px;
+  min-height: 2.75rem;
   margin: 2px 0 0;
   padding: 9px 12px;
   text-align: left;
@@ -2064,9 +2066,9 @@ body::before {
   display: flex;
   align-items: center;
   gap: 9px;
-  min-height: 2.25rem;
-  padding: 8px 12px;
-  font-size: 0.78rem;
+  min-height: 2.5rem;
+  padding: 9px 12px;
+  font-size: 0.9rem;
   text-align: left;
 }
 
@@ -2074,8 +2076,8 @@ body::before {
 .site-actions .compare-open:hover {
   color: #fff;
   border-color: var(--signal);
-  background: linear-gradient(180deg, rgba(var(--signal-rgb), 0.26), rgba(var(--signal-rgb), 0.08));
-  box-shadow: 0 6px 22px -12px rgba(var(--signal-rgb), 0.6);
+  background: linear-gradient(180deg, rgb(var(--signal-rgb) / 0.26), rgb(var(--signal-rgb) / 0.08));
+  box-shadow: 0 6px 22px -12px rgb(var(--signal-rgb) / 0.6);
 }
 
 .btn.see-site:disabled {
@@ -2083,8 +2085,24 @@ body::before {
   cursor: not-allowed;
 }
 
+/* The site's first field frame, faded into the card behind the label, so the
+   row reads as "this site has ground photography" before the words are read.
+   The gradient in the inline style keeps the label legible over a bright
+   frame; the gallery is where the credit and licence are printed in full. */
+.btn.see-site.has-photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* A picture behind text is the first thing high contrast should drop. */
+html[data-a11y-contrast='on'] .btn.see-site.has-photo {
+  background-image: none !important;
+}
+
 /* Both action cards carry a 16 px line icon drawn in the current colour, so they
-   wear one rule rather than two that can drift. */
+   wear one rule rather than two that can drift. See Site only draws its glyph
+   when the site has no photography to stand behind the label instead. */
 .see-site-icon,
 .compare-icon {
   flex: none;
@@ -2108,7 +2126,7 @@ body::before {
 .see-site-label {
   flex: none;
   white-space: nowrap;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
 }
 
 /* The arrow carries the "comparison" in the comparison button, so it reads a
