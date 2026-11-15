@@ -17,10 +17,12 @@ const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
  *
  * Mars opens on the dunes because that is the ground a Mars analogue stands in
  * for; brushing the frame then reveals the mountains behind them, which is the
- * landscape the rover sites actually sit against. The file is a drop-in: if it
- * is absent the painter decodes nothing and the dune frame simply stays.
+ * landscape the rover sites actually sit against. There is no second mountain
+ * photograph in the repository, so this is the arctic ridge already used as the
+ * Moon cover, mirrored when it is drawn: same skyline, opposite way round, so the
+ * two covers never read as the same picture.
  */
-const RIDGE_PHOTO = `${import.meta.env.BASE_URL}home/mars-ridge.jpg`;
+const RIDGE_PHOTO = ARCTIC_PHOTO;
 
 /**
  * Which photograph is the cover, by target.
@@ -191,7 +193,20 @@ export function HomePage({ sites, datasets, still, target }: HomePageProps) {
       // Centring the desert instead left the two frames ~10 px apart once the
       // hero was wider than 16:9, which put every peak and dune ripple just off
       // the ice feature it is meant to replace.
-      flatCtx.drawImage(image, (width - dw) / 2, (height - dh) * 0.46, dw, dh);
+      const dx = (width - dw) / 2;
+      const dy = (height - dh) * 0.46;
+      if (target === 'mars') {
+        // The ridge is the Moon's own mountain frame, so it is drawn mirrored:
+        // hover Mars and the same skyline comes back the other way round rather
+        // than repeating the picture already seen on the other cover.
+        flatCtx.save();
+        flatCtx.translate(width, 0);
+        flatCtx.scale(-1, 1);
+        flatCtx.drawImage(image, dx, dy, dw, dh);
+        flatCtx.restore();
+        return;
+      }
+      flatCtx.drawImage(image, dx, dy, dw, dh);
     };
 
     const resize = () => {

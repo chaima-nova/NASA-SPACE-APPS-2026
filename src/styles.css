@@ -4468,6 +4468,12 @@ html[data-a11y-motion='reduced'] *::after {
   opacity: 1;
 }
 
+/* The Mars brush lays down the same bright ridge as the Moon cover, but over a
+   warmer, darker dune field, so it is pulled down to sit in the same exposure. */
+:root[data-target='mars'] .home-photo-sand {
+  filter: brightness(0.82) saturate(1.02);
+}
+
 /* No pointer, no paint: the poster frame stays whole on touch screens. */
 @media (hover: none) {
   .home-photo-sand {
