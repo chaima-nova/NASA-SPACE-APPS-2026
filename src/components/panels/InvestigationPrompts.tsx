@@ -117,7 +117,6 @@ interface Track {
   /** Which of the five lines of investigation this is. */
   kind: string;
   title: string;
-  aim: string;
   /**
    * The row's own colour, as space-separated RGB components so CSS can hold it
    * at any alpha (`rgb(var(--tint) / 0.2)`). Five stacked rows need to stay
@@ -133,7 +132,6 @@ const TRACKS: Track[] = [
     kind: 'Line 01',
     title: 'Terrain & Mobility',
     tint: '34 211 238',
-    aim: 'Could this terrain help researchers investigate rover mobility on comparable landforms? Slope, roughness and elevation are what a navigation study would actually test.',
     prompts: [
       {
         question: 'Does the terrain stay inside a drive envelope cell by cell, or only on average?',
@@ -154,7 +152,6 @@ const TRACKS: Track[] = [
     kind: 'Line 02',
     title: 'Geology & Materials',
     tint: '251 191 36',
-    aim: 'Do the available geological maps or spectral observations indicate comparable surface materials? That question sets the follow-up observations any claim would need.',
     prompts: [
       {
         question: 'Does the geological crosswalk survive contact with the ground?',
@@ -177,7 +174,6 @@ const TRACKS: Track[] = [
     kind: 'Line 03',
     title: 'Environmental Processes',
     tint: '52 211 153',
-    aim: 'Could this location support studies of dust, wind, erosion, volcanic activity or sedimentation under Earth-comparable processes?',
     prompts: [
       {
         question: 'Is the site’s dust cycle regular enough to time an experiment against?',
@@ -200,7 +196,6 @@ const TRACKS: Track[] = [
     kind: 'Line 04',
     title: 'Resources & Subsurface',
     tint: '91 124 250',
-    aim: 'Are there measurable indicators relevant to water, ice, permafrost, caves or lava tubes? This is where the evidence boundary for resource claims runs.',
     prompts: [
       {
         question: 'What can the catalogue say about the subsurface at all?',
@@ -221,7 +216,6 @@ const TRACKS: Track[] = [
     kind: 'Line 05',
     title: 'Human & Robotic Prep',
     tint: '244 114 182',
-    aim: 'Could this environment support instrument testing, field procedures or robotics research? And which planetary conditions cannot transfer at all?',
     prompts: [
       {
         question: 'Which field procedures actually rehearse here?',
@@ -306,7 +300,6 @@ export function InvestigationPrompts({ prediction = null }: InvestigationPrompts
                   : undefined
               }
             >
-              <p className="investigation-aim">{track.aim}</p>
               <ol className="investigation-prompts">
                 {track.prompts.map((prompt) => (
                   <li key={prompt.question}>
