@@ -1439,6 +1439,32 @@ body::before {
   color: var(--ink);
 }
 
+/* The name is a link to the dataset's own page: provenance you can check. No
+   permanent underline — these cards are dense already — but hover and keyboard
+   focus put one back, and the arrow marks that it opens in a new tab. */
+.source-link {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.source-link:hover,
+.source-link:focus-visible {
+  color: var(--signal);
+  border-bottom-color: var(--signal);
+}
+
+.source-link:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.source-link-mark {
+  margin-left: 4px;
+  font-size: 0.62rem;
+  color: var(--ink-3);
+}
+
 .source-meta {
   margin-top: 3px;
   font-family: var(--mono);
