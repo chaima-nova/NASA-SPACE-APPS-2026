@@ -4752,7 +4752,7 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-3);
 }
 
-.home-features ul {
+.home-features > ul {
   display: grid;
   /* The same three-across rhythm as the steps above: one paragraph each, so
      they read in the same shape as the steps they follow. */
@@ -4763,7 +4763,7 @@ html[data-a11y-motion='reduced'] *::after {
   list-style: none;
 }
 
-.home-features li {
+.home-features > ul > li {
   padding-top: 16px;
   border-top: 1px solid var(--line-2);
 }
@@ -4826,7 +4826,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 @media (max-width: 900px) {
   .home-steps ol,
-  .home-features ul {
+  .home-features > ul {
     grid-template-columns: 1fr;
   }
 
@@ -7043,4 +7043,36 @@ a.compare-thumb {
 
 .scope-note strong {
   color: var(--ink);
+}
+
+
+/* Feature cards. The line is short by design and the tags carry the concrete
+   parts, so the grid can be scanned a row at a time rather than read as prose.
+   Both use tokens, so high contrast and the dyslexia face reach them. */
+.home-features .home-feature-line {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.home-feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-feature-tags li {
+  padding: 2px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  line-height: 1.6;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
 }

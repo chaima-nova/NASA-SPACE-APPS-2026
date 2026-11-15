@@ -74,47 +74,64 @@ interface HomePageProps {
  * not content.
  */
 /**
- * What this build actually does, beyond the three steps above it. Each line is a
- * feature that ships in this repository, named with the condition for saying so,
- * so the list is a promise that can be checked rather than a roadmap.
+ * What this build actually does, beyond the three steps above it. Each entry is
+ * a title, one line and a few tags rather than a paragraph: nine paragraphs in a
+ * three-column grid is a wall, and a reader skimming for the thing they care
+ * about should not have to read all nine to find it. The tags are the same claim
+ * in noun form, so the row can be scanned without reading the line at all.
  */
-const FEATURES: readonly [title: string, body: string][] = [
-  [
-    'Accessibility settings',
-    'Text size, high contrast, reduced motion, a dyslexia-friendly face and underlined links, plus a one-press mode that reads each site out and stops everything moving.',
-  ],
-  [
-    'Plan my trip',
-    'Picks between the ways of getting to a site and prices each one: kilometres, hours and a modelled cost range, with a live driving search beside the legs.',
-  ],
-  [
-    'Heat map and altitude map',
-    'The same ground in NASA land-surface temperature or in its own metres, each with a scale fitted to that patch and the numbers printed on it.',
-  ],
-  [
-    'Uncertainty, stated',
-    'Every engine check carries its verdict, and the ones that came back with insufficient evidence are named rather than averaged into the score.',
-  ],
-  [
-    'Export in one press',
-    'The ranking as an Excel workbook, a Google Sheets paste or a single HTML page that carries its own provenance line.',
-  ],
-  [
-    'Your own field notes',
-    'Write what you saw at a site, dated, and it sits with the measurements instead of in a chat thread.',
-  ],
-  [
-    'Submit an analogue site',
-    'Send in ground you think belongs on the list. It goes in as unreviewed, not as a prediction, and every report waits in one panel to revisit.',
-  ],
-  [
-    'Photographs from the ground',
-    'Attach a photo to a note so the ground is shown as well as described, and see what other field teams have posted.',
-  ],
-  [
-    'Upvotes on field notes',
-    'Agree with an observation and cast one vote for it per browser, so the notes that hold up rise above the rest.',
-  ],
+const FEATURES: readonly {
+  title: string;
+  /** One line, and only one: anything longer is a paragraph again. */
+  line: string;
+  /** Two or three nouns that name the concrete parts of the feature. */
+  tags: readonly string[];
+}[] = [
+  {
+    title: 'Accessibility settings',
+    line: 'Text size, contrast, motion and a reading mode.',
+    tags: ['High contrast', 'Dyslexia face', 'Read aloud'],
+  },
+  {
+    title: 'Plan my trip',
+    line: 'Route, hours and a modelled cost to each site.',
+    tags: ['Gateway airports', 'Flight or drive', 'Live links'],
+  },
+  {
+    title: 'Heat map and altitude map',
+    line: 'The same ground as temperature, or as elevation.',
+    tags: ['MODIS LST', 'SRTM metres', 'Fitted scale'],
+  },
+  {
+    title: 'Uncertainty, stated',
+    line: 'Engine verdicts sit beside the score, never inside it.',
+    tags: ['Four states', 'Gaps named', 'Not averaged'],
+  },
+  {
+    title: 'Export in one press',
+    line: 'The ranking out, carrying its own provenance line.',
+    tags: ['Excel', 'Google Sheets', 'One HTML page'],
+  },
+  {
+    title: 'Your own field notes',
+    line: 'Dated observations, kept beside the measurements.',
+    tags: ['Dated', 'Per site', 'In this browser'],
+  },
+  {
+    title: 'Submit an analogue site',
+    line: 'Send in ground you think belongs on the list.',
+    tags: ['Unreviewed', 'No auto-score', 'One panel'],
+  },
+  {
+    title: 'Photographs from the ground',
+    line: 'Attach a frame to a note, credited to its source.',
+    tags: ['Local upload', 'Downscaled', 'Credited'],
+  },
+  {
+    title: 'Upvotes on field notes',
+    line: 'Agree with an observation, once per browser.',
+    tags: ['One vote', 'Raises the note'],
+  },
 ];
 
 export function HomePage({ sites, datasets, still, target }: HomePageProps) {
@@ -509,13 +526,18 @@ export function HomePage({ sites, datasets, still, target }: HomePageProps) {
       <section className="home-features" aria-labelledby="home-features-title">
         <h3 id="home-features-title">Feature highlight</h3>
         <ul>
-          {FEATURES.map(([title, body], index) => (
+          {FEATURES.map(({ title, line, tags }, index) => (
             <li key={title}>
               <span className="home-feature-n" aria-hidden="true">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <h4>{title}</h4>
-              <p>{body}</p>
+              <p className="home-feature-line">{line}</p>
+              <ul className="home-feature-tags">
+                {tags.map((tag) => (
+                  <li key={tag}>{tag}</li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>
