@@ -13,12 +13,27 @@ import { routeHref } from '../../lib/route';
 const ARCTIC_PHOTO = `${import.meta.env.BASE_URL}home/arctic.jpg`;
 const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
 
+/**
+ * Which of the two committed photographs is the cover, by target.
+ *
+ * On the Moon the frame is the arctic one: ice in front, its dune analogue painted
+ * in under the pointer. On Mars the frame is already the dune field, with its
+ * ridge standing behind it, because that is the ground a Mars analogue is standing
+ * in for — a snowfield under an orange shell reads as the wrong planet. There is
+ * nothing left to paint in there, so the brush stays still.
+ */
+function coverFor(target: 'moon' | 'mars'): string {
+  return target === 'mars' ? DESERT_PHOTO : ARCTIC_PHOTO;
+}
+
 interface HomePageProps {
   /** Live counts, so the page never advertises numbers the app does not have. */
   sites: number;
   datasets: number;
   /** Reduced motion, from the accessibility settings. */
   still: boolean;
+  /** The selected analogue. The cover photograph follows it. */
+  target: 'moon' | 'mars';
 }
 
 /**
@@ -86,16 +101,19 @@ const FEATURES: readonly [title: string, body: string][] = [
   ],
 ];
 
-export function HomePage({ sites, datasets, still }: HomePageProps) {
+export function HomePage({ sites, datasets, still, target }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const sandRef = useRef<HTMLCanvasElement>(null);
   const clearTimer = useRef<number>(0);
+  const cover = coverFor(target);
 
   useEffect(() => {
     const canvas = sandRef.current;
     const hero = heroRef.current;
-    if (!canvas || !hero || still) return;
+    // Mars shows the dune field as the frame itself, so there is no second
+    // photograph to brush in; the handler simply has no painter to talk to.
+    if (!canvas || !hero || still || target === 'mars') return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -323,7 +341,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       observer.disconnect();
       delete (canvas as HTMLCanvasElement & { __painter?: typeof painter }).__painter;
     };
-  }, [still]);
+  }, [still, target]);
 
   const painter = () => {
     const canvas = sandRef.current as
@@ -381,7 +399,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
         <div className="home-photo" aria-hidden="true">
           <img
             className="home-photo-ice"
-            src={ARCTIC_PHOTO}
+            src={cover}
             alt=""
             decoding="async"
             draggable={false}

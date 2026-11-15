@@ -4388,6 +4388,12 @@ html[data-a11y-motion='reduced'] *::after {
   filter: brightness(0.8) contrast(1.04) saturate(0.95);
 }
 
+/* On Mars the frame is sand, which is a brighter field than the snow it replaces,
+   so it comes down further and keeps its warmth rather than being desaturated. */
+:root[data-target='mars'] .home-photo-ice {
+  filter: brightness(0.72) contrast(1.05) saturate(1.04);
+}
+
 /* The canvas the brush paints into. Its trails fade out when the pointer
    leaves, so the next sweep starts on clean ice. */
 .home-photo-sand {

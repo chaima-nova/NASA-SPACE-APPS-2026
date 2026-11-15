@@ -748,6 +748,7 @@ export default function App() {
 
       {route === 'home' ? (
         <HomePage
+          target={target}
           sites={predictions.length}
           datasets={datasets.length}
           still={a11y.reduceMotion}
