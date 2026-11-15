@@ -42,6 +42,50 @@ interface HomePageProps {
  * leave the still ice frame alone, which is why the effect is decoration and
  * not content.
  */
+/**
+ * What this build actually does, beyond the three steps above it. Each line is a
+ * feature that ships in this repository, named with the condition for saying so,
+ * so the list is a promise that can be checked rather than a roadmap.
+ */
+const FEATURES: readonly [title: string, body: string][] = [
+  [
+    'Accessibility settings',
+    'Text size, high contrast, reduced motion, a dyslexia-friendly face and underlined links, plus a one-press mode that reads each site out and stops everything moving.',
+  ],
+  [
+    'Plan my trip',
+    'Picks between the ways of getting to a site and prices each one: kilometres, hours and a modelled cost range, with a live driving search beside the legs.',
+  ],
+  [
+    'Heat map and altitude map',
+    'The same ground in NASA land-surface temperature or in its own metres, each with a scale fitted to that patch and the numbers printed on it.',
+  ],
+  [
+    'Uncertainty, stated',
+    'Every engine check carries its verdict, and the ones that came back with insufficient evidence are named rather than averaged into the score.',
+  ],
+  [
+    'Export in one press',
+    'The ranking as an Excel workbook, a Google Sheets paste or a single HTML page that carries its own provenance line.',
+  ],
+  [
+    'Your own field notes',
+    'Write what you saw at a site, dated, and it sits with the measurements instead of in a chat thread.',
+  ],
+  [
+    'Submit an analogue site',
+    'Send in ground you think belongs on the list. It goes in as unreviewed, not as a prediction, and every report waits in one panel to revisit.',
+  ],
+  [
+    'Photographs from the ground',
+    'Attach a photo to a note so the ground is shown as well as described, and see what other field teams have posted.',
+  ],
+  [
+    'Upvotes on field notes',
+    'Agree with an observation and cast one vote for it per browser, so the notes that hold up rise above the rest.',
+  ],
+];
+
 export function HomePage({ sites, datasets, still }: HomePageProps) {
   const stepsRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -353,7 +397,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
           </p>
           <div className="home-actions">
             <a className="home-cta" href={routeHref('solution')}>
-              Open the solution
+              Open the Solution
             </a>
             <button
               type="button"
@@ -362,7 +406,7 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
                 stepsRef.current?.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
               }
             >
-              How it works
+              How It Works
             </button>
           </div>
 
@@ -417,6 +461,20 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
             </p>
           </li>
         </ol>
+      </section>
+
+      {/* The features, under the steps that reach them. A grid rather than a
+          numbered list: these are parallel, not sequential. */}
+      <section className="home-features" aria-labelledby="home-features-title">
+        <h3 id="home-features-title">Feature highlight</h3>
+        <ul>
+          {FEATURES.map(([title, body]) => (
+            <li key={title}>
+              <h4>{title}</h4>
+              <p>{body}</p>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );

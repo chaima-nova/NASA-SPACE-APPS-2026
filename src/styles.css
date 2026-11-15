@@ -4440,6 +4440,51 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-3);
 }
 
+.home-features {
+  padding: clamp(38px, 5.5vw, 68px) 4px 0;
+}
+
+.home-features h3 {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.home-features ul {
+  display: grid;
+  /* Denser than the steps above: one paragraph each, so they pack in as many
+     per row as the window allows rather than forcing three. */
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 14px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-features li {
+  padding: 14px 16px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+}
+
+.home-features h4 {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.home-features p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
 .home-close {
   display: flex;
   flex-direction: column;
