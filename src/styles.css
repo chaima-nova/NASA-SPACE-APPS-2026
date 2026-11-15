@@ -723,17 +723,17 @@ body::before {
 /* The discovery label: a row this project found itself, out of the committed
    SRTM grids. Small and quiet, because it qualifies the row rather than ranking
    it, and in the signal colour the rest of the interface uses for its own work. */
+/* The screening tag borrows `.pill` for its shape, colour and capitals, so a row
+   we found ourselves wears the same badge as every card tag in the app. What is
+   left here is placement only: a flex child stretches to the column width by
+   default, which drew the outline straight across the row instead of hugging the
+   words, and `justify-self` — the grid property the old rule reached for — does
+   nothing on a flex child. `align-self` is the axis that applies, and pinning it
+   to the start is what lines the tag up under the site name and above the
+   terrain line. */
 .site-found {
-  justify-self: start;
-  margin: 1px 0 0;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid rgba(var(--signal-rgb), 0.4);
-  color: var(--signal);
-  font-family: var(--mono);
-  font-size: 0.56rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  align-self: flex-start;
+  margin-top: 1px;
   white-space: nowrap;
 }
 

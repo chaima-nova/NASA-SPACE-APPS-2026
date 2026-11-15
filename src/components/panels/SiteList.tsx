@@ -79,7 +79,10 @@ export function SiteList({ items, selectedId, target, total, fit, onSelect }: Si
                     out of the committed SRTM grid is a different kind of claim from a
                     site somebody catalogued from the literature. */}
                 {foundByTerraNexus(prediction) ? (
-                  <span className="site-found">Found by TerraNexus</span>
+                  // Two classes on purpose: `.pill` is the app's badge shape — the
+                  // amber outline, mono capitals and 3px corner every card tag
+                  // already uses — while `.site-found` only says where it sits.
+                  <span className="site-found pill">Found by TerraNexus</span>
                 ) : null}
                 <span className="site-meta">
                   {terrainLabel(prediction)} · {formatCoords(prediction.lat, prediction.lon)}
