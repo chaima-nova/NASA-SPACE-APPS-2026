@@ -4139,22 +4139,67 @@ html[data-a11y-dyslexia='on'] :where(p, li, dd, dt, blockquote, .site-name, .sit
 
 /* High contrast: lift the ink and the rules, and drop the photograph wash that
    dims the panels underneath it. */
+/**
+ * High contrast, as an actual contrast change.
+ *
+ * The earlier version lifted two ink tokens and hid the backdrop, which left the
+ * body wash, the card gradients, the dimmed secondary text and the cyan glows to
+ * do as they liked: the page came out slightly brighter, not legible at a glance.
+ * This goes to the far end — black ground, white text at every level, hairlines
+ * that can be seen, no translucent surfaces, nothing faded — and lightens the
+ * accents so they stay distinguishable on black without glowing into the text.
+ */
 html[data-a11y-contrast='on'] {
-  --bg: #000;
-  --surface: #05080d;
-  --surface-2: #0a1018;
-  --surface-3: #111a26;
-  --line: #33455e;
-  --line-2: #4a6485;
-  --line-3: #6a88ab;
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #0a0a0a;
+  --surface-3: #171717;
+
+  --line: #6b6b6b;
+  --line-2: #9a9a9a;
+  --line-3: #c4c4c4;
+
   --ink: #ffffff;
-  --ink-2: #d3ddec;
-  --ink-3: #b3c1d3;
+  --ink-2: #f2f2f2;
+  --ink-3: #dcdcdc;
+
+  --signal: #5ee7ff;
+  --signal-rgb: 94 231 255;
+  --moon: #b9e2ff;
+  --moon-rgb: 185 226 255;
+  --mars: #ffb37a;
+  --amber: #ffd84d;
+  --danger: #ff8f8f;
+}
+
+/* The page wash, the photographs behind the shell and the card gradients all cut
+   contrast whatever the tokens say, so they go. */
+html[data-a11y-contrast='on'] body {
+  background-image: none;
 }
 
 html[data-a11y-contrast='on'] .site-backdrop,
-html[data-a11y-contrast='on'] .card::before {
+html[data-a11y-contrast='on'] .card::before,
+html[data-a11y-contrast='on'] .card::after {
   display: none;
+}
+
+html[data-a11y-contrast='on'] :where(.card, .panel, .dossier, .filterbar, .tabs, .a11y-panel) {
+  background-image: none;
+  backdrop-filter: none;
+}
+
+/* A token cannot rescue text an opacity rule has faded, so this is one of the few
+   places `important` is the honest tool: no running text is dimmed in this mode. */
+html[data-a11y-contrast='on']
+  :where(p, li, dd, dt, span, b, strong, small, label, em, blockquote) {
+  opacity: 1 !important;
+}
+
+/* Focus has to win against a white page as well as a black one. */
+html[data-a11y-contrast='on'] :focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }
 
 html[data-a11y-links='underline'] a[href] {
