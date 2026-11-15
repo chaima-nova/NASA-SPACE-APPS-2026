@@ -8,8 +8,11 @@ import { latestImageryDate } from '../../lib/earthImagery';
 import {
   altitudeGradient,
   altitudeTicks,
+  formatTemperature,
   rampAt,
   temperatureSurface,
+  temperatureTicks,
+  type TemperatureScale,
 } from '../../lib/terrainScale';
 
 interface SiteTerrainProps {
@@ -120,7 +123,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
   /** What the temperature drape says for itself, once it knows. */
   const [tempNote, setTempNote] = useState<string | null>(null);
   /** The bands the temperature frame really carries, coldest first. */
-  const [tempBands, setTempBands] = useState<string[] | null>(null);
+  const [tempScale, setTempScale] = useState<TemperatureScale | null>(null);
   /** Set by the scene effect, so a toggle recolours without rebuilding it. */
   const overlayApi = useRef<((mode: 'none' | 'altitude' | 'temperature') => void) | null>(null);
 
@@ -345,7 +348,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       if (tempState === 'loading' || tempState === 'ready') return;
       tempState = 'loading';
       setTempNote('Loading the MODIS surface temperature layer…');
-      setTempBands(null);
+      setTempScale(null);
       const start = new Date(latestImageryDate() + 'T00:00:00Z').getTime();
       // An 8-day composite always lags: step back in whole composites and take the
       // first frame that carries paint rather than assuming the newest one does.
@@ -368,13 +371,13 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           // the map only appeared on some of them.
           const surface = temperatureSurface(texture.image, n, colors);
           texture.dispose();
-          if (surface.bands.length) tempAttr = new THREE.BufferAttribute(surface.colours, 3);
-          setTempBands(surface.bands);
+          if (surface.scale.bands.length) tempAttr = new THREE.BufferAttribute(surface.colours, 3);
+          setTempScale(surface.scale);
           if (current === 'temperature') applyOverlay('temperature');
           setTempNote(
             'MODIS Terra land surface temperature · 8-day composite to ' +
               day +
-              ' · colours are the GIBS ramp, not a value measured here',
+              ' · degrees read off the GIBS ramp, not measured on this ground',
           );
           return;
         } catch {
@@ -605,6 +608,18 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
     overlayApi.current?.(overlay);
   }, [overlay, patch]);
 
+  // The scale's numbers come from the frame's own colours, mapped through
+  // NASA's colormap; without that mapping it stays qualitative.
+  const heatTicks = tempScale ? temperatureTicks(tempScale) : [];
+  const heatSpan = tempScale?.span
+    ? `${formatTemperature(tempScale.span[0])} to ${formatTemperature(tempScale.span[1])}`
+    : null;
+  const heatSteps = tempScale
+    ? tempScale.bands.length === 1
+      ? 'One step'
+      : `${tempScale.bands.length} steps`
+    : '';
+
   const reliefM = patch ? Math.round(patch.maxElevation - patch.minElevation) : 0;
 
   return (
@@ -677,16 +692,28 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
                   <div
                     className="terrain-scale-bar"
                     style={{
-                      background: tempBands?.length
-                        ? `linear-gradient(to top, ${tempBands.join(', ')})`
+                      background: tempScale?.bands.length
+                        ? `linear-gradient(to top, ${tempScale.bands.join(', ')})`
                         : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
                     }}
                     role="img"
-                    aria-label="Relative surface temperature: cooler at the bottom, warmer at the top"
+                    aria-label={
+                      tempScale?.span
+                        ? `Surface temperature from ${formatTemperature(
+                            tempScale.span[0],
+                          )} to ${formatTemperature(tempScale.span[1])}, colder at the bottom`
+                        : 'Surface temperature: cooler at the bottom, warmer at the top'
+                    }
                   />
                   <div className="terrain-scale-ticks">
-                    <span>Warmer</span>
-                    <span>Cooler</span>
+                    {heatTicks.length ? (
+                      heatTicks.map((tick) => <span key={tick}>{tick}</span>)
+                    ) : (
+                      <>
+                        <span>Warmer</span>
+                        <span>Cooler</span>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -696,13 +723,13 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
                 ? `Ramp fitted to this ground: ${Math.round(
                     patch.maxElevation - patch.minElevation,
                   ).toLocaleString('en-US')} m of relief.`
-                : tempBands === null
+                : tempScale === null
                   ? 'Waiting on the temperature frame.'
-                  : tempBands.length === 0
+                  : tempScale.bands.length === 0
                     ? 'The colours in this frame could not be read off the image.'
-                    : tempBands.length > 1
-                      ? `${tempBands.length} bands here, stretched across the full ramp.`
-                      : 'One band here: this ground sits inside a single step of NASA’s ramp.'}
+                    : heatSpan
+                      ? `${heatSteps} of NASA’s ramp here, ${heatSpan}. Read off the frame’s colours.`
+                      : `${tempScale.bands.length} bands here, but their colours are not on NASA’s ramp, so no degrees.`}
             </p>
           </div>
         ) : null}
