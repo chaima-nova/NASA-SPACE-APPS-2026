@@ -120,8 +120,9 @@ function DimensionBlock({
  */
 /**
  * The dossier's open control: a pair of diagonal arrows pointing out to the
- * corners, at a 2.6 px stroke so the shape survives the card's dark surface at
- * 20 px.
+ * corners. It draws in the same 14 px hairline box as the gallery's glyphs, so
+ * the control reads as the same object whether it opens the dossier or
+ * dismisses it.
  */
 function ExpandGlyph() {
   return (
@@ -145,7 +146,9 @@ function ExpandGlyph() {
  *
  * An X rather than the arrows turned inward: the panel is a sheet over the
  * workbench at that point, and a sheet is dismissed rather than collapsed. It
- * sits in the same box as the arrows, so the control does not move when the
+ * is drawn exactly as the photo gallery's close button — same 28 px box, same
+ * 14 px glyph, same hover — so both overlays are dismissed by the same object.
+ * It sits in the same box as the arrows, so the control does not move when the
  * state changes under the pointer, and it is the one control that also answers
  * the click on the backdrop.
  */
@@ -157,8 +160,9 @@ function CloseGlyph() {
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M6.5 6.5 17.5 17.5" />
-      <path d="M17.5 6.5 6.5 17.5" />
+      {/* The photo gallery's X verbatim, so the dismiss in the dossier and the
+          dismiss in the photo popup are the same drawing, not two near-misses. */}
+      <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   );
 }

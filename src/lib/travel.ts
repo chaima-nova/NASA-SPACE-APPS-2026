@@ -226,6 +226,25 @@ export function purposeFits(
   return purpose === 'landing' ? measured && scheduled : measured;
 }
 
+/**
+ * Does this site fit any of the chosen purposes?
+ *
+ * The purpose chips are a multi-select, and the cut they make is the union:
+ * choosing Landing and Robotic Operations asks for ground a crew can fly into
+ * *or* ground a robot can work on, because both answers feed one shortlist.
+ * Intersection would be a question nothing can answer — no site is both
+ * scheduled and charter-only — and it would empty the list for reasons the reader
+ * never asked for. No purpose chosen means no purpose cut at all.
+ */
+export function purposesFit(
+  purposes: readonly MissionPurpose[],
+  prediction: Prediction,
+  target: 'moon' | 'mars',
+): boolean {
+  if (purposes.length === 0) return true;
+  return purposes.some((purpose) => purposeFits(purpose, prediction, target));
+}
+
 export const ACCESS_LABELS: Record<Access, string> = {
   scheduled: 'Commercial Travel Available',
   charter: 'Charter needed',

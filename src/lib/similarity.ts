@@ -401,9 +401,6 @@ export const FIT_BAND_LABELS: Record<FitBand, string> = {
 /** The two cuts, in per cent. 40 is the guide's threshold; 60 sits 20 above it. */
 export const FIT_BAND_CUTS = { strong: 60, promising: 40 } as const;
 
-/** Strong beats promising beats weak, when three bands have to become one. */
-export const BAND_RANK: Record<FitBand, number> = { strong: 3, promising: 2, weak: 1 };
-
 /** Which band a percentage falls in, or null where there is no percentage. */
 export function fitBandOf(percent: number | null): FitBand | null {
   if (percent === null) return null;
@@ -425,6 +422,40 @@ export const FIT_TYPE_LABELS: Record<FitType, string> = {
   illumination: 'illumination',
   name: 'name',
 };
+
+/**
+ * The percentage one fit is measured by, or null where the fit carries no ratio.
+ *
+ * The queue is ordered by this number, so the ranking cannot contradict the bands
+ * it prints: a band is cut from this same figure (60 strong, 40 promising), which
+ * makes "largest first" the same order as "strong, then promising, then weak".
+ * Ordering by evidence state could not promise that — the guide's states are
+ * coarser than its numbers, so a 50% and a 70% terrain overlap are both `similar`
+ * and the tie fell to the alphabet.
+ *
+ * `overall` is the strongest of the three dimensions, the same reading its band
+ * uses: nothing is averaged and no fourth number is made.
+ */
+export function fitPercentFor(
+  fit: FitType,
+  classification: SiteClassification,
+  target: 'moon' | 'mars',
+): number | null {
+  if (fit === 'name' || fit === 'waterIce' || fit === 'illumination') return null;
+
+  const percentOf = (verdict: DimensionVerdict) => similarityFor(verdict, target).percent;
+
+  if (fit === 'overall') {
+    return classification.dimensions.reduce<number | null>((best, verdict) => {
+      const percent = percentOf(verdict);
+      if (percent === null) return best;
+      return best === null || percent > best ? percent : best;
+    }, null);
+  }
+
+  const verdict = classification.dimensions.find((dimension) => dimension.id === fit);
+  return verdict ? percentOf(verdict) : null;
+}
 
 /**
  * The band for one site under the selected fit type, or null where that fit
@@ -450,18 +481,8 @@ export function fitBandFor(
   classification: SiteClassification,
   target: 'moon' | 'mars',
 ): FitBand | null {
-  if (fit === 'name' || fit === 'waterIce' || fit === 'illumination') return null;
-
-  const percentOf = (verdict: DimensionVerdict) => similarityFor(verdict, target).percent;
-
-  if (fit === 'overall') {
-    return classification.dimensions.reduce<FitBand | null>((best, verdict) => {
-      const band = fitBandOf(percentOf(verdict));
-      if (!band) return best;
-      return !best || BAND_RANK[band] > BAND_RANK[best] ? band : best;
-    }, null);
-  }
-
-  const verdict = classification.dimensions.find((dimension) => dimension.id === fit);
-  return verdict ? fitBandOf(percentOf(verdict)) : null;
+  // One word for one number, cut in one place: the band of a fit is the band of
+  // the percentage that fit is measured by, so a row's colour and its rank can
+  // never disagree.
+  return fitBandOf(fitPercentFor(fit, classification, target));
 }
