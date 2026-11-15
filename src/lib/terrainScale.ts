@@ -407,27 +407,58 @@ function kelvinBand(r: number, g: number, b: number): { low: number; high: numbe
       best = entry;
     }
   }
-  return nearest <= 24 * 24 ? best : null;
+  return nearest <= 36 * 36 ? best : null;
 }
 
-/** Whole degrees Celsius, which is all a 0.6 K step can honestly support. */
-export function formatTemperature(kelvin: number): string {
-  return `${Math.round(kelvin - 273.15)} °C`;
+/** Formats Kelvin into degrees Celsius. Uses 1 decimal place when precision > 0. */
+export function formatTemperature(kelvin: number, precision = 0): string {
+  const c = kelvin - 273.15;
+  if (precision > 0) {
+    return `${c.toFixed(precision)} °C`;
+  }
+  return `${Math.round(c)} °C`;
 }
 
 /**
- * Three labels for the scale: warm end, middle, cold end. Empty when the frame's
- * colours could not be matched to the ramp, so the legend falls back to
- * Warmer/Cooler rather than printing a number it cannot stand behind.
+ * Three labels for the scale: warm end, middle, cold end (or two labels if the span is tight).
+ * When scale.span exists, always return degree labels (with decimal precision if the span
+ * is narrow) so the legend never unpredictably drops degrees.
+ * Empty when the frame's colours could not be matched to the ramp, allowing the legend
+ * to fall back to Warmer/Cooler only when no real temperature data exists.
  */
 export function temperatureTicks(scale: TemperatureScale): string[] {
   if (!scale.span) return [];
   const [cold, warm] = scale.span;
-  const ticks = [warm, (cold + warm) / 2, cold].map(formatTemperature);
-  // A frame whose whole span rounds to one degree has nothing to separate:
-  // three identical labels read as a broken scale, so the legend stays
-  // qualitative rather than claiming a resolution it does not have.
-  return new Set(ticks).size > 1 ? ticks : [];
+  const lowK = Math.min(cold, warm);
+  const highK = Math.max(cold, warm);
+  const spanK = highK - lowK;
+
+  // For spans >= 2.5 K, whole degrees are distinct and clean
+  if (spanK >= 2.5) {
+    const warmC = Math.round(highK - 273.15);
+    const midC = Math.round((highK + lowK) / 2 - 273.15);
+    const coldC = Math.round(lowK - 273.15);
+    if (warmC !== midC && midC !== coldC) {
+      return [`${warmC} °C`, `${midC} °C`, `${coldC} °C`];
+    }
+  }
+
+  // For narrower spans (or where whole-degree rounding produced duplicates),
+  // format with 1 decimal place. Since NASA GIBS MODIS LST bands are 0.6 K wide,
+  // 0.1 °C resolution accurately reflects genuine colormap boundaries.
+  const warmF = (highK - 273.15).toFixed(1);
+  const midF = ((highK + lowK) / 2 - 273.15).toFixed(1);
+  const coldF = (lowK - 273.15).toFixed(1);
+
+  if (warmF !== midF && midF !== coldF) {
+    return [`${warmF} °C`, `${midF} °C`, `${coldF} °C`];
+  }
+
+  if (warmF !== coldF) {
+    return [`${warmF} °C`, `${coldF} °C`];
+  }
+
+  return [`${warmF} °C`];
 }
 
 /**
@@ -455,11 +486,12 @@ export function temperatureSurface(
     probe.height = size;
     const context = probe.getContext('2d', { willReadFrequently: true });
     if (!context) return empty;
+    context.imageSmoothingEnabled = false;
     context.drawImage(image, 0, 0, size, size);
     const { data } = context.getImageData(0, 0, size, size);
     const colours = new Float32Array(size * size * 3);
     const bands = new Map<
-      string,
+      number,
       { r: number; g: number; b: number; pixels: number; kelvin: { low: number; high: number } | null }
     >();
     let painted = 0;
@@ -478,24 +510,46 @@ export function temperatureSurface(
       colours[i * 3 + 1] = g / 255;
       colours[i * 3 + 2] = b / 255;
       painted += 1;
-      const key = `${r >> 3}/${g >> 3}/${b >> 3}`;
+      const key = (r << 16) | (g << 8) | b;
       const band = bands.get(key);
-      if (band) band.pixels += 1;
-      else bands.set(key, { r, g, b, pixels: 1, kelvin: kelvinBand(r, g, b) });
+      if (band) {
+        band.pixels += 1;
+      } else {
+        bands.set(key, { r, g, b, pixels: 1, kelvin: kelvinBand(r, g, b) });
+      }
     }
     if (!painted) return empty;
-    const kept = [...bands.values()]
-      .filter((band) => band.pixels / painted > 0.005)
-      .sort((a, b) => warmth(a) - warmth(b))
-      .slice(0, 12);
-    const coldest = kept[0]?.kelvin;
-    const warmest = kept[kept.length - 1]?.kelvin;
+
+    let kept = [...bands.values()].filter((band) => band.pixels / painted > 0.002);
+    if (!kept.length) {
+      kept = [...bands.values()].sort((a, b) => b.pixels - a.pixels).slice(0, 12);
+    }
+
+    // Sort strictly from coldest to warmest: by Kelvin when known, or warmth hue heuristic
+    const bandTemp = (b: (typeof kept)[0]) => (b.kelvin ? b.kelvin.low : warmth(b) + 200);
+    kept.sort((a, b) => bandTemp(a) - bandTemp(b));
+
+    const validKelvins = kept
+      .map((b) => b.kelvin)
+      .filter((k): k is { low: number; high: number } => k !== null);
+
+    let span: [number, number] | null = null;
+    if (validKelvins.length > 0) {
+      const minK = Math.min(...validKelvins.map((k) => k.low));
+      const maxK = Math.max(...validKelvins.map((k) => k.high));
+      span = [minK, maxK];
+    }
+
+    if (kept.length > 16) {
+      const step = (kept.length - 1) / 15;
+      kept = Array.from({ length: 16 }, (_, idx) => kept[Math.round(idx * step)]);
+    }
+
     return {
       colours,
       scale: {
         bands: kept.map((band) => `rgb(${band.r} ${band.g} ${band.b})`),
-        // Only claim a span when both ends of the scale are ramp colours.
-        span: coldest && warmest ? [coldest.low, warmest.high] : null,
+        span,
       },
     };
   } catch {

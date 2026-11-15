@@ -330,6 +330,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         probe.height = 32;
         const context = probe.getContext('2d', { willReadFrequently: true });
         if (!context) return false;
+        context.imageSmoothingEnabled = false;
         context.drawImage(image, 0, 0, 32, 32);
         const { data } = context.getImageData(0, 0, 32, 32);
         let painted = 0;
@@ -352,7 +353,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
       const start = new Date(latestImageryDate() + 'T00:00:00Z').getTime();
       // An 8-day composite always lags: step back in whole composites and take the
       // first frame that carries paint rather than assuming the newest one does.
-      for (const offset of [8, 16, 24]) {
+      for (const offset of [8, 16, 24, 32]) {
         const day = new Date(start - offset * 86_400_000).toISOString().slice(0, 10);
         try {
           const texture = await new THREE.TextureLoader().loadAsync(tempUrl(day));
@@ -371,13 +372,16 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           // the map only appeared on some of them.
           const surface = temperatureSurface(texture.image, n, colors);
           texture.dispose();
-          if (surface.scale.bands.length) tempAttr = new THREE.BufferAttribute(surface.colours, 3);
+          if (surface.colours) {
+            tempAttr = new THREE.BufferAttribute(surface.colours, 3);
+            tempAttr.needsUpdate = true;
+          }
           setTempScale(surface.scale);
           if (current === 'temperature') applyOverlay('temperature');
           setTempNote(
             'MODIS Terra land surface temperature · 8-day composite to ' +
-              day +
-              ' · degrees read off the GIBS ramp, not measured on this ground',
+            day +
+            ' · degrees read off the GIBS ramp, not measured on this ground',
           );
           return;
         } catch {
@@ -396,7 +400,11 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
         mode === 'altitude' ? altitudeAttr : mode === 'temperature' && tempAttr ? tempAttr : baseAttr;
       geometry.setAttribute('color', colours);
       colours.needsUpdate = true;
-      if (mode === 'temperature') void loadTemperature();
+      if (geometry.attributes.color) {
+        geometry.attributes.color.needsUpdate = true;
+      }
+      groundMaterial.needsUpdate = true;
+      if (mode === 'temperature' && !tempAttr) void loadTemperature();
       if (mode !== 'temperature') setTempNote(null);
     };
     overlayApi.current = applyOverlay;
@@ -610,9 +618,16 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
 
   // The scale's numbers come from the frame's own colours, mapped through
   // NASA's colormap; without that mapping it stays qualitative.
+  const isNarrowSpan = tempScale?.span
+    ? Math.abs(tempScale.span[1] - tempScale.span[0]) < 2.5 ||
+    Math.round(tempScale.span[0] - 273.15) === Math.round(tempScale.span[1] - 273.15)
+    : false;
+  const tempPrecision = isNarrowSpan ? 1 : 0;
   const heatTicks = tempScale ? temperatureTicks(tempScale) : [];
   const heatSpan = tempScale?.span
-    ? `${formatTemperature(tempScale.span[0])} to ${formatTemperature(tempScale.span[1])}`
+    ? tempScale.span[0] === tempScale.span[1]
+      ? formatTemperature(tempScale.span[0], tempPrecision)
+      : `${formatTemperature(tempScale.span[0], tempPrecision)} to ${formatTemperature(tempScale.span[1], tempPrecision)}`
     : null;
   const heatSteps = tempScale
     ? tempScale.bands.length === 1
@@ -665,7 +680,7 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
             this patch: the altitude ramp spans the ground's own relief, and the
             temperature ramp spans only the bands this frame carries. A scale fixed
             to the planet is what made every site read the same. */}
-                {/* One card per overlay, each behind its own condition. The two used to
+        {/* One card per overlay, each behind its own condition. The two used to
             share one card whose body switched on the overlay, which is how a
             temperature tick could reach the height scale. */}
         {overlay === 'altitude' && patch ? (
@@ -703,14 +718,19 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
                 role="img"
                 aria-label={
                   tempScale?.span
-                    ? 'Surface temperature from ' + formatTemperature(tempScale.span[0]) +
-                      ' to ' + formatTemperature(tempScale.span[1]) + ', colder at the bottom'
+                    ? 'Surface temperature from ' + formatTemperature(tempScale.span[0], tempPrecision) +
+                    ' to ' + formatTemperature(tempScale.span[1], tempPrecision) + ', colder at the bottom'
                     : 'Surface temperature: cooler at the bottom, warmer at the top'
                 }
               />
               <div className="terrain-scale-ticks">
                 {heatTicks.length ? (
-                  heatTicks.map((tick) => <span key={tick}>{tick}</span>)
+                  heatTicks.map((tick, index) => <span key={'heat-tick-' + index}>{tick}</span>)
+                ) : tempScale === null ? (
+                  <>
+                    <span>…</span>
+                    <span>…</span>
+                  </>
                 ) : (
                   <>
                     <span>Warmer</span>
@@ -775,8 +795,8 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
           <strong>
             {patch
               ? `${Math.round(patch.minElevation).toLocaleString('en-US')}–${Math.round(
-                  patch.maxElevation,
-                ).toLocaleString('en-US')} m`
+                patch.maxElevation,
+              ).toLocaleString('en-US')} m`
               : '—'}
           </strong>
         </div>
