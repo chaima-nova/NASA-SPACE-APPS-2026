@@ -3,8 +3,9 @@
  *
  * This is the team's own division of work, kept in data rather than in the page
  * so a name, a role or a responsibility is a one-line edit here. The
- * responsibilities are the team's own core-responsibility column, split at its
- * commas so each line is one thing owned rather than a paragraph to read.
+ * descriptions are the team's own core-responsibility column kept as one line
+ * of prose, because that is how the team wrote them: broken at the commas they
+ * read as four unrelated bullet points rather than as one person's remit.
  *
  * The team owner is listed first, because the owner is the one answerable for
  * the whole; the rest follow in the order the work reaches them.
@@ -16,8 +17,8 @@ export interface TeamMember {
   role: string;
   /** Marks the team owner; the page badges the name rather than restating it. */
   owner?: boolean;
-  /** What they are responsible for, in the order the work reaches them. */
-  tasks: string[];
+  /** What they own, in the team's own words, as one line rather than a list. */
+  description: string;
 }
 
 export const TEAM: readonly TeamMember[] = [
@@ -25,52 +26,27 @@ export const TEAM: readonly TeamMember[] = [
     name: 'Chaima',
     role: 'Product Direction & System Integration',
     owner: true,
-    tasks: [
-      'Product architecture.',
-      'Discovery workflow.',
-      'Cross-team coordination.',
-      'System integration and storytelling.',
-    ],
+    description: 'Product architecture, discovery workflow, cross-team coordination, system integration, storytelling.',
   },
   {
     name: 'Abid',
     role: 'Geospatial Data & GIS',
-    tasks: [
-      'Dataset availability.',
-      'Geographic coverage.',
-      'Spatial harmonisation.',
-      'Candidate mapping.',
-    ],
+    description: 'Dataset availability, geographic coverage, spatial harmonisation, candidate mapping.',
   },
   {
     name: 'Zehra',
     role: 'Scientific Criteria & Validation',
-    tasks: [
-      'Planetary criteria.',
-      'Scientific comparability.',
-      'Reference literature.',
-      'Validation methodology.',
-    ],
+    description: 'Planetary criteria, scientific comparability, reference literature, validation methodology.',
   },
   {
     name: 'Harshil',
     role: 'Machine Learning & AI',
-    tasks: [
-      'Feature analysis.',
-      'Screening algorithms.',
-      'Candidate-detection models.',
-      'Performance evaluation.',
-    ],
+    description: 'Feature analysis, screening algorithms, candidate-detection models, performance evaluation.',
   },
   {
     name: 'Jasmine',
     role: 'Frontend & User Experience',
-    tasks: [
-      'Analog Atlas visual UI.',
-      'Analog Quest flow.',
-      'Analog DNA profiles.',
-      'Candidate investigation UX.',
-    ],
+    description: 'Analog Atlas visual UI, Analog Quest flow, Analog DNA profiles, candidate investigation UX.',
   },
 ];
 

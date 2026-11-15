@@ -4638,22 +4638,11 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--signal);
 }
 
-.team-tasks {
+.team-description {
   margin: 14px 0 0;
-  padding: 0 0 0 16px;
-  list-style: disc;
-}
-
-.team-tasks li {
-  margin-top: 7px;
   font-size: 0.8rem;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--ink-2);
-}
-
-.team-tasks li::marker {
-  color: var(--ink-4, var(--ink-3));
-  font-size: 0.7rem;
 }
 
 /* The pipeline: numbered, in reading order, one line per hand-off. */
