@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type {
   CommunityState,
   DataSource,
@@ -13,6 +14,12 @@ import {
   STATE_LABELS,
   type DimensionVerdict,
 } from '../../lib/classification';
+import {
+  SIMILARITY_KIND_LABELS,
+  similarityFor,
+  type DimensionSimilarity,
+} from '../../lib/similarity';
+import { UncertaintyDialog } from './UncertaintyDialog';
 import {
   datasetsFor,
   formatCoords,
@@ -48,16 +55,52 @@ interface SiteInspectorProps {
 /**
  * One dimension, as the dossier states it.
  *
- * The verdict is a word and the basis is the measurement behind it; the caveats
- * are what the dimension could not decide. Removing the percentage meters is the
- * point of this block: three independent verdicts, no composite.
+ * The verdict is a word; the percentage is the ratio behind it, with the ± that
+ * belongs to that ratio. A prediction is labelled as one in the same row, so a
+ * number built on a substituted envelope can never pass for a measurement.
  */
-function DimensionBlock({ verdict }: { verdict: DimensionVerdict }) {
+function DimensionBlock({
+  verdict,
+  similarity,
+  onExplain,
+  muted = false,
+}: {
+  verdict: DimensionVerdict;
+  similarity: DimensionSimilarity;
+  onExplain: () => void;
+  /** Listed under the matches rather than highlighted with them. */
+  muted?: boolean;
+}) {
   return (
-    <div className={`dimension is-${verdict.state}`}>
+    <div className={`dimension is-${verdict.state}${muted ? ' is-muted' : ''}`}>
       <div className="dimension-head">
         <span className="dimension-label">{verdict.label}</span>
         <span className={`state-badge is-${verdict.state}`}>{STATE_LABELS[verdict.state]}</span>
+      </div>
+      <div className={`dimension-sim is-${similarity.kind}`}>
+        {similarity.percent === null || !similarity.uncertainty ? (
+          <span className="sim-none">{SIMILARITY_KIND_LABELS.incomparable}</span>
+        ) : (
+          <>
+            <span className={`sim-value is-${similarity.kind}`}>
+              {Math.round(similarity.percent)}%
+            </span>
+            <span className={`sim-kind is-${similarity.kind}`}>
+              {SIMILARITY_KIND_LABELS[similarity.kind]}
+            </span>
+            <button
+              type="button"
+              className="sim-uncertainty"
+              onClick={onExplain}
+              title="How this uncertainty is calculated"
+            >
+              ±{similarity.uncertainty.total}
+            </button>
+            <span className="sim-band">
+              {similarity.uncertainty.low}–{similarity.uncertainty.high}%
+            </span>
+          </>
+        )}
       </div>
       <p className="dimension-basis">{verdict.basis}</p>
       {verdict.caveats.map((caveat) => (
@@ -75,15 +118,16 @@ function DimensionBlock({ verdict }: { verdict: DimensionVerdict }) {
  * the datasets behind the numbers, and an export that survives the demo.
  */
 /**
- * The dossier's open/close control.
+ * The dossier's open/close control: a pair of diagonal arrows.
  *
- * An arrow, not a word: the chip that used to sit here said "Expand" in 0.56rem
- * mono, which read as a label rather than a button and was easy to miss beside
- * the rank chip. The glyph is drawn at a 2.6 px stroke so it stays a clear shape
- * on the card's dark surface, and it turns to point back into the column once the
- * dossier is open.
+ * Two arrows, not one, because the control does two things: outward towards the
+ * corners says "open this out across the page", inward towards the middle says
+ * "put it back". Drawn as a pair of shafts with corner heads at a 2.6 px stroke,
+ * so the shape survives the card's dark surface at 20 px. The glyph carries both
+ * states itself, which is why the old 180° rotation is gone: rotating a symmetric
+ * pair of arrows lands on the same picture, so it signalled nothing.
  */
-function ExpandGlyph() {
+function ExpandGlyph({ open }: { open: boolean }) {
   return (
     <svg
       className="dossier-expand-glyph"
@@ -91,8 +135,23 @@ function ExpandGlyph() {
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M7 17 17 7" />
-      <path d="M10 7h7v7" />
+      {open ? (
+        <>
+          {/* Head at the inner end: the arrows point back towards the middle. */}
+          <path d="M12.9 11.1h5.5v-5.5" />
+          <path d="M18.5 5.5 12.9 11.1" />
+          <path d="M11.1 12.9H5.6v5.5" />
+          <path d="M5.5 18.5 11.1 12.9" />
+        </>
+      ) : (
+        <>
+          {/* Head at the outer end: the arrows point out towards the corners. */}
+          <path d="M13 5.5h5.5V11" />
+          <path d="M12.9 11.1 18.5 5.5" />
+          <path d="M11 18.5H5.5V13" />
+          <path d="M11.1 12.9 5.5 18.5" />
+        </>
+      )}
     </svg>
   );
 }
@@ -114,6 +173,9 @@ export function SiteInspector({
   expanded,
   onToggleExpand,
 }: SiteInspectorProps) {
+  /** The dimension whose ± is open in the budget dialog, if any. */
+  const [explained, setExplained] = useState<DimensionSimilarity | null>(null);
+
   if (!prediction) {
     return (
       <div className="empty">
@@ -129,7 +191,7 @@ export function SiteInspector({
             aria-label="Collapse the dossier"
             title="Return the dossier to its column"
           >
-            <ExpandGlyph />
+            <ExpandGlyph open={expanded} />
           </button>
         ) : null}
       </div>
@@ -137,6 +199,9 @@ export function SiteInspector({
   }
 
   const classification = classifySite(prediction, target);
+  // The highlighted half of the classification: only the dimensions that matched.
+  const matches = classification.dimensions.filter((verdict) => verdict.state === 'similar');
+  const others = classification.dimensions.filter((verdict) => verdict.state !== 'similar');
   const siteDatasets = datasetsFor(prediction, datasets);
   const photos = photosFor(prediction);
   const photoCount = photos.length;
@@ -162,7 +227,7 @@ export function SiteInspector({
                 : 'Open the dossier across the page to read it'
             }
           >
-            <ExpandGlyph />
+            <ExpandGlyph open={expanded} />
           </button>
         </span>
       </div>
@@ -183,21 +248,6 @@ export function SiteInspector({
           <dd>{formatCoords(prediction.lat, prediction.lon)}</dd>
         </div>
       </dl>
-
-      {/* The three verdicts, which are the whole classification. */}
-      <div className="dimensions">
-        <div className="dimensions-head">
-          <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
-          <span className="dimensions-count">
-            {classification.agreements} of 3 similar
-          </span>
-        </div>
-        {classification.dimensions.map((verdict) => (
-          <DimensionBlock key={verdict.id} verdict={verdict} />
-        ))}
-      </div>
-
-      <p className="verdict">{classificationSummary(classification)}</p>
 
       {/* The four limits, which apply to every site on the list. */}
       <h3 className="section-title">
@@ -422,6 +472,74 @@ export function SiteInspector({
           </button>
         </div>
       </div>
+
+      {/* How the site compares, below the actions that act on it: the dossier
+          opens with what the site is and closes with the verdict. */}
+      {/* The three verdicts, which are the whole classification. Only the ones
+          that matched are highlighted: a coloured badge on a "Different"
+          dimension reads as a finding, and the reader meets three of them before
+          anything says what did match. The rest are listed below, unhighlighted,
+          so nothing measured is hidden — only the emphasis moves. */}
+      <div className="dimensions">
+        <div className="dimensions-head">
+          <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
+          <span className="dimensions-count">
+            {classification.agreements} of 3 similar
+          </span>
+        </div>
+        <p className="dimensions-note">
+          Each percentage belongs to its own dimension and is never averaged into a site score.
+        </p>
+        {matches.length > 0 ? (
+          matches.map((verdict) => {
+            const similarity = similarityFor(verdict, target);
+            return (
+              <DimensionBlock
+                key={verdict.id}
+                verdict={verdict}
+                similarity={similarity}
+                onExplain={() => setExplained(similarity)}
+              />
+            );
+          })
+        ) : (
+          <p className="dimensions-none">
+            No dimension matches this target. The measured differences and the data gaps are
+            below, with the same numbers behind them.
+          </p>
+        )}
+      </div>
+
+      {others.length > 0 ? (
+        <div className="dimensions dimensions-others">
+          <div className="dimensions-head">
+            <span className="kicker">Differences and gaps</span>
+            <span className="dimensions-count">{others.length}</span>
+          </div>
+          {others.map((verdict) => {
+            const similarity = similarityFor(verdict, target);
+            return (
+              <DimensionBlock
+                key={verdict.id}
+                verdict={verdict}
+                similarity={similarity}
+                onExplain={() => setExplained(similarity)}
+                muted
+              />
+            );
+          })}
+        </div>
+      ) : null}
+
+      <p className="verdict">{classificationSummary(classification)}</p>
+
+      {explained ? (
+        <UncertaintyDialog
+          similarity={explained}
+          target={target}
+          onClose={() => setExplained(null)}
+        />
+      ) : null}
     </div>
   );
 }

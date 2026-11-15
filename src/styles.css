@@ -673,8 +673,7 @@ body::before {
 
 .site-row {
   display: grid;
-  /* Two columns now: the chips moved under the name, where they have the width
-     to spell themselves out instead of hiding behind initials. */
+  /* Two columns: the rank, then everything the row says about the site. */
   grid-template-columns: 22px minmax(0, 1fr);
   align-items: start;
   gap: 7px;
@@ -699,8 +698,17 @@ body::before {
   border-color: rgba(var(--signal-rgb), 0.22);
 }
 
+/*
+ * The rank integer.
+ *
+ * Set in the sans stack, not the mono one. JetBrains Mono draws its zero with a
+ * slash, and at 0.6rem that slash closes up: "08" read as an "8" beside a "1",
+ * so rows 06 and 08 looked like the same number. Inter's zero is a plain oval,
+ * and tabular figures keep the column steady as the queue reorders.
+ */
 .site-rank {
-  font-family: var(--mono);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   color: var(--ink-3);
 }
@@ -898,7 +906,11 @@ body::before {
 .legend {
   display: flex;
   align-items: center;
-  gap: 13px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px 13px;
+  min-width: 0;
+  max-width: 100%;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -913,6 +925,8 @@ body::before {
   display: flex;
   align-items: center;
   gap: 5px;
+  /* Wraps between entries, not through "Insufficient evidence". */
+  white-space: nowrap;
 }
 
 .legend-dot {
@@ -1080,8 +1094,10 @@ body::before {
   gap: 8px;
 }
 
+/* Same reason as .site-rank: the dossier chip would otherwise wear the slash. */
 .rank-chip {
-  font-family: var(--mono);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   color: var(--ink-3);
   border: 1px solid var(--line-2);
@@ -1796,11 +1812,22 @@ body::before {
   border-color: var(--signal);
   color: var(--signal);
 }
+/*
+ * The marker legend and its hint.
+ *
+ * Five entries of mono caps do not fit one row at this panel width, and with no
+ * wrapping allowed the row ran past the panel's right edge — "Not comparable"
+ * and then "Click a beacon to land" were clipped. The entries now wrap between
+ * themselves, never inside a label, and the column is given permission to
+ * shrink so the hint has somewhere to sit.
+ */
 .globe-side {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .globe-hint {
@@ -2608,48 +2635,10 @@ html[data-a11y-contrast='on'] .btn.see-site.has-photo {
 
 /* Top-bar switch for the backdrop: a pill like the data-mode badge, so the
    chrome keeps one visual language. */
-.topbar-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  font: inherit;
-  font-size: 0.64rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--ink-3);
-  background: transparent;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s var(--ease), border-color 0.15s var(--ease),
-    background 0.15s var(--ease);
-}
 
-.topbar-toggle:hover {
-  color: var(--ink-2);
-  border-color: var(--line-3);
-}
 
-.topbar-toggle.is-on {
-  color: var(--ink);
-  background: var(--surface-2);
-  border-color: var(--line-3);
-}
 
-.backdrop-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #2b4a63, var(--moon));
-  opacity: 0.4;
-  transition: opacity 0.15s var(--ease);
-}
 
-.topbar-toggle.is-on .backdrop-dot {
-  opacity: 1;
-}
 
 /* =============================================================================
    Community: reported sites, field notes, reviews, upvotes
@@ -4339,12 +4328,12 @@ html[data-a11y-contrast='on']
 /* Edges, not surfaces: at this contrast a card is a rectangle of black with a
    white rule around it, which is what an OS high-contrast theme draws too. */
 html[data-a11y-contrast='on']
-  :where(.card, .panel, .dossier, .filterbar, .tabs, .a11y-panel, .site-row, .reported-row, .btn, .globe-toggle, .globe-reset, .topbar-toggle) {
+  :where(.card, .panel, .dossier, .filterbar, .tabs, .a11y-panel, .site-row, .reported-row, .btn, .globe-toggle, .globe-reset) {
   border-color: #ffffff !important;
   box-shadow: none !important;
 }
 
-html[data-a11y-contrast='on'] :where(.btn, .globe-toggle, .globe-reset, .topbar-toggle) {
+html[data-a11y-contrast='on'] :where(.btn, .globe-toggle, .globe-reset) {
   background: #000000 !important;
   color: #ffffff !important;
 }
@@ -5766,10 +5755,6 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 /* Open: the same arrow turns to point back into the column. */
-.dossier-expand[aria-pressed='true'] .dossier-expand-glyph {
-  transform: rotate(180deg);
-}
-
 .dossier-expand:hover,
 .dossier-expand[aria-pressed='true'] {
   border-color: rgba(255, 255, 255, 0.55);
@@ -7252,29 +7237,6 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 .state-chip.is-not_comparable { color: #a7b0c0; }
 
 /* The dimension is the quiet half of the chip; the state is the claim. */
-.state-chip-dim { opacity: 0.72; }
-.state-chip-state { font-weight: 650; }
-
-.site-states {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 2px 0 0;
-  align-items: center;
-}
-
-.dimensions {
-  display: grid;
-  gap: 12px;
-  margin: 16px 0 6px;
-}
-
-.dimensions-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
 
 .dimensions-count {
   font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
@@ -7367,4 +7329,187 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
   font-size: 0.72rem;
   line-height: 1.5;
   color: #a9b4c4;
+}
+
+/* ------------------------------------------------------- similarity % ---- */
+
+/*
+ * The percentage row inside a dimension block.
+ *
+ * Colour is doing the honesty work here: a measured number is white, a predicted
+ * one amber and labelled, and the ± is a button rather than a footnote because
+ * the budget is the part a reader is most likely to want to check.
+ */
+.dimensions-note {
+  margin: 2px 0 10px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.dimension-sim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 2px 0 8px;
+}
+
+.sim-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-value.is-measured {
+  color: #fff;
+}
+
+.sim-value.is-predicted {
+  color: #fbbf24;
+}
+
+.sim-kind {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+  color: var(--ink-3);
+}
+
+.sim-kind.is-predicted {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.09);
+}
+
+.sim-uncertainty {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--signal);
+  background: transparent;
+  border: 1px dashed rgba(var(--signal-rgb), 0.55);
+  border-radius: 3px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.sim-uncertainty:hover,
+.sim-uncertainty:focus-visible {
+  background: rgba(var(--signal-rgb), 0.14);
+  border-style: solid;
+}
+
+.sim-band {
+  font-size: 0.7rem;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-none {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* The budget dialog: one row per term, each quoting its own arithmetic. */
+.uncertainty-basis {
+  margin: 10px 0 4px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.uncertainty-terms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.uncertainty-terms li {
+  border-left: 2px solid rgba(var(--signal-rgb), 0.5);
+  padding: 2px 0 2px 10px;
+}
+
+.uncertainty-term-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.uncertainty-term {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.uncertainty-points {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--signal);
+  white-space: nowrap;
+}
+
+.uncertainty-detail {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.uncertainty-method {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.uncertainty-caveat {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+/*
+ * The dossier's second half.
+ *
+ * A match keeps the coloured badge and the white percentage; a difference or a
+ * data gap keeps its numbers but loses the highlight, so the eye lands on what
+ * matched first and still finds the rest without leaving the column.
+ */
+.dimensions-none {
+  margin: 6px 0 2px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.dimensions-others {
+  margin-top: 14px;
+}
+
+.dimension.is-muted .state-badge {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--ink-3);
+}
+
+.dimension.is-muted .sim-value {
+  color: var(--ink-2);
 }
