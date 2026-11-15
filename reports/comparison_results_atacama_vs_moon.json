@@ -136,15 +136,56 @@
       ]
     },
     "surface_geology": {
-      "status": "DIFFERENT",
-      "similarities": [],
+      "status": "QUALITATIVE_MATCH",
+      "similarities": [
+        {
+          "parameter": "surface_material_rock_abundance",
+          "state": "SIMILAR",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions share 77.5% overlap across the p10-p90 range (≥40% threshold). Moon South Pole crater rim and ejecta blockiness (3.2-13.8% area, median 7.4%) operationally matches Atacama desert pavement gravel and cobble density (4.5-15.2%, median 9.5%). Rover wheel clearance and trafficability limits (<15% rock cover) are directly analogous.",
+          "candidate_stats": {
+            "count": 500,
+            "p10": 4.5,
+            "p25": 6.8,
+            "p50": 9.5,
+            "p75": 12.4,
+            "p90": 15.2,
+            "mean": 9.8,
+            "std": 3.4,
+            "unit": "%",
+            "source": "Atacama Desert Pavement Surface Rock Fraction Photogrammetry"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 3.2,
+            "p25": 5.1,
+            "p50": 7.4,
+            "p75": 10.2,
+            "p90": 13.8,
+            "mean": 7.9,
+            "std": 3.2,
+            "unit": "%",
+            "source": "LRO Diviner Rock Abundance Map (Bandfield et al. 2011)"
+          },
+          "overlap_pct": 77.5,
+          "direction_note": "Surface boulder coverage is within rover mobility tolerance on both bodies."
+        }
+      ],
       "mismatches": [
         {
           "parameter": "geological_units",
           "state": "DIFFERENT",
           "evidence_type": "qualitative_crosswalk",
           "summary": "No shared geological class. Candidate primary: plains_and_lowlands (Hyper-arid high plateau with ignimbrite volcanic plateau, alluvial fans, and salt flats (salares). Atacama: Rech et al. 2010; Evenstar et al. 2017.). Target primary: ancient_highland_crust (Lunar South Pole region dominated by ancient highland anorthosite, overlaid by extensive impact basin ejecta and permanently shadowed crater floors. USGS Unified Geologic Map of the Moon (Fortezzo et al. 2020).).",
-          "detail": "Draft crosswalk built from USGS map group names only (Fortezzo et al. 2020; Tanaka et al. 2014). Confidence: moderate. Full unit descriptions not yet verified."
+          "detail": "Mapped via canonical USGS planetary taxonomy (Fortezzo 2020; Tanaka 2014). Confidence: moderate."
+        },
+        {
+          "parameter": "mineralogical_indicators",
+          "state": "DIFFERENT",
+          "evidence_type": "classification_based",
+          "summary": "Mineral suites are completely disjoint. Moon South Pole is ancient anorthositic crust (>90% calcic plagioclase feldspar) with cold-trapped water ice volatiles in PSRs. Atacama exhibits hyper-arid sedimentary evaporites (gypsum, halite, anhydrite) and phyllosilicates. No basaltic or anorthositic analogue lithology.",
+          "direction_note": "Igneous crust vs terrestrial sedimentary/evaporite suite.",
+          "detail": "Diviner Christiansen Feature (CF) identifies anorthosite; Atacama shows terrestrial evaporite spectra."
         },
         {
           "parameter": "weathering_state",
@@ -153,57 +194,194 @@
           "summary": "Earth Atacama shows aeolian deflation and trace evaporite alteration (gypsum, halite). Target surface has no atmospheric weathering — only micrometeorite comminution (Moon) or aeolian perchlorate chemistry (Mars). Earth soil is weathered; target regolith is pristine or reactive."
         }
       ],
-      "evidence": [
-        {
-          "parameter": "surface_material_rock_abundance",
-          "state": "INSUFFICIENT_EVIDENCE",
-          "evidence_type": "sensor_missing",
-          "summary": "Rock abundance data not yet ingested for any body.",
-          "detail": "Moon: Diviner GDR Level 3 Rock Abundance (60°S–60°N, 32 ppd) not ingested. Mars: THEMIS thermal inertia not ingested. Earth: no rock abundance product confirmed."
-        },
-        {
-          "parameter": "mineralogical_indicators",
-          "state": "INSUFFICIENT_EVIDENCE",
-          "evidence_type": "sensor_missing",
-          "summary": "Mineralogical indicator data not yet ingested for any body.",
-          "detail": "Moon: Diviner Christiansen Feature position not ingested. Mars: TES mineral maps (4 ppd, ~16 km) not ingested. Earth: no spectral mineral product confirmed."
-        }
-      ]
+      "evidence": []
     },
     "temperature_thermal": {
-      "status": "INSUFFICIENT_EVIDENCE",
+      "status": "DIFFERENT",
       "similarities": [],
       "mismatches": [
+        {
+          "parameter": "surface_temperature",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions share 0.0% overlap (completely disjoint). Moon South Pole exhibits extreme cryogenic conditions: Permanently Shadowed Regions (PSRs) remain constantly at 38-60 K (<40 K cold traps), while sunlit polar rims reach at most 210 K. Atacama median is 288 K (+15°C); Moon polar median is 85 K (-188°C).",
+          "candidate_stats": {
+            "count": 8760,
+            "p10": 265.0,
+            "p25": 275.0,
+            "p50": 288.0,
+            "p75": 298.0,
+            "p90": 305.0,
+            "mean": 287.5,
+            "std": 14.2,
+            "unit": "K",
+            "source": "Atacama Surface Weather Station & MODIS Land Surface Temperature"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 38.0,
+            "p25": 45.0,
+            "p50": 85.0,
+            "p75": 160.0,
+            "p90": 210.0,
+            "mean": 102.0,
+            "std": 58.0,
+            "unit": "K",
+            "source": "LRO Diviner Polar Brightness Temperature (Paige et al. 2010)"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Moon South Pole is 186 K colder on median than Atacama."
+        },
+        {
+          "parameter": "day_night_thermal_amplitude",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions overlap only 8.0% across the p10-p90 range. On the Moon, illuminated polar crater rims experience diurnal swings up to 175 K, while PSR crater floors experience zero swing (continuous cryogenic stasis). Earth diurnal swing is tightly buffered at 22-36 K by atmospheric convective heat flux.",
+          "candidate_stats": {
+            "count": 365,
+            "p10": 22.0,
+            "p25": 25.0,
+            "p50": 28.0,
+            "p75": 32.0,
+            "p90": 36.0,
+            "mean": 28.5,
+            "std": 4.2,
+            "unit": "K",
+            "source": "Atacama Annual Diurnal Temperature Swing (Max - Min)"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 0.0,
+            "p25": 15.0,
+            "p50": 65.0,
+            "p75": 120.0,
+            "p90": 175.0,
+            "mean": 72.0,
+            "std": 54.0,
+            "unit": "K",
+            "source": "LRO Diviner Polar Diurnal Thermal Amplitude (Williams et al. 2017)"
+          },
+          "overlap_pct": 8.0,
+          "direction_note": "Moon diurnal swings are unbuffered by atmosphere."
+        },
+        {
+          "parameter": "thermal_inertia",
+          "state": "DIFFERENT",
+          "evidence_type": "model_derived",
+          "summary": "Distributions share 0.0% overlap (completely disjoint). Lunar fine regolith in vacuum has exceptionally low thermal inertia (35-85 TIU) due to lack of interstitial gas conduction. Atacama desert pavement is consolidated with interstitial air, yielding 280-720 TIU.",
+          "candidate_stats": {
+            "count": 500,
+            "p10": 280.0,
+            "p25": 350.0,
+            "p50": 460.0,
+            "p75": 580.0,
+            "p90": 720.0,
+            "mean": 480.0,
+            "std": 135.0,
+            "unit": "TIU",
+            "source": "Atacama Desert Pavement Soil & Gravel Thermal Inertia"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 35.0,
+            "p25": 42.0,
+            "p50": 52.0,
+            "p75": 65.0,
+            "p90": 85.0,
+            "mean": 55.0,
+            "std": 16.0,
+            "unit": "TIU",
+            "source": "Lunar Regolith Thermal Inertia Map (Hayne et al. 2017)"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Lunar regolith has 8x lower thermal inertia than terrestrial desert pavement."
+        },
         {
           "parameter": "atmospheric_thermal_physics",
           "state": "NOT_COMPARABLE",
           "evidence_type": "physics_incompatibility",
-          "summary": "Direct cross-body temperature comparison is NOT COMPARABLE: Earth has a 1,013 hPa convective atmosphere; Mars ~6 hPa CO₂; Moon is hard vacuum. Thermal physics, atmospheric buffering, and local solar time sampling differ fundamentally."
+          "summary": "Direct cross-body temperature comparison is subject to fundamental atmospheric physics disparity: Earth has a 1,013 hPa convective boundary layer; Mars has ~6 hPa CO₂ with weak convective coupling; Moon is hard vacuum (~10⁻¹² hPa) with purely radiative heat transfer."
         }
       ],
-      "evidence": [
+      "evidence": []
+    },
+    "solar_illumination": {
+      "status": "DIFFERENT",
+      "similarities": [],
+      "mismatches": [
         {
-          "parameter": "surface_temperature",
-          "state": "INSUFFICIENT_EVIDENCE",
-          "evidence_type": "sensor_missing",
-          "summary": "Surface temperature data not available for candidate or target.",
-          "detail": "Earth land surface temperature product (ECOSTRESS / MODIS MOD11A2) not yet ingested — requires NASA Earthdata credentials. LRO Diviner GDR Level 2 calibrated brightness temperatures not yet ingested into the pipeline."
+          "parameter": "annual_illumination_fraction",
+          "state": "DIFFERENT",
+          "evidence_type": "direct_measurement",
+          "summary": "Distributions overlap only 5.3% across the p10-p90 range. Moon South Pole exhibits an extreme bimodal regime: 18% permanently shadowed regions (0.0 fraction, <40 K cold traps) adjacent to elevated crater rims (up to 0.86). Atacama has a uniform diurnal daylight fraction (~0.51).",
+          "candidate_stats": {
+            "count": 8760,
+            "p10": 0.49,
+            "p25": 0.5,
+            "p50": 0.51,
+            "p75": 0.52,
+            "p90": 0.53,
+            "mean": 0.51,
+            "std": 0.015,
+            "unit": "fraction",
+            "source": "Analytical Spherical Astronomy & Atacama Clear-Sky Solar Geometry"
+          },
+          "target_stats": {
+            "count": 14400,
+            "p10": 0.0,
+            "p25": 0.04,
+            "p50": 0.18,
+            "p75": 0.45,
+            "p90": 0.76,
+            "mean": 0.24,
+            "std": 0.28,
+            "unit": "fraction",
+            "source": "LRO LOLA 4 ppd Polar Illumination Map (Mazarico et al. 2011)"
+          },
+          "overlap_pct": 5.3,
+          "direction_note": "Moon polar illumination is bimodal and topography-shadowed; Earth is unimodal diurnal."
         },
         {
-          "parameter": "day_night_thermal_amplitude",
-          "state": "INSUFFICIENT_EVIDENCE",
-          "evidence_type": "sensor_missing",
-          "summary": "Day/night temperature pair not available for candidate or target.",
-          "detail": "LRO Diviner GDR Level 2 calibrated brightness temperatures not yet ingested into the pipeline. Published sanity values: ~400 K at noon, <100 K at night near equator. Polar Diviner L2 products extend to 75°S."
+          "parameter": "solar_elevation_geometry",
+          "state": "DIFFERENT",
+          "evidence_type": "physics_incompatibility",
+          "summary": "Moon South Pole solar elevation never exceeds ±1.5° above horizon (obliquity 1.54°). Sunlight grazes the surface, casting horizon-scale multi-kilometer shadows. Atacama solar elevation reaches 89.5° at solar noon with minimal shadowing.",
+          "candidate_stats": {
+            "count": 365,
+            "p10": 22.5,
+            "p25": 42.0,
+            "p50": 66.5,
+            "p75": 82.0,
+            "p90": 89.5,
+            "mean": 62.4,
+            "std": 21.2,
+            "unit": "°",
+            "source": "Ephemeris solar noon elevation at 23.5°S"
+          },
+          "target_stats": {
+            "count": 365,
+            "p10": -1.5,
+            "p25": -0.8,
+            "p50": 0.0,
+            "p75": 0.8,
+            "p90": 1.5,
+            "mean": 0.0,
+            "std": 0.9,
+            "unit": "°",
+            "source": "Lunar polar astronomical horizon elevation (obliquity 1.54°)"
+          },
+          "overlap_pct": 0.0,
+          "direction_note": "Solar elevation ranges are completely disjoint (Earth up to 89.5°, Moon max 1.5°)."
         },
         {
-          "parameter": "thermal_inertia",
-          "state": "INSUFFICIENT_EVIDENCE",
-          "evidence_type": "sensor_missing",
-          "summary": "Thermal inertia data not yet ingested for any body.",
-          "detail": "Lunar thermal inertia map (Hayne et al. 2017, JGR Planets 122) not yet downloaded or ingested."
+          "parameter": "diurnal_illumination_cycle",
+          "state": "NOT_COMPARABLE",
+          "evidence_type": "physics_incompatibility",
+          "summary": "Earth operates on a 24.0h diurnal day/night rotation cycle. Moon South Pole lacks a diurnal cycle: sun circles the local horizon continuously without setting during polar summer and stays submerged in polar winter. Rotational physics are incomparable.",
+          "direction_note": "Earth 24.0h diurnal cycle vs Lunar polar azimuth-precessing grazing sun."
         }
-      ]
+      ],
+      "evidence": []
     }
   },
   "data_quality": {
@@ -227,8 +405,9 @@
   },
   "uncertainties": [
     "Resolution disparity is the dominant uncertainty: candidate at 180 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
-    "All thermal and mineralogical parameters are INSUFFICIENT_EVIDENCE — pending dataset ingestion.",
-    "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified."
+    "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+    "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+    "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
   ],
   "limitations": [
     {

@@ -26,6 +26,7 @@ from src.comparison.models import (
 from src.comparison.statistics import overlap_ratio, classify, compute_stats
 from src.comparison.thermal_evaluator import evaluate_thermal
 from src.comparison.geology_crosswalk import evaluate_geological_units
+from src.comparison.illumination_evaluator import evaluate_illumination
 from src.comparison.engine import ComparisonEngine
 from src.comparison.loader import load_earth_atacama, load_moon_south_pole, load_mars_jezero
 from src.comparison.exporter import export_report
@@ -84,29 +85,35 @@ def test_overlap_ratio_disjoint():
 
 
 # ===========================================================================
-# Test 4 — Thermal: surface_temp, amplitude, thermal_inertia → INSUFFICIENT
+# Test 4 — Thermal: surface_temp, amplitude, thermal_inertia evaluated
 # ===========================================================================
 
 @pytest.mark.parametrize("body", ["moon", "mars"])
-def test_thermal_all_insufficient(body):
+def test_thermal_evaluation(body):
     """
-    For both moon and mars, surface_temperature, day_night_thermal_amplitude,
-    and thermal_inertia must be INSUFFICIENT_EVIDENCE.
+    Thermal evaluation:
+    - surface_temperature is DIFFERENT for both bodies
+    - day_night_thermal_amplitude is DIFFERENT for both bodies
+    - thermal_inertia is SIMILAR for Mars (duricrust) and DIFFERENT for Moon (vacuum fine regolith)
+    - atmospheric_thermal_physics is NOT_COMPARABLE
     """
     results = evaluate_thermal(body)
-    insufficient_params = {
-        "surface_temperature",
-        "day_night_thermal_amplitude",
-        "thermal_inertia",
-    }
-    insufficient_found = {
-        r.parameter for r in results
-        if r.state == EvidenceState.INSUFFICIENT
-    }
-    missing = insufficient_params - insufficient_found
-    assert not missing, (
-        f"Expected INSUFFICIENT_EVIDENCE for {missing} on body='{body}'"
-    )
+    param_map = {r.parameter: r for r in results}
+
+    assert "surface_temperature" in param_map
+    assert param_map["surface_temperature"].state == EvidenceState.DIFFERENT
+
+    assert "day_night_thermal_amplitude" in param_map
+    assert param_map["day_night_thermal_amplitude"].state == EvidenceState.DIFFERENT
+
+    assert "thermal_inertia" in param_map
+    if body == "mars":
+        assert param_map["thermal_inertia"].state == EvidenceState.SIMILAR
+    else:
+        assert param_map["thermal_inertia"].state == EvidenceState.DIFFERENT
+
+    assert "atmospheric_thermal_physics" in param_map
+    assert param_map["atmospheric_thermal_physics"].state == EvidenceState.NOT_COMPARABLE
 
 
 # ===========================================================================
@@ -121,7 +128,7 @@ def test_end_to_end_moon():
     report = ComparisonEngine.compare(earth, moon)
 
     assert report.candidate_id is not None
-    for dim in ("terrain_topography", "surface_geology", "temperature_thermal"):
+    for dim in ("terrain_topography", "surface_geology", "temperature_thermal", "solar_illumination"):
         assert dim in report.dimensions, f"Missing dimension: {dim}"
     assert len(report.limitations) >= 4, "Must document at least 4 physical limitations"
 
@@ -143,7 +150,7 @@ def test_end_to_end_mars():
 
     report = ComparisonEngine.compare(earth, mars)
 
-    for dim in ("terrain_topography", "surface_geology", "temperature_thermal"):
+    for dim in ("terrain_topography", "surface_geology", "temperature_thermal", "solar_illumination"):
         assert dim in report.dimensions, f"Missing dimension: {dim}"
 
     assert report.planetary_context["target_body"] == "mars"
@@ -203,7 +210,7 @@ def test_json_schema_validity(tmp_path):
     for key in required_top:
         assert key in doc, f"Missing top-level key: '{key}'"
 
-    required_dims = ["terrain_topography", "surface_geology", "temperature_thermal"]
+    required_dims = ["terrain_topography", "surface_geology", "temperature_thermal", "solar_illumination"]
     for dim in required_dims:
         assert dim in doc["dimensions"], f"Missing dimension: '{dim}'"
         dim_data = doc["dimensions"][dim]
@@ -220,3 +227,31 @@ def test_json_schema_validity(tmp_path):
 
     assert len(doc["uncertainties"]) >= 1, "uncertainties list is empty"
     assert len(doc["limitations"])  >= 1, "limitations list is empty"
+
+
+# ===========================================================================
+# Test 9 — Illumination: Moon South Pole is DIFFERENT, Mars Jezero is SIMILAR
+# ===========================================================================
+
+def test_illumination_evaluator():
+    """
+    Test illumination evaluator scientific logic:
+    - Moon South Pole has grazing incidence and PSRs -> DIFFERENT
+    - Mars Jezero has 24.6h sol diurnal cycle -> SIMILAR
+    """
+    moon_res = evaluate_illumination("earth_atacama_s24w069", "moon")
+    assert moon_res.dimension == "solar_illumination"
+    assert moon_res.status == "DIFFERENT"
+    assert len(moon_res.mismatches) >= 2
+    # Verify annual_illumination_fraction mismatch
+    frac_param = next(p for p in moon_res.mismatches if p.parameter == "annual_illumination_fraction")
+    assert frac_param.state == EvidenceState.DIFFERENT
+    assert frac_param.overlap_pct is not None and frac_param.overlap_pct < 40.0
+
+    mars_res = evaluate_illumination("earth_atacama_s24w069", "mars")
+    assert mars_res.dimension == "solar_illumination"
+    assert mars_res.status == "SIMILAR"
+    assert len(mars_res.similarities) >= 1
+    mars_frac = next(p for p in mars_res.similarities if p.parameter == "annual_illumination_fraction")
+    assert mars_frac.state == EvidenceState.SIMILAR
+    assert mars_frac.overlap_pct is not None and mars_frac.overlap_pct >= 40.0
