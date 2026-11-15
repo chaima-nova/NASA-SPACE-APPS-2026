@@ -1,5 +1,5 @@
 import type { Prediction } from '../../data-contracts/types';
-import { scoreColor } from '../../lib/colors';
+import { bandOf } from '../../lib/colors';
 import { formatScore, terrainLabel, type Target } from '../../lib/site';
 
 export interface RankedItem {
@@ -57,13 +57,19 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
                 <span className="site-bar" aria-hidden="true">
                   <span
                     className="site-bar-fill"
-                    style={{ width: `${Math.round(fit * 100)}%`, background: scoreColor(fit) }}
+                    style={{
+                      width: `${Math.round(fit * 100)}%`,
+                      background: bandOf(fit).color,
+                    }}
                   />
                 </span>
               </span>
-              <span className="site-score" style={{ color: scoreColor(fit) }}>
+              <span className="site-score" style={{ color: bandOf(fit).color }}>
                 {formatScore(fit)}
               </span>
+              {/* The band in words, for a reader who is listening or cannot tell
+                  the four colours apart: colour is never the only carrier. */}
+              <span className="sr-only">{bandOf(fit).band}</span>
             </button>
           </li>
         );

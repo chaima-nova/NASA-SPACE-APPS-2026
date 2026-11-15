@@ -1028,10 +1028,10 @@ export function EarthGlobe({
           className={showClouds ? 'globe-toggle is-on' : 'globe-toggle'}
           aria-pressed={showClouds}
           onClick={onToggleClouds}
-          title="Show NASA's live cloud cover for the chosen day"
+          title="Show NASA's cloud cover for the moment the clock above is set to"
         >
           <span className="cloud-dot" aria-hidden="true" />
-          Live Cloud Layer
+          Cloud Layer
         </button>
         <button
           type="button"
