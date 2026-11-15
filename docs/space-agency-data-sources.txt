@@ -1,0 +1,66 @@
+
+SRTM Global 1 Arc-Second DEM (GL1)
+  Agency and mission: NASA / USGS / DLR - Shuttle Radar Topography Mission
+  Resolution: 1 arc-second, about 30 m
+  Access: NASA Earthdata HTTPS, tiles as .hgt
+  In the repository: 10 tiles in data/tiles/ - N19W156, N29W014, N35W116,
+    N36W117, N37E094, N37W007, N41W122, N43W114, S24W069, S24W070
+  Feeds: the screening pass over five of those tiles (15,680 windows of 64 x 64
+    cells, about 2 km each); measured ground for ten of the thirteen curated
+    sites over a 601 x 601 cell window (about 18.5 km); the Atacama elevation,
+    slope and roughness arrays behind the sample dossiers
+  Derived outputs: reports/screened_candidates.json, reports/site_terrain.json,
+    data/samples/srtm_earth_*.npy and srtm_earth_stats.json
+
+LOLA Global Lunar DEM, 4 pixels per degree (LDEM_4)
+  Agency and mission: NASA GSFC - Lunar Reconnaissance Orbiter / LOLA
+  Resolution: about 7.58 km per pixel at the equator
+  Access: PDS, imbrium.mit.edu (MIT)
+  Feeds: the lunar south-pole reference - slope, roughness and elevation grids
+    behind every Moon verdict, and the Moon side of all thirty engine reports
+  Derived outputs: data/samples/lola_moon_south_pole_*.npy and
+    lola_moon_stats.json
+
+MOLA MEGaDR Global Topography, 4 pixels per degree (meg004)
+  Agency and mission: NASA GSFC - Mars Global Surveyor / MOLA
+  Resolution: about 14.8 km per pixel at the equator
+  Access: PDS, pds-geosciences.wustl.edu; read through the native PDS3 reader
+  Feeds: the Jezero reference - the Mars side of all thirty engine reports
+  Derived outputs: data/samples/mola_mars_jezero_*.npy and mola_mars_stats.json
+
+MGS TES Thermal Inertia Global Map
+  Agency and mission: NASA / ASU / PSI - Mars Global Surveyor / TES
+    (Putzig, Mellon and Boynton 2005)
+  Resolution: about 3 km per pixel
+  Access: PDS, se.psi.edu
+  Status: PDS3 binary reader implemented and verified
+  Feeds: the thermal comparison, which uses the map's published inertia ranges
+    as a body-level envelope rather than reading per-pixel values
+
+NASA GIBS (gibs.earthdata.nasa.gov)
+  Draws the heat map, through a WMS request for MODIS_Terra_Land_Surface_Temp_Day
+  at the site's bounding box, and the cloud layer on the globe, from VIIRS
+  true-colour imagery on the same service.
+
+NASA Images API (images.nasa.gov, pixels from images-assets.nasa.gov)
+  Thirty-one agency frames across five of the thirteen sites, addressed by NASA
+  asset id. Every URL was requested and checked before it was committed.
+
+NASA Blue Marble and Earth at Night
+  public/earth/blue-marble-ice-4k.jpg and night-lights-3600.jpg - the globe's
+  day and night faces.
+
+NASA LOLA LDEM and LROC WAC
+  public/moon/ldem-4k.png and lroc-color-4k.jpg - lunar relief and colour.
+
+NASA / USGS Viking MDIM 2.1 colour mosaic
+  public/mars/viking-color-2k.jpg - the Mars reference map.
+
+NASA Deep Star Maps 2020 and the CGI Moon Kit
+  public/moon/starmap-4k.jpg, and the Moon frames the map composites.
+
+  MODIS MOD11A2 land surface temperature (NASA LPDAAC)
+  MODIS MCD12Q1 land cover (NASA LPDAAC)
+  MOLA MEGaDR 128 pixels per degree
+  LOLA 64 and 1024 pixels per degree
+  ASTER GDEM and NASA POWER

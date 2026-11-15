@@ -485,16 +485,6 @@ export function SiteInspector({
         </div>
       </dl>
 
-      <SiteCommunity
-        siteId={prediction.id}
-        siteName={prediction.siteName}
-        community={community}
-        onVote={() => actions.onVote()}
-        onAddNote={actions.onAddNote}
-        onAddReview={actions.onAddReview}
-        onDelete={actions.onDelete}
-      />
-
       <div className="divider" />
 
       <div className="dossier-actions">
@@ -520,6 +510,16 @@ export function SiteInspector({
           </button>
         </div>
       </div>
+
+      <SiteCommunity
+        siteId={prediction.id}
+        siteName={prediction.siteName}
+        community={community}
+        onVote={() => actions.onVote()}
+        onAddNote={actions.onAddNote}
+        onAddReview={actions.onAddReview}
+        onDelete={actions.onDelete}
+      />
 
 
       {explained ? (

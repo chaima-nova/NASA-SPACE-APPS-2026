@@ -1381,12 +1381,12 @@ body::before {
 
 .dossier-actions {
   display: flex;
-  /* "Fly in to terrain" plus "Satellite-Ground Comparison" does not fit one
-     row in this column, so the longer label takes a row of its own rather
-     than squeezing both. */
+  /* Under the facts and above the researcher notes, so the reader meets what
+     can be done with the site before the conversation about it. The labels are
+     long, so the comparison question takes a row of its own rather than being
+     squeezed beside the pair above it. */
   flex-wrap: wrap;
   gap: 7px;
-  margin-top: auto;
   padding-top: 8px;
 }
 
@@ -1793,12 +1793,6 @@ body::before {
   }
   .sources-card {
     grid-column: auto;
-  }
-  .dossier-actions {
-    position: sticky;
-    bottom: 0;
-    padding-bottom: 4px;
-    background: var(--surface);
   }
 }
 
@@ -4635,6 +4629,26 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 
+
+/* Attribution on the frame itself: the cover is stand-in imagery, not an agency
+   photograph, so the mark is fixed to the photograph rather than to the page. It
+   sits above the scrim and carries its own shadow, because the same bottom-right
+   corner is bright sand as often as it is snow. */
+.home-photo-mark {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  z-index: 2;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.09em;
+  color: rgba(244, 248, 250, 0.62);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  user-select: none;
+}
+
 /* No pointer, no paint: the poster frame stays whole on touch screens. */
 @media (hover: none) {
   .home-photo-sand {
@@ -6127,7 +6141,7 @@ html[data-a11y-motion='reduced'] *::after {
    analogue site is *for*. It sits inside .app's 22px gutter, so it carries no
    horizontal padding of its own. */
 .investigations {
-  margin-top: 16px;
+  margin-top: 30px;
 }
 
 .investigations-head {
