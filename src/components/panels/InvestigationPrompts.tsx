@@ -288,22 +288,24 @@ export function InvestigationPrompts({ prediction = null }: InvestigationPrompts
               <span className="investigation-chevron" aria-hidden="true" />
             </summary>
 
-            <div className="investigation-body">
-              {photo ? (
-                <figure className="investigation-photo">
-                  <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
-                    <img
-                      src={photoUrl(photo, 640)}
-                      alt={photo.caption}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </a>
-                  <figcaption>
-                    {photo.credit} · {photo.license}
-                  </figcaption>
-                </figure>
-              ) : null}
+            <div
+              className={photo ? 'investigation-body has-photo' : 'investigation-body'}
+              /* The plate is the body's own background, faded, rather than a
+                 116 px band above the prompts: the frame says which ground the
+                 questions are about without pushing the first question below
+                 the fold. The dark wash keeps the evidence at reading contrast;
+                 the credit stays in the flow because the photograph is
+                 licensed. */
+              style={
+                photo
+                  ? {
+                      backgroundImage:
+                        'linear-gradient(180deg, rgba(6, 10, 18, 0.84), rgba(6, 10, 18, 0.92)), ' +
+                        'url(' + photoUrl(photo, 960) + ')',
+                    }
+                  : undefined
+              }
+            >
               <p className="investigation-aim">{track.aim}</p>
               <ol className="investigation-prompts">
                 {track.prompts.map((prompt) => (
@@ -316,6 +318,15 @@ export function InvestigationPrompts({ prediction = null }: InvestigationPrompts
                   </li>
                 ))}
               </ol>
+              {photo ? (
+                <p className="investigation-credit">
+                  Background:{' '}
+                  <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
+                    {photo.caption}
+                  </a>{' '}
+                  — {photo.credit} · {photo.license}
+                </p>
+              ) : null}
             </div>
           </details>
         ))}

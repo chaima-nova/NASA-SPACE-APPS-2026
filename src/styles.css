@@ -3415,7 +3415,7 @@ html[data-a11y-contrast='on'] .btn.see-site.has-photo {
 
 .community-date {
   font-family: var(--mono);
-  font-size: 0.56rem;
+  font-size: 0.62rem;
   color: var(--ink-3);
 }
 
@@ -6043,7 +6043,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigation-kind {
   font-family: var(--mono);
-  font-size: 0.54rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: rgb(var(--tint));
@@ -6052,7 +6052,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigation-title {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 1.04rem;
   letter-spacing: -0.01em;
 }
 
@@ -6080,8 +6080,8 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigation-aim {
   margin: 0;
-  font-size: 0.68rem;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  line-height: 1.6;
   color: var(--ink-3);
 }
 
@@ -6096,7 +6096,7 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigation-prompts li {
   position: relative;
-  padding: 10px 10px 10px 26px;
+  padding: 12px 10px 12px 28px;
   border-top: 1px solid var(--line);
 }
 
@@ -6112,8 +6112,8 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 .investigation-question {
-  margin: 0 0 5px;
-  font-size: 0.72rem;
+  margin: 0 0 6px;
+  font-size: 0.86rem;
   font-weight: 600;
   line-height: 1.45;
   color: var(--ink);
@@ -6121,8 +6121,8 @@ html[data-a11y-motion='reduced'] *::after {
 
 .investigation-evidence {
   margin: 0;
-  font-size: 0.66rem;
-  line-height: 1.6;
+  font-size: 0.78rem;
+  line-height: 1.65;
   color: var(--ink-3);
 }
 
@@ -6133,7 +6133,7 @@ html[data-a11y-motion='reduced'] *::after {
   border: 1px solid var(--line-2);
   border-radius: 4px;
   font-family: var(--mono);
-  font-size: 0.5rem;
+  font-size: 0.56rem;
   line-height: 1.5;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -6559,35 +6559,35 @@ a.compare-thumb {
   justify-content: center;
 }
 
-/* One field photograph per line of investigation, cropped to a band so the
-   cards keep their rhythm whatever the source image aspect is. The link is
-   the provenance: it opens the Commons file page the credit names. */
-.investigation-photo {
+/* One field photograph per line of investigation, faded into the body of the
+   card rather than sitting above it as a band: the prompts are the content, and
+   a band pushed the first question below the fold on a laptop. The caption
+   stays as text with a link to the Commons file page, because the frame is
+   licensed. */
+.investigation-body.has-photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 0 0 9px 9px;
+}
+
+/* A photograph behind text is the first thing high contrast should drop. */
+html[data-a11y-contrast='on'] .investigation-body.has-photo {
+  background-image: none !important;
+}
+
+.investigation-credit {
   margin: 0;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  overflow: hidden;
-  background: #05080d;
-}
-
-.investigation-photo a {
-  display: block;
-}
-
-.investigation-photo img {
-  display: block;
-  width: 100%;
-  height: 116px;
-  object-fit: cover;
-}
-
-.investigation-photo figcaption {
-  padding: 5px 7px;
   font-family: var(--mono);
-  font-size: 0.5rem;
+  font-size: 0.52rem;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  line-height: 1.6;
   color: var(--ink-3);
+}
+
+.investigation-credit a {
+  color: var(--ink-2);
+  text-underline-offset: 2px;
 }
 
 /* ---- Boot overlay -------------------------------------------------------- */
