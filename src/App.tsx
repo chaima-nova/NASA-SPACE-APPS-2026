@@ -49,14 +49,16 @@ import {
   FIT_BAND_LABELS,
   FIT_TYPE_LABELS,
   fitBandFor,
+  fitPercentFor,
   type FitType,
 } from './lib/similarity';
-import { classifySite, classificationRank, STATE_LABELS, STATE_RANK } from './lib/classification';
+import { classifySite, classificationRank, STATE_LABELS } from './lib/classification';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
 import {
   purposeFits,
+  purposesFit,
   MISSION_PURPOSE_ORDER,
   travelAccessOf,
   travelExport,
@@ -238,10 +240,12 @@ export default function App() {
   }, [dossierWide]);
   /** When on, only sites commercial travel can reach are listed. */
   /**
-   * What the reader is planning. Read from commercial access, the only
-   * mission-side fact this build holds; see lib/travel.ts.
+   * What the reader is planning: any number of the six purposes, held as a list
+   * so the chips are a multi-select. An empty list is "All Purposes" — no purpose
+   * cut at all — and the list is read as a union: a site stays if it fits at
+   * least one chosen purpose. See lib/travel.ts.
    */
-  const [purpose, setPurpose] = useState<MissionPurpose>('any');
+  const [purposes, setPurposes] = useState<MissionPurpose[]>([]);
   const [travelOnly, setTravelOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
@@ -369,33 +373,35 @@ export default function App() {
     };
   }, []);
 
-  // Open on the strongest site for the active target.
-  useEffect(() => {
-    if (selectedId || predictions.length === 0) return;
-    const top = [...predictions].sort(
-      (a, b) =>
-        classificationRank(classifySite(a, target)) - classificationRank(classifySite(b, target)) ||
-        a.siteName.localeCompare(b.siteName),
-    )[0];
-    setSelectedId(top.id);
-  }, [predictions, selectedId, target]);
-
   /** Least settled dimension first: the guide's own reading of a row. */
   const compareByOverall = (a: RankedItem, b: RankedItem) =>
     classificationRank(a.classification) - classificationRank(b.classification) ||
     a.prediction.siteName.localeCompare(b.prediction.siteName);
 
-  /** One dimension's evidence state, ignoring the other two. */
-  const compareByDimension = (
-    a: RankedItem,
-    b: RankedItem,
-    id: 'terrain' | 'geology' | 'thermal',
-  ) => {
-    const rankOf = (item: RankedItem) => {
-      const dimension = item.classification.dimensions.find((entry) => entry.id === id);
-      return dimension ? STATE_RANK[dimension.state] : Number.MAX_SAFE_INTEGER;
-    };
-    return rankOf(a) - rankOf(b);
+  /**
+   * Best to worst on the fit the sort menu is reading: the percentage itself,
+   * largest first.
+   *
+   * The queue used to order each dimension by evidence state, which cannot promise
+   * best-to-worst: the guide's states are coarser than its numbers, so a 50% and a
+   * 70% terrain overlap are both `similar`, the states tie, and the alphabet
+   * decides — which is how a promising candidate reached #1 above six strong ones.
+   * The percentage is what the band is cut from, so ordering by it cannot
+   * contradict the row's colour: strong first, then promising, then weak, and the
+   * higher figure first inside a band. Equal figures fall back to the name, so the
+   * order is stable rather than dependent on the order the predictions arrived in.
+   */
+  const compareByFit = (a: RankedItem, b: RankedItem) => {
+    const percentA = fitPercentFor(sort, a.classification, target);
+    const percentB = fitPercentFor(sort, b.classification, target);
+    // A fit with no ratio at all — Water & Ice, Illumination — has no figure to
+    // order by, so those keep the evidence order instead of pretending to one.
+    if (percentA === null && percentB === null) return compareByOverall(a, b);
+    // Rows without a figure for the selected fit are dropped before the sort, so
+    // this only guards the moment between data arriving and the filter running.
+    if (percentA === null) return 1;
+    if (percentB === null) return -1;
+    return percentB - percentA || a.prediction.siteName.localeCompare(b.prediction.siteName);
   };
 
   const ranked = useMemo<RankedItem[]>(() => {
@@ -413,9 +419,11 @@ export default function App() {
       // reaches is not a worse candidate, it is one the reader cannot use.
       .filter((p) => !travelOnly || travelAccessOf(p).access !== 'none')
       // Purpose is the same kind of cut: a site that no crew can fly into is not
-      // a worse analogue, it is one the reader's mission cannot use. The target
-      // comes in because navigation and construction read the classification.
-      .filter((p) => purposeFits(purpose, p, target))
+      // a worse analogue, it is one the reader's mission cannot use. Several
+      // purposes are a union, so a site needs to fit only one of them to stay. The
+      // target comes in because navigation and construction read the
+      // classification.
+      .filter((p) => purposesFit(purposes, p, target))
       .map((prediction) => ({
         prediction,
         classification: classifySite(prediction, target),
@@ -435,14 +443,13 @@ export default function App() {
     );
 
     const sorters: Record<SortKey, (a: RankedItem, b: RankedItem) => number> = {
-      // The whole set: a site whose least-decided dimension sits further up the
-      // state order leads. Nothing is averaged to produce the order.
-      overall: (a, b) => compareByOverall(a, b),
-      // One dimension at a time, ties broken by how settled the row is and then
-      // by name, so changing the dimension re-orders rather than reshuffles.
-      terrain: (a, b) => compareByDimension(a, b, 'terrain') || compareByOverall(a, b),
-      geology: (a, b) => compareByDimension(a, b, 'geology') || compareByOverall(a, b),
-      thermal: (a, b) => compareByDimension(a, b, 'thermal') || compareByOverall(a, b),
+      // The whole set, read as its strongest dimension: the figure a site can
+      // actually claim, which is the same figure its overall band is cut from.
+      overall: compareByFit,
+      // One dimension at a time, highest overlap first.
+      terrain: compareByFit,
+      geology: compareByFit,
+      thermal: compareByFit,
       // Listed because the challenge asks for them; nothing in this build
       // measures either, so the order stays the evidence order rather than
       // ranking sites on an ice or illumination number that does not exist.
@@ -452,7 +459,21 @@ export default function App() {
     };
 
     return items.sort(sorters[sort]);
-  }, [predictions, terrain, query, sort, target, origin, radiusKm, travelOnly, purpose]);
+  }, [predictions, terrain, query, sort, target, origin, radiusKm, travelOnly, purposes]);
+
+  /**
+   * Open on the row the queue actually leads with.
+   *
+   * This used to sort by evidence state and break ties by name, which is the same
+   * flaw the queue had: every site holding one `similar` dimension tied, and the
+   * alphabet picked the dossier — so the panel opened on a site ranked #11 while
+   * #1 sat unread beside it. Reading the queue's own first row keeps the two in
+   * step under the current sort, filters included.
+   */
+  useEffect(() => {
+    if (selectedId || ranked.length === 0) return;
+    setSelectedId(ranked[0].prediction.id);
+  }, [ranked, selectedId]);
 
   // Reported sites share the selection with model predictions: exactly one of
   // these two is ever non-null.
@@ -899,8 +920,8 @@ export default function App() {
         onOpenDistance={() => setDistanceOpen(true)}
         travelOnly={travelOnly}
         onTravelOnly={setTravelOnly}
-        purpose={purpose}
-        onPurpose={setPurpose}
+        purposes={purposes}
+        onPurposes={setPurposes}
         purposeCounts={purposeCounts}
       />
 
@@ -911,7 +932,6 @@ export default function App() {
           <header className="card-head">
             <div className="card-head-text">
               <h2>Ranked sites</h2>
-              <p>{target === 'moon' ? 'Moon' : 'Mars'} classification</p>
             </div>
             <label className="select">
               <span className="sr-only">Sort sites by</span>

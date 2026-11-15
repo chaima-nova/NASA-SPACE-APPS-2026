@@ -26,8 +26,9 @@ interface SiteListProps {
 }
 
 /**
- * The discovery queue: candidate analog sites, ordered by how settled their
- * classification is against the active target.
+ * The discovery queue: candidate analog sites, best to worst on the fit the sort
+ * menu is reading, so the rank beside a name is the order of that fit's
+ * percentage and never disagrees with the band the name is coloured by.
  *
  * A row identifies a site and says where it is; the three dimension verdicts and
  * their percentages live in the dossier. Printing them here as well made every

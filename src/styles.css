@@ -5751,8 +5751,6 @@ html[data-a11y-motion='reduced'] *::after {
   gap: 6px;
 }
 
-/* The dossier's open/close control: one arrow, white and large enough to read
-   as the way in rather than as another label beside the rank chip. */
 /* One column, so a long latitude/longitude pair never clips against an empty
    second slot. */
 .facts-coords {
@@ -5761,37 +5759,46 @@ html[data-a11y-motion='reduced'] *::after {
   margin-top: 4px;
 }
 
+/* The dossier's open/close control, drawn as the photo gallery's dismiss (the
+   .gallery-close box) so the two overlays are dismissed by the same object: a
+   28 px square with a hairline border, a 14 px hairline glyph, and the same
+   colour lift on hover. The box stays 28 px in both states, because the glyph
+   swaps under the pointer and the target must not move when it does. */
 .dossier-expand {
+  flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 0;
+  color: var(--ink-2);
   background: transparent;
-  color: #c3ccda;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
   cursor: pointer;
-  transition: color 0.15s var(--ease);
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
 }
 
+/* 1.8 px at 14 px, the weight the gallery's glyphs use at the same size: any
+   heavier and the X reads as a delete icon rather than as a dismiss. */
 .dossier-expand-glyph {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.6;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: transform 0.18s var(--ease);
 }
 
-/* Pointer or keyboard on the control: the glyph goes to full white. Pressed (the
-   dossier opened out) reads the same, because the arrow pair already says which
-   state the control is in. */
-.dossier-expand:hover,
-.dossier-expand[aria-pressed='true'] {
-  color: #ffffff;
+/* Pointer on the control: glyph and border lift together, exactly as the
+   gallery's X does. The open state needs no rule of its own; the X glyph is
+   what says the dossier is already opened out. */
+.dossier-expand:hover {
+  color: var(--ink);
+  border-color: var(--line-3);
 }
 
 .dossier-expand:focus-visible {

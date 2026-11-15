@@ -4,6 +4,7 @@ import type { Origin } from '../../lib/geo';
 import { TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
 import {
   MISSION_PURPOSE_LABELS,
+  MISSION_PURPOSE_ORDER,
   type MissionPurpose,
 } from '../../lib/travel';
 
@@ -26,9 +27,9 @@ interface FilterBarProps {
   /** True when the list is cut to sites that commercial travel can reach. */
   travelOnly: boolean;
   onTravelOnly: (travelOnly: boolean) => void;
-  /** What the reader is planning, out of the six purposes the brief names. */
-  purpose: MissionPurpose;
-  onPurpose: (purpose: MissionPurpose) => void;
+  /** What the reader is planning: any number of the six purposes the brief names. */
+  purposes: MissionPurpose[];
+  onPurposes: (purposes: MissionPurpose[]) => void;
   /** How many sites each purpose would leave, so no chip is a dead end. */
   purposeCounts: Record<MissionPurpose, number>;
 }
@@ -61,8 +62,8 @@ export function FilterBar({
   onOpenDistance,
   travelOnly,
   onTravelOnly,
-  purpose,
-  onPurpose,
+  purposes,
+  onPurposes,
   purposeCounts,
 }: FilterBarProps) {
   const [open, setOpen] = useState(false);
@@ -81,7 +82,9 @@ export function FilterBar({
     (terrain === 'all' ? 0 : 1) +
     (origin ? 1 : 0) +
     (travelOnly ? 1 : 0) +
-    (purpose === 'any' ? 0 : 1);
+    // One constraint, however many purposes are chosen inside it: the badge counts
+    // what narrows the list, not how many chips are lit.
+    (purposes.length === 0 ? 0 : 1);
 
   return (
     <div className="filterbar">
@@ -156,15 +159,34 @@ export function FilterBar({
                 ))}
               </div>
 
+              {/* A multi-select: a mission can need landing *and* mobility, and a
+                  site that answers either one belongs on the shortlist. "All
+                  Purposes" is the empty selection, so it clears the others rather
+                  than being a seventh thing that can be chosen beside them. */}
               <p className="constraints-title">Mission Purpose</p>
-              <div className="chips" role="group" aria-label="Mission purpose">
-                {(Object.keys(MISSION_PURPOSE_LABELS) as MissionPurpose[]).map((value) => (
+              <div className="chips" role="group" aria-label="Mission purpose, choose any number">
+                <button
+                  type="button"
+                  className="chip"
+                  aria-pressed={purposes.length === 0}
+                  onClick={() => onPurposes([])}
+                >
+                  {MISSION_PURPOSE_LABELS.any}
+                  <span className="chip-count">{purposeCounts.any}</span>
+                </button>
+                {MISSION_PURPOSE_ORDER.map((value) => (
                   <button
                     key={value}
                     type="button"
                     className="chip"
-                    aria-pressed={purpose === value}
-                    onClick={() => onPurpose(value)}
+                    aria-pressed={purposes.includes(value)}
+                    onClick={() =>
+                      onPurposes(
+                        purposes.includes(value)
+                          ? purposes.filter((entry) => entry !== value)
+                          : [...purposes, value],
+                      )
+                    }
                   >
                     {MISSION_PURPOSE_LABELS[value]}
                     <span className="chip-count">{purposeCounts[value]}</span>
@@ -174,7 +196,8 @@ export function FilterBar({
               {/* Says what each purpose reads, so a chip that removes a site cannot
                   be mistaken for a safety, trafficability or habitability verdict. */}
               <p className="constraints-hint">
-                Each purpose reads a signal this build already holds. Landing — a measured
+                Choose as many as the mission needs; a site stays if it fits at least one of
+                them. Each purpose reads a signal this build already holds. Landing — a measured
                 slope window with scheduled service into the gate. Mobility — a measured slope
                 window, however the site is reached. Navigation — a named target-site crosswalk.
                 Robotic Operations — charter or expedition logistics, with no scheduled service.
