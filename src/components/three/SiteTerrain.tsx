@@ -665,58 +665,59 @@ export function SiteTerrain({ prediction, onClose }: SiteTerrainProps) {
             this patch: the altitude ramp spans the ground's own relief, and the
             temperature ramp spans only the bands this frame carries. A scale fixed
             to the planet is what made every site read the same. */}
-        {overlay !== 'none' && patch ? (
+                {/* One card per overlay, each behind its own condition. The two used to
+            share one card whose body switched on the overlay, which is how a
+            temperature tick could reach the height scale. */}
+        {overlay === 'altitude' && patch ? (
           <div className="terrain-scale">
-            <span className="terrain-scale-title">
-              {overlay === 'altitude' ? 'Height' : 'Surface temp'}
-            </span>
+            <span className="terrain-scale-title">Height</span>
             <div className="terrain-scale-body">
-              {overlay === 'altitude' ? (
-                <>
-                  <div
-                    className="terrain-scale-bar"
-                    style={{ background: altitudeGradient() }}
-                    role="img"
-                    aria-label={`Height, from ${Math.round(
-                      patch.minElevation,
-                    )} to ${Math.round(patch.maxElevation)} metres above sea level`}
-                  />
-                  <div className="terrain-scale-ticks">
-                    {altitudeTicks(patch.minElevation, patch.maxElevation).map((tick, index) => (
-                      <span key={`${tick}-${index}`}>{formatElevation(tick)}</span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div
-                    className="terrain-scale-bar"
-                    style={{
-                      background: tempScale?.bands.length
-                        ? `linear-gradient(to top, ${tempScale.bands.join(', ')})`
-                        : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
-                    }}
-                    role="img"
-                    aria-label={
-                      tempScale?.span
-                        ? `Surface temperature from ${formatTemperature(
-                            tempScale.span[0],
-                          )} to ${formatTemperature(tempScale.span[1])}, colder at the bottom`
-                        : 'Surface temperature: cooler at the bottom, warmer at the top'
-                    }
-                  />
-                  <div className="terrain-scale-ticks">
-                    {heatTicks.length ? (
-                      heatTicks.map((tick) => <span key={tick}>{tick}</span>)
-                    ) : (
-                      <>
-                        <span>Warmer</span>
-                        <span>Cooler</span>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
+              <div
+                className="terrain-scale-bar"
+                style={{ background: altitudeGradient() }}
+                role="img"
+                aria-label={
+                  'Height, from ' + Math.round(patch.minElevation) + ' to ' +
+                  Math.round(patch.maxElevation) + ' metres above sea level'
+                }
+              />
+              <div className="terrain-scale-ticks">
+                {altitudeTicks(patch.minElevation, patch.maxElevation).map((tick, index) => (
+                  <span key={'altitude-' + index}>{formatElevation(tick)}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {overlay === 'temperature' && patch ? (
+          <div className="terrain-scale">
+            <span className="terrain-scale-title">Surface temp</span>
+            <div className="terrain-scale-body">
+              <div
+                className="terrain-scale-bar"
+                style={{
+                  background: tempScale?.bands.length
+                    ? 'linear-gradient(to top, ' + tempScale.bands.join(', ') + ')'
+                    : 'repeating-linear-gradient(to top, var(--line-3) 0 6px, transparent 6px 12px)',
+                }}
+                role="img"
+                aria-label={
+                  tempScale?.span
+                    ? 'Surface temperature from ' + formatTemperature(tempScale.span[0]) +
+                      ' to ' + formatTemperature(tempScale.span[1]) + ', colder at the bottom'
+                    : 'Surface temperature: cooler at the bottom, warmer at the top'
+                }
+              />
+              <div className="terrain-scale-ticks">
+                {heatTicks.length ? (
+                  heatTicks.map((tick) => <span key={tick}>{tick}</span>)
+                ) : (
+                  <>
+                    <span>Warmer</span>
+                    <span>Cooler</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         ) : null}

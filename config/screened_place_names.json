@@ -1,0 +1,66 @@
+{
+  "generated_by": "manual review of reports/screened_candidates.json against the window coordinates",
+  "note": "Names the screening pass output by the ground each window sits on. The basis field says how the name was decided so it can be checked against the coordinates; a window whose name cannot be defended keeps its coordinates in the name.",
+  "places": {
+    "screened-n29w014-01": {
+      "name": "Atlantic Ocean, north-east of Lanzarote",
+      "basis": "Window centre 29.440N 13.262W, mean elevation -169 m. North and east of Lanzarote's north coast (29.26N), so the window is water, not land."
+    },
+    "screened-n29w014-02": {
+      "name": "Atlantic Ocean, north of Lanzarote",
+      "basis": "Window centre 29.404N 13.280W, mean elevation -152 m, 16 km north of Lanzarote. Open water."
+    },
+    "screened-n29w014-03": {
+      "name": "Atlantic Ocean, east of Lanzarote",
+      "basis": "Window centre 29.298N 13.333W, mean elevation -55 m. East of the island and north of its north-east point, so the window is water."
+    },
+    "screened-s24w069-01": {
+      "name": "Salar de Atacama, east shore",
+      "basis": "Window centre 23.471S 68.138W, mean elevation 2,303 m. That elevation is the salar floor, and the centre sits on the basin's eastern margin, west of Toconao."
+    },
+    "screened-s24w069-02": {
+      "name": "Salar de Atacama, north basin",
+      "basis": "Window centre 23.187S 68.315W, mean elevation 2,312 m, on the northern salt flat between San Pedro de Atacama and the salar proper."
+    },
+    "screened-s24w069-03": {
+      "name": "Salar de Atacama, centre",
+      "basis": "Window centre 23.365S 68.227W, mean elevation 2,303 m, inside the salar outline."
+    },
+    "screened-n43w114-01": {
+      "name": "Big Lost River valley, Idaho",
+      "basis": "Window centre 43.902N 113.475W, mean elevation 1,774 m, on the valley floor between Arco and Mackay, below the Lost River Range."
+    },
+    "screened-n43w114-02": {
+      "name": "Lost River Range foothills, Idaho",
+      "basis": "Window centre 43.902N 113.440W, mean elevation 1,799 m, 3 km east of the window above, rising toward the range front."
+    },
+    "screened-n43w114-03": {
+      "name": "Howe, Snake River Plain, Idaho",
+      "basis": "Window centre 43.867N 113.031W, mean elevation 1,513 m, about 10 km north of Howe on the eastern plain."
+    },
+    "screened-n41w122-01": {
+      "name": "Tule Lake basin, California",
+      "basis": "Window centre 41.867N 121.387W, mean elevation 1,287 m, on the basin floor east of Tule Lake and north-east of the Lava Beds."
+    },
+    "screened-n41w122-02": {
+      "name": "Modoc Plateau, near Medicine Lake, California",
+      "basis": "Window centre 41.493N 121.920W, mean elevation 1,671 m, high plateau south-west of Medicine Lake."
+    },
+    "screened-n41w122-03": {
+      "name": "Modoc Plateau, west of Alturas, California",
+      "basis": "Window centre 41.653N 121.013W, mean elevation 1,522 m, on the plateau about 45 km west of Alturas."
+    },
+    "screened-n37e094-01": {
+      "name": "Qarhan playa, Qaidam Basin, China",
+      "basis": "Window centre 37.155N 94.365E, mean elevation 2,682 m, on the basin floor near the Qarhan salt flat."
+    },
+    "screened-n37e094-02": {
+      "name": "Qarhan playa, east basin, China",
+      "basis": "Window centre 37.067N 94.596E, mean elevation 2,683 m, on the same basin floor 21 km east-south-east of the window above."
+    },
+    "screened-n37e094-03": {
+      "name": "Qaidam Basin, north of Qarhan playa, China",
+      "basis": "Window centre 37.244N 94.596E, mean elevation 2,687 m, on the basin floor north of the salt flat."
+    }
+  }
+}

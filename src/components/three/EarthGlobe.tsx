@@ -72,16 +72,32 @@ const HOME_DISTANCE = 6.81;
 const HOME = new THREE.Vector3(0.9, 1.3, 5.3).setLength(HOME_DISTANCE);
 
 /**
+ * Beacon size, in CSS pixels, and how it changes with zoom.
+ *
+ * A sprite given a fixed world size grows on screen as the camera closes in:
+ * at the closest framing the same 0.26-unit quad covers five times the ground
+ * it does from home, so sites a couple of degrees apart merged into blobs that
+ * no click could separate. The quad is sized from the live projection instead:
+ * 20 px at the home framing, which is what the beacon always measured there,
+ * easing down to 12 px at the closest zoom so the dots shrink while the ground
+ * under them grows and each centre stands apart.
+ */
+const HOME_MARKER_PX = 20;
+const MIN_MARKER_PX = 12;
+
+/**
  * How close, in CSS pixels, the pointer has to get to a beacon's centre.
  *
  * Picking used to be a raycast against the sprite, which tests the whole quad
  * including its glow: measured in the running globe that came to a ~34 px
  * radius, so three sites a few degrees apart all answered with whichever
  * sprite happened to be nearest the camera — one name for the whole cluster.
- * 14 px keeps a 28 px target around each dot, close enough to the visible core
- * that neighbouring beacons resolve to themselves.
+ * The radius now follows the drawn dot — 70% of its diameter, never below
+ * 9 px — so a shrunk beacon inside a cluster claims only the ground it covers
+ * instead of stealing the click from its neighbour.
  */
-const PICK_RADIUS_PX = 14;
+const PICK_RADIUS_RATIO = 0.7;
+const PICK_RADIUS_MIN_PX = 9;
 
 interface GlobeApi {
   rebuild: (items: MarkerItem[]) => void;
@@ -634,6 +650,47 @@ export function EarthGlobe({
       startTween(target, 0.9, () => onOpenSiteRef.current(id));
     };
 
+    /**
+     * Diameter of a beacon right now, in CSS pixels.
+     *
+     * Interpolated over the camera's own zoom range rather than its raw
+     * distance, so the dots reach their smallest at `controls.minDistance` and
+     * are back to their home size the moment the framing is pulled out. Past
+     * home they hold that size rather than growing, which keeps a full-globe
+     * view calm instead of turning every site into a flare.
+     */
+    const markerPixelSize = () => {
+      const distance = camera.position.distanceTo(controls.target);
+      const close = THREE.MathUtils.clamp(
+        (distance - HOME_DISTANCE) / (controls.minDistance - HOME_DISTANCE),
+        0,
+        1,
+      );
+      return HOME_MARKER_PX + (MIN_MARKER_PX - HOME_MARKER_PX) * close;
+    };
+
+    /**
+     * The size last drawn, which picking reuses: hit-testing a 20 px dot with a
+     * 34 px halo is what made dense clusters unclickable in the first place.
+     */
+    let markerPixels = HOME_MARKER_PX;
+
+    /**
+     * World scale that draws a sprite `factor × pixels` wide at the current
+     * framing. The visible world height at the controls target is
+     * 2·tan(fov/2)·distance, so one CSS pixel is that divided by the canvas
+     * height; multiplying by the wanted pixel size gives the quad's width in
+     * world units. Recomputing it every frame is what keeps the beacon the
+     * same apparent size while the globe grows under it.
+     */
+    const markerScale = (factor = 1) => {
+      const distance = camera.position.distanceTo(controls.target);
+      const height = Math.max(1, renderer.domElement.clientHeight);
+      const worldPerPixel =
+        (2 * Math.tan((camera.fov * Math.PI) / 360) * distance) / height;
+      return worldPerPixel * markerPixelSize() * factor;
+    };
+
     const rebuild = (items: MarkerItem[]) => {
       markers.forEach((sprite) => {
         markerGroup.remove(sprite);
@@ -654,26 +711,20 @@ export function EarthGlobe({
           blending: reported ? THREE.NormalBlending : THREE.AdditiveBlending,
         });
         const sprite = new THREE.Sprite(material);
-        // One beacon size: the states are categorical, so size is not a second axis.
-        const base = reported ? 0.24 : 0.26;
-        sprite.scale.setScalar(base);
+        // One beacon size: the states are categorical, so size is not a second
+        // axis. This is a multiplier on the on-screen size, not a world size.
+        const sizeFactor = reported ? 0.92 : 1;
+        sprite.scale.setScalar(markerScale(sizeFactor));
         sprite.position.copy(latLonToVec(item.lat, item.lon, RADIUS + 0.015));
-        sprite.userData = { ...item, base };
+        sprite.userData = { ...item, sizeFactor };
         markerGroup.add(sprite);
         markers.set(item.id, sprite);
       }
 
-      if (activeId) {
-        const active = markers.get(activeId);
-        if (active) active.scale.setScalar(active.userData.base * 1.75);
-      }
     };
 
     const select = (id: string | null) => {
       activeId = id;
-      markers.forEach((sprite, key) => {
-        sprite.scale.setScalar(sprite.userData.base * (key === id ? 1.75 : 1));
-      });
       const selected = id ? markers.get(id) : null;
       if (selected && !reduceMotion) {
         const distance = Math.max(5.2, camera.position.length());
@@ -722,7 +773,7 @@ export function EarthGlobe({
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       let best: THREE.Sprite | null = null;
-      let bestDistance = PICK_RADIUS_PX;
+      let bestDistance = Math.max(PICK_RADIUS_MIN_PX, markerPixels * PICK_RADIUS_RATIO);
       markers.forEach((sprite) => {
         sprite.getWorldPosition(markerWorld);
         toCamera.subVectors(camera.position, markerWorld);
@@ -913,13 +964,18 @@ export function EarthGlobe({
           Math.abs(next - cloudsTarget) < 0.002 ? cloudsTarget : next;
       }
 
-      // Selected beacon breathes; hovered one brightens slightly.
+      // Every beacon is redrawn from the live projection, so zooming in shrinks
+      // the dots instead of inflating them over the sites beside them. The
+      // selected beacon breathes and a hovered one grows a little; both are
+      // multipliers on that pixel size, never a fixed world scale.
+      markerPixels = markerPixelSize();
       markers.forEach((sprite, key) => {
-        const base = sprite.userData.base as number;
         const isActive = key === activeId;
         const isHovered = key === hovered;
         const pulse = isActive ? 1 + Math.sin(t * 2.6) * 0.08 : 1;
-        sprite.scale.setScalar(base * (isActive ? 1.75 : isHovered ? 1.3 : 1) * pulse);
+        const emphasis = isActive ? 1.75 : isHovered ? 1.3 : 1;
+        const factor = (sprite.userData.sizeFactor as number) ?? 1;
+        sprite.scale.setScalar(markerScale(factor) * emphasis * pulse);
       });
 
       // The sky rotates at the real sidereal rate while the Earth stays fixed

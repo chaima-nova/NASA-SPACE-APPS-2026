@@ -615,7 +615,9 @@ body::before {
 .ranked-list {
   list-style: none;
   margin: 0;
-  padding: 5px;
+  /* Flush to the panel edge: each row carries its own inset, so a gutter here
+     only pushed the names away from the card they sit in. */
+  padding: 4px 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -623,11 +625,11 @@ body::before {
 
 .site-row {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
   width: 100%;
-  padding: 8px 9px;
+  padding: 9px 4px;
   font: inherit;
   text-align: left;
   color: inherit;
@@ -665,7 +667,7 @@ body::before {
 }
 
 .site-name {
-  font-size: 0.81rem;
+  font-size: 0.94rem;
   font-weight: 500;
   color: var(--ink);
   white-space: nowrap;
@@ -678,8 +680,9 @@ body::before {
 }
 
 .site-meta {
-  font-size: 0.63rem;
-  color: var(--ink-3);
+  font-size: 0.72rem;
+  /* White, not grey: this line is the row's evidence, not a caption. */
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1449,6 +1452,14 @@ body::before {
   border-radius: 50%;
   background: #9beaff;
   box-shadow: 0 0 6px #9beaff;
+}
+
+/* The Mars map's caption dot takes the planet's own colour, the same one the
+   season badge under it already uses. A lunar cyan dot on Jezero's ground read
+   as the wrong body, and this caption is the one thing naming the region. */
+.mars-target-dot {
+  background: #d9713c;
+  box-shadow: 0 0 6px #d9713c;
 }
 
 .target-caption-name {
@@ -6945,7 +6956,10 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 108px;
+  /* Shrink to the ramp and its ticks. A fixed 108 px left a column of empty
+     card to the right of the numbers, which read as a missing label. */
+  width: max-content;
+  max-width: 100%;
   padding: 7px 8px;
   background: rgba(6, 10, 16, 0.78);
   border: 1px solid var(--line);
@@ -7004,10 +7018,6 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
     top: 88px;
     bottom: 152px;
     width: 168px;
-  }
-
-  .terrain-scale {
-    width: 100px;
   }
 
   .terrain-scale-body {

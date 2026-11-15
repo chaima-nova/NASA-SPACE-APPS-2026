@@ -423,7 +423,11 @@ export function formatTemperature(kelvin: number): string {
 export function temperatureTicks(scale: TemperatureScale): string[] {
   if (!scale.span) return [];
   const [cold, warm] = scale.span;
-  return [warm, (cold + warm) / 2, cold].map(formatTemperature);
+  const ticks = [warm, (cold + warm) / 2, cold].map(formatTemperature);
+  // A frame whose whole span rounds to one degree has nothing to separate:
+  // three identical labels read as a broken scale, so the legend stays
+  // qualitative rather than claiming a resolution it does not have.
+  return new Set(ticks).size > 1 ? ticks : [];
 }
 
 /**

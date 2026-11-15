@@ -202,7 +202,7 @@ export function MarsMap({ highlight = null }: MarsMapProps) {
       <div ref={mountRef} className="three-mount" />
       {highlight ? (
         <div className="target-caption">
-          <span className="target-caption-dot" aria-hidden="true" />
+          <span className="target-caption-dot mars-target-dot" aria-hidden="true" />
           <span className="target-caption-name">{highlight.name}</span>
           <span className="target-caption-coords">
             {formatCoords(highlight.lat, highlight.lon)}

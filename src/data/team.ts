@@ -23,28 +23,28 @@ export interface TeamMember {
 
 export const TEAM: readonly TeamMember[] = [
   {
-    name: 'Chaima',
+    name: 'Chaima Hafsi',
     role: 'Product Direction & System Integration',
     owner: true,
     description: 'Product architecture, discovery workflow, cross-team coordination, system integration, storytelling.',
   },
   {
-    name: 'Abid',
+    name: 'Abid T.S',
     role: 'Geospatial Data & GIS',
     description: 'Dataset availability, geographic coverage, spatial harmonisation, candidate mapping.',
   },
   {
-    name: 'Zehra',
+    name: 'Zehra Merve Camci',
     role: 'Scientific Criteria & Validation',
     description: 'Planetary criteria, scientific comparability, reference literature, validation methodology.',
   },
   {
-    name: 'Harshil',
+    name: 'Harshil P',
     role: 'Machine Learning & AI',
     description: 'Feature analysis, screening algorithms, candidate-detection models, performance evaluation.',
   },
   {
-    name: 'Jasmine',
+    name: 'Jasmine Jowahir',
     role: 'Frontend & User Experience',
     description: 'Analog Atlas visual UI, Analog Quest flow, Analog DNA profiles, candidate investigation UX.',
   },
@@ -55,15 +55,15 @@ export const TEAM: readonly TeamMember[] = [
  * that is where the other threads meet, not because its part starts later.
  */
 export const WORKFLOW: readonly { who: string; detail: string }[] = [
-  { who: 'Abid', detail: 'Datasets, coverage and spatial harmonisation.' },
-  { who: 'Zehra', detail: 'The planetary criteria and the validation methodology.' },
-  { who: 'Harshil', detail: 'Feature analysis, screening and candidate detection.' },
+  { who: 'Abid T.S', detail: 'Datasets, coverage and spatial harmonisation.' },
+  { who: 'Zehra Merve Camci', detail: 'The planetary criteria and the validation methodology.' },
+  { who: 'Harshil P', detail: 'Feature analysis, screening and candidate detection.' },
   {
-    who: 'Chaima',
+    who: 'Chaima Hafsi',
     detail: 'Product architecture, and the integration that joins the threads.',
   },
   {
-    who: 'Jasmine',
+    who: 'Jasmine Jowahir',
     detail: 'The atlas, the quest flow and the investigation interface.',
   },
 ];
