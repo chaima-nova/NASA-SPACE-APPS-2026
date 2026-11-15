@@ -1,5 +1,5 @@
 /**
- * The site's two views, as a hash route.
+ * The site's views, as a hash route.
  *
  * A hash rather than a path because the app ships as a static bundle: `/solution`
  * would need a server rewrite on every host it lands on, while `#/solution` works
@@ -15,13 +15,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = 'home' | 'solution' | 'summary' | 'team';
+export type Route = 'home' | 'solution' | 'team';
 
-export const ROUTES: readonly Route[] = ['home', 'solution', 'summary', 'team'];
+export const ROUTES: readonly Route[] = ['home', 'solution', 'team'];
 
 function parse(hash: string): Route | null {
   const value = hash.replace(/^#\/?/, '').replace(/\/+$/, '').toLowerCase();
-  const known: Route[] = ['home', 'solution', 'summary', 'team'];
+  const known: Route[] = ['home', 'solution', 'team'];
   return known.includes(value as Route) ? (value as Route) : null;
 }
 
@@ -42,7 +42,7 @@ export function routeHref(route: Route): string {
 
 /**
  * The current route and a way to change it. The change is a real hash
- * navigation, so the back button walks between the two views.
+ * navigation, so the back button walks between views.
  */
 export function useRoute(): [Route, (route: Route) => void] {
   const [route, setRoute] = useState<Route>(readRoute);
