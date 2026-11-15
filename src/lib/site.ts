@@ -49,6 +49,23 @@ export function siteRefOf(reported: ReportedSite): SiteRef {
 /** Which world the current classification is made against. */
 export type Target = 'moon' | 'mars';
 
+/**
+ * The model id the SRTM screening pass writes on the rows it publishes.
+ *
+ * A screened row is the only candidate this project found itself: a Node pass
+ * walked the committed 601x601 elevation and slope grids, measured each 16x16
+ * window and published the best cells. Every other row is a place somebody
+ * catalogued from the literature. The model id is the record of that difference,
+ * so the interface names it instead of leaving a reader to infer it from a site
+ * name that starts with "Screened cell".
+ */
+const SCREENING_MODEL_ID = 'screening-pass';
+
+/** True when TerraNexus found this ground, rather than cataloguing it. */
+export function foundByTerraNexus(prediction: Pick<Prediction, 'model'>): boolean {
+  return prediction.model.id === SCREENING_MODEL_ID;
+}
+
 export const TERRAIN_ORDER: TerrainType[] = [
   'desert',
   'arid',
