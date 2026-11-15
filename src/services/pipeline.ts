@@ -22,7 +22,9 @@ import molaStats from '../../data/samples/mola_mars_stats.json';
 import srtmStats from '../../data/samples/srtm_earth_stats.json';
 import marsReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_mars.json';
 import moonReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_moon.json';
-import type { DataSource, FocusArea } from '../data-contracts/types';
+import screenedRaw from '../../reports/screened_candidates.json';
+import type { DataSource, EvidenceState, FocusArea, Prediction } from '../data-contracts/types';
+import { SCORE_BANDS } from '../data-contracts/types';
 
 /* ------------------------------------------------------------ CSV parsing ---- */
 
@@ -247,3 +249,94 @@ export const measuredTerrain: TerrainSample[] = [
   toSample(molaStats as unknown as RawStats),
   toSample(lolaStats as unknown as RawStats),
 ];
+
+
+/* ------------------------------------------------ screened candidates ---- */
+
+/**
+ * Cells the screening pass selected, rather than sites typed into a fixture.
+ *
+ * `scripts/screen_analogues.mjs` walks Abid's committed SRTM grid, measures a
+ * 16 x 16 window at a time and scores each one against the lunar south pole and
+ * Jezero references. Rows from here are derived from data that is in this
+ * repository — which is the difference between characterising three famous
+ * sites and finding candidates.
+ *
+ * The caveat is in the file and on the page, because it matters: only slope and
+ * roughness were compared, and terrain roughness depends on the cell size the
+ * grid was sampled at. A 30 m SRTM window and a 0.25 degree MOLA window do not
+ * measure the same thing, so the score here is a screening signal, not a verdict.
+ * That is why every screened row carries `insufficient_evidence` unless the
+ * terrain is plainly unlike the target.
+ */
+interface ScreenedFile {
+  coverage: string;
+  method: string;
+  earth_tile: { dataset_id: string; bbox: number[]; grid: string; citation: string };
+  candidates: Array<{
+    id: string;
+    siteName: string;
+    region: string;
+    lat: number;
+    lon: number;
+    terrainType: 'desert';
+    elevationM: number;
+    measured: {
+      slopeMeanDeg: number;
+      triMeanM: number;
+      reliefM: number;
+      windowCells: number;
+      validPct: number;
+    };
+    moon: { fit: number; distance: number; terrainState: EvidenceState; overallState: EvidenceState };
+    mars: { fit: number; distance: number; terrainState: EvidenceState; overallState: EvidenceState };
+    strongest: 'moon' | 'mars';
+  }>;
+}
+
+const screened = screenedRaw as unknown as ScreenedFile;
+
+/** What was screened and what was not, in the pipeline's own words. */
+export const screeningCoverage = {
+  coverage: screened.coverage,
+  method: screened.method,
+  tile: screened.earth_tile,
+};
+
+const bandOf = (score: number) =>
+  score >= SCORE_BANDS.strong ? 'Strong' : score >= SCORE_BANDS.promising ? 'Promising' : 'Weak';
+
+export const screenedPredictions: Prediction[] = screened.candidates.map((cell) => {
+  const moonWins = cell.moon.fit >= cell.mars.fit;
+  const strongest = moonWins ? cell.moon : cell.mars;
+  const score = strongest.fit;
+  return {
+    id: cell.id,
+    pointId: cell.id,
+    siteName: cell.siteName,
+    lat: cell.lat,
+    lon: cell.lon,
+    focusArea: 'dual-analog',
+    model: { id: 'screening-pass', version: '1.0.0' },
+    predictedAt: '2026-11-14T00:00:00.000Z',
+    analogScore: score,
+    moonFit: cell.moon.fit,
+    marsFit: cell.mars.fit,
+    terrainType: cell.terrainType,
+    region: cell.region,
+    elevationM: cell.elevationM,
+    label: bandOf(score),
+    confidence: Number(Math.max(0, 1 - strongest.distance / 3).toFixed(2)),
+    // Only the measured roughness goes in. Thermal, aridity and geology have no
+    // Earth grid in this repository, so a number for them would be a guess
+    // dressed as data — the evidence state says the comparison is incomplete.
+    featureContributions: {
+      terrainRoughness: Number((cell.measured.triMeanM / 1000).toFixed(3)),
+    },
+    evidence: strongest.overallState,
+    evidenceNote: `Terrain-only screen of one SRTM window: mean slope ${cell.measured.slopeMeanDeg} degrees, TRI ${cell.measured.triMeanM} m, relief ${cell.measured.reliefM} m. Thermal, geological and resource dimensions were not compared.`,
+    verdict: `Screened from the Atacama SRTM tile: terrain ${strongest.terrainState.replace('_', ' ')} the ${
+      moonWins ? 'lunar south pole' : 'Jezero'
+    } reference, with no thermal or geological check — evidence is incomplete, not favourable.`,
+  };
+});

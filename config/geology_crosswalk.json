@@ -5,44 +5,137 @@
     {
       "class_id": "volcanic",
       "label": "Volcanic",
-      "moon_groups": ["Volcanic materials", "Mare basalt", "Pyroclastic deposits"],
-      "mars_groups": ["Volcanic units", "Amazonian volcanic", "Noachian volcanic"],
-      "earth_types": ["Basaltic lava plain", "Volcanic plateau", "Ignimbrite", "Pyroclastic flow deposit", "Lava field"]
+      "moon_groups": [
+        "Volcanic materials",
+        "Mare basalt",
+        "Pyroclastic deposits"
+      ],
+      "mars_groups": [
+        "Volcanic units",
+        "Amazonian volcanic",
+        "Noachian volcanic"
+      ],
+      "earth_types": [
+        "Basaltic lava plain",
+        "Volcanic plateau",
+        "Ignimbrite",
+        "Pyroclastic flow deposit",
+        "Lava field"
+      ]
     },
     {
       "class_id": "impact_related",
       "label": "Impact-related",
-      "moon_groups": ["Materials of craters", "Basin materials", "Imbrium Formation", "Orientale Formation"],
-      "mars_groups": ["Impact units", "Impact crater materials"],
-      "earth_types": ["Impact breccia", "Suevite", "Impact melt", "Shatter cone terrain"]
+      "moon_groups": [
+        "Materials of craters",
+        "Basin materials",
+        "Imbrium Formation",
+        "Orientale Formation"
+      ],
+      "mars_groups": [
+        "Impact units",
+        "Impact crater materials"
+      ],
+      "earth_types": [
+        "Impact breccia",
+        "Suevite",
+        "Impact melt",
+        "Shatter cone terrain"
+      ]
     },
     {
       "class_id": "ancient_highland_crust",
       "label": "Ancient highland crust",
-      "moon_groups": ["Terra materials", "Highland plains", "Undivided ancient highland"],
-      "mars_groups": ["Highland units", "Noachian highland", "Ancient cratered terrain"],
-      "earth_types": ["Precambrian crystalline basement", "Deformed metamorphic terrain", "Ancient shield terrain"]
+      "moon_groups": [
+        "Terra materials",
+        "Highland plains",
+        "Undivided ancient highland"
+      ],
+      "mars_groups": [
+        "Highland units",
+        "Noachian highland",
+        "Ancient cratered terrain"
+      ],
+      "earth_types": [
+        "Precambrian crystalline basement",
+        "Deformed metamorphic terrain",
+        "Ancient shield terrain"
+      ]
     },
     {
       "class_id": "plains_and_lowlands",
       "label": "Plains and lowlands",
-      "moon_groups": ["Plains materials", "Light plains", "Dark plains"],
-      "mars_groups": ["Lowland and basin units", "Hesperian lowland plain", "Amazonian lowland"],
-      "earth_types": ["Flat sedimentary plain", "Alluvial fan", "Playa lake", "Hyper-arid desert flat", "Lacustrine sediment"]
+      "moon_groups": [
+        "Plains materials",
+        "Light plains",
+        "Dark plains"
+      ],
+      "mars_groups": [
+        "Lowland and basin units",
+        "Hesperian lowland plain",
+        "Amazonian lowland"
+      ],
+      "earth_types": [
+        "Flat sedimentary plain",
+        "Alluvial fan",
+        "Playa lake",
+        "Hyper-arid desert flat",
+        "Lacustrine sediment"
+      ]
     },
     {
       "class_id": "apron_and_transition",
       "label": "Apron and transition deposits",
       "moon_groups": [],
-      "mars_groups": ["Apron and transition units", "Lobate debris apron", "Lineated valley fill"],
-      "earth_types": ["Talus slope", "Rock glacier", "Debris fan", "Colluvial apron", "Periglacial slope deposit"]
+      "mars_groups": [
+        "Apron and transition units",
+        "Lobate debris apron",
+        "Lineated valley fill"
+      ],
+      "earth_types": [
+        "Talus slope",
+        "Rock glacier",
+        "Debris fan",
+        "Colluvial apron",
+        "Periglacial slope deposit"
+      ]
     },
     {
       "class_id": "polar_and_ice",
       "label": "Polar and ice-related",
       "moon_groups": [],
-      "mars_groups": ["Polar units", "Planum boreum", "Planum australe", "Polar layered deposits"],
-      "earth_types": ["Glacial terrain", "Permafrost", "Arctic gravel plain", "Polar ice sheet margin", "Frozen lake bed"]
+      "mars_groups": [
+        "Polar units",
+        "Planum boreum",
+        "Planum australe",
+        "Polar layered deposits"
+      ],
+      "earth_types": [
+        "Glacial terrain",
+        "Permafrost",
+        "Arctic gravel plain",
+        "Polar ice sheet margin",
+        "Frozen lake bed"
+      ]
+    },
+    {
+      "class_id": "cave",
+      "label": "Cave / lava tube",
+      "moon_groups": [
+        "Mare basalt (tube roofs)",
+        "Volcanic materials"
+      ],
+      "mars_groups": [
+        "Volcanic units",
+        "Amazonian volcanic"
+      ],
+      "earth_types": [
+        "Lava tube",
+        "Lava-tube collapse trench",
+        "Solution cave",
+        "Karst cavity"
+      ],
+      "note": "Added for the brief, which names caves among the terrains to screen. Lunar and martian tube interiors are not mapped at this resolution, so the target-side groups describe the roof material rather than the void itself; treat any match as a surface proxy."
     }
   ],
   "region_assignments": {
@@ -50,22 +143,51 @@
       "primary_class": "plains_and_lowlands",
       "secondary_class": "volcanic",
       "description": "Hyper-arid high plateau with ignimbrite volcanic plateau, alluvial fans, and salt flats (salares). Atacama: Rech et al. 2010; Evenstar et al. 2017.",
-      "landforms": ["Volcanic plateau (puna)", "Alluvial fan", "Playa / salar", "Canyon scarp", "Desert pavement"],
+      "landforms": [
+        "Volcanic plateau (puna)",
+        "Alluvial fan",
+        "Playa / salar",
+        "Canyon scarp",
+        "Desert pavement"
+      ],
       "confidence": "moderate"
     },
     "moon_south_pole_lola": {
       "primary_class": "ancient_highland_crust",
       "secondary_class": "impact_related",
       "description": "Lunar South Pole region dominated by ancient highland anorthosite, overlaid by extensive impact basin ejecta and permanently shadowed crater floors. USGS Unified Geologic Map of the Moon (Fortezzo et al. 2020).",
-      "landforms": ["Polar crater rim", "Permanently shadowed region (PSR)", "Impact basin floor", "Highland massif"],
+      "landforms": [
+        "Polar crater rim",
+        "Permanently shadowed region (PSR)",
+        "Impact basin floor",
+        "Highland massif"
+      ],
       "confidence": "moderate"
     },
     "mars_jezero_mola": {
       "primary_class": "plains_and_lowlands",
       "secondary_class": "ancient_highland_crust",
       "description": "Jezero Crater: ancient lacustrine delta deposit in a Noachian impact basin. Surrounded by highland volcanic basalt. USGS Geologic Map of Mars (Tanaka et al. 2014); Farley et al. 2022 (Perseverance).",
-      "landforms": ["Ancient river delta", "Crater floor", "Impact rim escarpment", "Basaltic volcanic terrain"],
+      "landforms": [
+        "Ancient river delta",
+        "Crater floor",
+        "Impact rim escarpment",
+        "Basaltic volcanic terrain"
+      ],
       "confidence": "moderate"
     }
+  },
+  "validation": {
+    "status": "unverified",
+    "method": "Each class maps USGS map-group names (Fortezzo 2020 for the Moon, Tanaka 2014 for Mars) onto Earth terrain types. The mapping is a literature judgement, not a measurement.",
+    "checked": [
+      "Class names and group spellings match the USGS legend entries cited above.",
+      "Every Earth type in this file appears in at least one catalogued site or candidate."
+    ],
+    "outstanding": [
+      "No unit description has been read in full against its Earth counterpart, which is what \"verified\" would mean.",
+      "Three classes (impact_related, fluvial, cave) have no independent reviewer."
+    ],
+    "owner": "Unassigned — needs a geologist or planetary scientist to sign off each class."
   }
 }

@@ -1,6 +1,15 @@
 import type { Prediction } from '../../data-contracts/types';
 import { bandOf } from '../../lib/colors';
 import { formatScore, terrainLabel, type Target } from '../../lib/site';
+import type { EvidenceState } from '../../data-contracts/types';
+
+/** The state in three words, because a four-word taxonomy breaks the row. */
+const STATE_LABELS: Record<EvidenceState, string> = {
+  similar: 'terrain similar',
+  different: 'terrain differs',
+  insufficient_evidence: 'terrain only',
+  not_comparable: 'not comparable',
+};
 
 export interface RankedItem {
   prediction: Prediction;
@@ -53,6 +62,14 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
                   {distanceKm === undefined
                     ? null
                     : ' · ' + Math.round(distanceKm).toLocaleString('en-US') + ' km away'}
+                  {prediction.evidence ? (
+                    <>
+                      {' · '}
+                      <span className={`site-state is-${prediction.evidence}`}>
+                        {STATE_LABELS[prediction.evidence]}
+                      </span>
+                    </>
+                  ) : null}
                 </span>
                 <span className="site-bar" aria-hidden="true">
                   <span

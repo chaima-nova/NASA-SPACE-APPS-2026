@@ -28,6 +28,20 @@ export type FocusArea =
  */
 export const SCORE_BANDS = { strong: 0.54, promising: 0.48 } as const;
 
+/**
+ * Zehra's four evidence states, as the engine writes them.
+ *
+ * They exist so a comparison can say it could not decide. A score alone cannot:
+ * 0.42 reads as a weak match whether the ground was measured and found wanting
+ * or was never measured at all. The interface carries the word alongside the
+ * number, so the difference survives to the screen.
+ */
+export type EvidenceState =
+  | 'similar'
+  | 'different'
+  | 'insufficient_evidence'
+  | 'not_comparable';
+
 /** Terrain families named in the challenge brief. */
 export type TerrainType =
   | 'desert'
@@ -144,6 +158,10 @@ export interface Prediction {
   datasetIds?: string[];
   /** Optional one-sentence plain-language verdict. */
   verdict?: string;
+  /** The engine's state for this comparison, where one has been run. */
+  evidence?: EvidenceState;
+  /** One line naming what the score was computed from, and what was not. */
+  evidenceNote?: string;
   /** Human-readable bucket, e.g. "Strong" / "Promising" / "Weak". */
   label: string;
   /** Model confidence in [0, 1]. */

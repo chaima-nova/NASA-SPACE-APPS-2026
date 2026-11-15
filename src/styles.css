@@ -6909,3 +6909,35 @@ a.compare-thumb {
   line-height: 1.55;
   color: var(--ink-3);
 }
+
+/* The evidence state beside a score. Deliberately quiet: it qualifies the
+   number rather than competing with it, and it is a word, not a colour alone. */
+.site-state {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px dotted currentColor;
+}
+
+.site-state.is-similar {
+  color: var(--signal);
+}
+
+.site-state.is-different {
+  color: var(--mars);
+}
+
+/* The scope statement under the prompts band. */
+.scope-note {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--line-2);
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.scope-note strong {
+  color: var(--ink);
+}

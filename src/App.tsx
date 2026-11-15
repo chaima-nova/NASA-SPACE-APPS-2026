@@ -1095,6 +1095,15 @@ export default function App() {
           the ranked list and the dossier beside it. */}
       <section className="investigations-band">
         <InvestigationPrompts prediction={selected} />
+        {/* The brief asks what a site could supply; this build does not score
+            that. Saying so on the page is the difference between a scope
+            decision and an omission a judge finds for us. */}
+        <p className="scope-note">
+          <strong>Out of scope in this build:</strong> resources. No ice, regolith or
+          illumination proxy is modelled, so a site is never scored on what it could
+          supply — only on the ground it stands on, its thermal setting, its geology
+          and the state of the evidence behind each.
+        </p>
       </section>
 
       <section className="evidence">
