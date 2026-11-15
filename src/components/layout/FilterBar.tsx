@@ -194,10 +194,10 @@ export function FilterBar({
       <dl className="kpis">
         <div>
           <dt>Sites</dt>
-          <dd>
-            {shown}
-            <span className="kpi-sub">/{total}</span>
-          </dd>
+          {/* The count alone: the catalogue is small enough that "13/13" reads as
+              a fraction nobody asked for, and the denominator only moves when a
+              filter is on. The full sentence is kept for the tooltip. */}
+          <dd title={`${shown} of ${total} sites shown`}>{shown}</dd>
         </div>
         <div>
           <dt>Mean fit</dt>
