@@ -37,6 +37,9 @@ interface SiteInspectorProps {
   onSeeSite: () => void;
   onCompare: () => void;
   copied: boolean;
+  /** Whether the dossier is opened out across the page. */
+  expanded: boolean;
+  onToggleExpand: () => void;
 }
 
 function Meter({
@@ -93,12 +96,21 @@ export function SiteInspector({
   onSeeSite,
   onCompare,
   copied,
+  expanded,
+  onToggleExpand,
 }: SiteInspectorProps) {
   if (!prediction) {
     return (
       <div className="empty">
         <p>No site selected.</p>
         <p className="empty-sub">Pick a row from the ranked list or click a beacon on the globe.</p>
+        {/* Still offered when there is nothing to show: an opened dossier that
+            lost its selection must not trap the reader in an empty overlay. */}
+        {expanded ? (
+          <button type="button" className="dossier-expand" onClick={onToggleExpand}>
+            Collapse
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -114,7 +126,24 @@ export function SiteInspector({
     <div className="dossier">
       <div className="dossier-top">
         <span className="kicker">Site dossier</span>
-        {rank !== null ? <span className="rank-chip">#{String(rank).padStart(2, '0')}</span> : null}
+        <span className="dossier-top-right">
+          {rank !== null ? (
+            <span className="rank-chip">#{String(rank).padStart(2, '0')}</span>
+          ) : null}
+          <button
+            type="button"
+            className="dossier-expand"
+            aria-pressed={expanded}
+            onClick={onToggleExpand}
+            title={
+              expanded
+                ? 'Return the dossier to its column'
+                : 'Open the dossier across the page to read it'
+            }
+          >
+            {expanded ? 'Collapse' : 'Expand'}
+          </button>
+        </span>
       </div>
 
       <h2 className="dossier-name">{prediction.siteName}</h2>
