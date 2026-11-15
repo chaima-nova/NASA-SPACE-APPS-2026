@@ -27,9 +27,10 @@ import {
   mockOrbitalObjects,
   mockPredictions,
 } from '../data-contracts/mock';
-import { pipelineDatasets } from './pipeline';
+import { engineComparisons, pipelineDatasets, screenedPredictions } from './pipeline';
 import type {
   CommunityState,
+  EvidenceState,
   DataSource,
   FieldNote,
   OrbitalObject,
@@ -63,8 +64,68 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * The engine's verdict for the site of that name, if it has run on it.
+ *
+ * Harshil's reports are the only evidence in the repository produced by the
+ * comparison engine, and they cover one candidate. Attaching them here is what
+ * puts that work in the ranked list rather than only in a panel: a row now says
+ * whether the engine found the ground similar, different, or unable to decide.
+ */
+/**
+ * A name with its decorations taken off: "Atacama Desert (Chile)" and
+ * "Atacama Desert, Chile" are the same site to a reader, so they are the same
+ * site to this lookup. Matching the raw strings attached the engine's verdict to
+ * nothing at all.
+ */
+const normaliseName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/([^)]*)/g, ' ')
+    .replace(/[^a-z ]/g, ' ')
+    .replace(/s+/g, ' ')
+    .trim();
+
+const ENGINE_BY_SITE = engineComparisons.map((comparison) => ({
+  comparison,
+  key: normaliseName(comparison.candidate),
+}));
+
+function withEngineState(prediction: Prediction): Prediction {
+  if (prediction.evidence) return prediction;
+  const name = normaliseName(prediction.siteName);
+  const hit = ENGINE_BY_SITE.find(
+    (entry) => name === entry.key || name.startsWith(entry.key) || entry.key.startsWith(name),
+  )?.comparison;
+  if (!hit) return prediction;
+  const statuses = hit.dimensions.map((dimension) => ({
+    id: dimension.id,
+    status: dimension.status.toLowerCase() as EvidenceState,
+  }));
+  const evidence: EvidenceState = statuses.some((s) => s.status === 'insufficient_evidence')
+    ? 'insufficient_evidence'
+    : statuses.every((s) => s.status === 'similar')
+      ? 'similar'
+      : 'different';
+  return {
+    ...prediction,
+    evidence,
+    evidenceNote: `Engine ${hit.engineVersion} against ${hit.targetRegion}: ${statuses
+      .map((s) => `${s.id.replace(/_/g, ' ')} ${s.status.replace('_', ' ')}`)
+      .join(', ')}.`,
+  };
+}
+
 export function getPredictions(): Promise<Prediction[]> {
-  return fetchJson<Prediction[]>('/predictions', mockPredictions);
+  /**
+   * Screened cells first, then the fixtures.
+   *
+   * The ranking sorts by fit anyway, so order here is not the ranking: what
+   * matters is that a row derived from the SRTM grid is in the same queue as a
+   * hand-written one, carrying the evidence state that says which is which.
+   */
+  const built = [...screenedPredictions, ...mockPredictions].map(withEngineState);
+  return fetchJson<Prediction[]>('/predictions', built);
 }
 
 /**

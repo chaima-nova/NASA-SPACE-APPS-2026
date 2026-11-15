@@ -1,0 +1,214 @@
+{
+  "generated_by": "scripts/screen_analogues.mjs",
+  "method": "Windows of 16x16 SRTM cells, mean slope / mean TRI / relief, distance to each target reference scaled by that reference spread, fit = 1 - distance/2.",
+  "coverage": "One 1x1 degree SRTM GL1 tile over the Atacama (24S 069W, 601x601 cells at 30 m). This demonstrates the screening method; it is not a global survey, and cells outside this tile have not been screened.",
+  "window_cells": 256,
+  "earth_tile": {
+    "dataset_id": "srtm_gl1",
+    "bbox": [
+      -69,
+      -24,
+      -68,
+      -23
+    ],
+    "grid": "601 x 601",
+    "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+  },
+  "references": [
+    {
+      "body": "moon",
+      "name": "Lunar south pole (80–90°S)",
+      "slopeMean": 8.91,
+      "slopeMax": 69.64,
+      "triMean": 1795.03,
+      "triMax": 6945.45,
+      "thermal": false
+    },
+    {
+      "body": "mars",
+      "name": "Jezero crater (17–20°N)",
+      "slopeMean": 1.2,
+      "slopeMax": 3.27,
+      "triMean": 754.01,
+      "triMax": 2037.56,
+      "thermal": false
+    }
+  ],
+  "screened_windows": 1369,
+  "candidates": [
+    {
+      "id": "screened-01",
+      "siteName": "Screened cell 01, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.0666,
+      "lon": -68.6406,
+      "terrainType": "desert",
+      "elevationM": 3450,
+      "measured": {
+        "slopeMeanDeg": 9.35,
+        "triMeanM": 90,
+        "reliefM": 393,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.44,
+        "distance": 1.121,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 5.859,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    },
+    {
+      "id": "screened-02",
+      "siteName": "Screened cell 02, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.1198,
+      "lon": -68.7471,
+      "terrainType": "desert",
+      "elevationM": 3462,
+      "measured": {
+        "slopeMeanDeg": 8.9,
+        "triMeanM": 85.1,
+        "reliefM": 370,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.439,
+        "distance": 1.123,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 5.544,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    },
+    {
+      "id": "screened-03",
+      "siteName": "Screened cell 03, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.7055,
+      "lon": -68.3478,
+      "terrainType": "desert",
+      "elevationM": 2647,
+      "measured": {
+        "slopeMeanDeg": 9.28,
+        "triMeanM": 86.7,
+        "reliefM": 372,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.439,
+        "distance": 1.123,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 5.808,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    },
+    {
+      "id": "screened-04",
+      "siteName": "Screened cell 04, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.1198,
+      "lon": -68.7205,
+      "terrainType": "desert",
+      "elevationM": 3516,
+      "measured": {
+        "slopeMeanDeg": 9.06,
+        "triMeanM": 84.3,
+        "reliefM": 393,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.438,
+        "distance": 1.123,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 5.658,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    },
+    {
+      "id": "screened-05",
+      "siteName": "Screened cell 05, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.1198,
+      "lon": -68.5607,
+      "terrainType": "desert",
+      "elevationM": 3173,
+      "measured": {
+        "slopeMeanDeg": 10.02,
+        "triMeanM": 97.4,
+        "reliefM": 419,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.438,
+        "distance": 1.124,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 6.321,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    },
+    {
+      "id": "screened-06",
+      "siteName": "Screened cell 06, Atacama tile",
+      "region": "Antofagasta, Chile (SRTM S24W069)",
+      "lat": -23.2529,
+      "lon": -68.614,
+      "terrainType": "desert",
+      "elevationM": 2695,
+      "measured": {
+        "slopeMeanDeg": 9.12,
+        "triMeanM": 83.1,
+        "reliefM": 373,
+        "windowCells": 256,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.438,
+        "distance": 1.124,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0,
+        "distance": 5.699,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "moon"
+    }
+  ]
+}
