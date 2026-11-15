@@ -38,8 +38,11 @@ export function SiteList({ items, selectedId, target, total, fit, onSelect }: Si
   if (items.length === 0) {
     return (
       <div className="empty">
-        <p>No sites match these filters.</p>
-        <p className="empty-sub">Clear a terrain chip or widen the search to see all {total}.</p>
+        <p>No results match these criteria.</p>
+        <p className="empty-sub">
+          Clear a terrain chip, widen the search, or choose a fit this build measures to see all{' '}
+          {total}.
+        </p>
       </div>
     );
   }

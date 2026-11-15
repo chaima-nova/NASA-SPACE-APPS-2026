@@ -44,7 +44,7 @@ import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
-import { BAND_COLORS, NO_FIT_COLOR, bandColor } from './lib/colors';
+import { BAND_COLORS, bandColor } from './lib/colors';
 import {
   FIT_BAND_LABELS,
   FIT_TYPE_LABELS,
@@ -400,7 +400,7 @@ export default function App() {
 
   const ranked = useMemo<RankedItem[]>(() => {
     const needle = fold(query.trim());
-    const items = predictions
+    let items = predictions
       .filter((p) => terrain === 'all' || terrainOf(p) === terrain)
       .filter(
         (p) =>
@@ -421,6 +421,18 @@ export default function App() {
         classification: classifySite(prediction, target),
         distanceKm: origin ? distanceBetween(origin, prediction) : undefined,
       }));
+
+    /*
+     * A row with no figure for the fit being read is not a result of that fit.
+     * Listing it uncoloured claimed it answered a question it has no number for,
+     * so it drops out here and the queue's empty state speaks instead — which is
+     * the honest answer for Water & Ice and Illumination, neither of which this
+     * build measures. The alphabetical sort is not a fit reading at all, so it
+     * keeps every row.
+     */
+    items = items.filter(
+      (item) => sort === 'name' || fitBandFor(sort, item.classification, target) !== null,
+    );
 
     const sorters: Record<SortKey, (a: RankedItem, b: RankedItem) => number> = {
       // The whole set: a site whose least-decided dimension sits further up the
@@ -1114,10 +1126,6 @@ export default function App() {
                     Weak
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: NO_FIT_COLOR }} />
-                    No fit figure
-                  </li>
-                  <li>
                     <span className="legend-ring" />
                     Reported
                   </li>
@@ -1201,6 +1209,20 @@ export default function App() {
               <MarsMap highlight={marsReference} />
             )}
           </Panel>
+
+          {/* An opened-out dossier is a sheet over the workbench, so the page behind
+              it is a real button rather than a painted wash: clicking anywhere outside
+              the panel closes it. Transparent, because the wash is drawn by the card's
+              own ::before and a second one here would double the darkness. */}
+          {dossierWide ? (
+            <button
+              type="button"
+              className="dossier-scrim"
+              aria-label="Close the site dossier"
+              tabIndex={-1}
+              onClick={() => setDossierWide(false)}
+            />
+          ) : null}
 
           <section
             className={dossierWide ? 'card dossier-card is-wide' : 'card dossier-card'}
