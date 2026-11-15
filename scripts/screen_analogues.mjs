@@ -43,6 +43,21 @@ import { measureWindow, readHgt, tileBounds } from './lib/hgt.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
+/**
+ * Reviewed place names, keyed by candidate id.
+ *
+ * The screen measures shape; it does not know what the ground is called. The
+ * names live in `config/screened_place_names.json` so a reviewer can check each
+ * one against the coordinates it describes, and a rerun keeps them instead of
+ * overwriting them with row numbers.
+ */
+const PLACE_NAMES = existsSync(resolve(root, 'config/screened_place_names.json'))
+  ? JSON.parse(readFileSync(resolve(root, 'config/screened_place_names.json'), 'utf8')).places
+  : {};
+
+/** A window with no reviewed name still reads as a location, not as a screen row. */
+const latLabel = (lat) => Math.abs(lat).toFixed(2) + '°' + (lat >= 0 ? 'N' : 'S');
+const lonLabel = (lon) => Math.abs(lon).toFixed(2) + '°' + (lon >= 0 ? 'E' : 'W');
 
 /* ------------------------------------------------------------- coverage ---- */
 
@@ -181,8 +196,10 @@ for (const entry of TILES) {
     const mars = window.fits.find((f) => f.target === 'mars');
     const strongest = moon.fit >= mars.fit ? moon : mars;
     candidates.push({
-      id: `screened-${entry.tile.toLowerCase()}-${pad(index + 1)}`,
-      siteName: `Screened cell ${pad(index + 1)}, ${entry.short} tile`,
+      id,
+      siteName:
+        PLACE_NAMES['screened-' + entry.tile.toLowerCase() + '-' + pad(index + 1)]?.name ??
+        entry.short + ', ' + latLabel(window.lat) + ' ' + lonLabel(window.lon),
       region: `${entry.region} (SRTM ${entry.tile})`,
       tile: entry.tile,
       lat: window.lat,

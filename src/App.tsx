@@ -45,7 +45,7 @@ import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
 import { STATE_COLORS } from './lib/colors';
-import { classifySite, classificationRank, STATE_LABELS } from './lib/classification';
+import { classifySite, classificationRank, STATE_LABELS, STATE_RANK } from './lib/classification';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
@@ -76,7 +76,16 @@ interface CompareRequest {
 /** Which report dialog is open: a new one, one being edited, or none. */
 type ReportDraft = { mode: 'new' } | { mode: 'edit'; site: ReportedSite } | null;
 
-type SortKey = 'settled' | 'name';
+/**
+ * What the ranked queue is ordered by.
+ *
+ * The guide grades three dimensions and refuses to average them, so the order
+ * is chosen too: one dimension at a time, or the whole set by how settled it
+ * is. There is no "best fit" entry because there is no composite score for it
+ * to name, and no Moon/Mars entry because the target button already says which
+ * body every row is being read against.
+ */
+type SortKey = 'overall' | 'terrain' | 'geology' | 'thermal' | 'name';
 
 const readParam = (key: string) =>
   typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get(key);
@@ -129,7 +138,7 @@ export default function App() {
     const known = Object.keys(TERRAIN_LABELS) as TerrainType[];
     return known.includes(value as TerrainType) ? (value as TerrainType) : 'all';
   });
-  const [sort, setSort] = useState<SortKey>('settled');
+  const [sort, setSort] = useState<SortKey>('overall');
   /** Where "distance from me" is measured from, once the reader has picked it. */
   const [origin, setOrigin] = useState<Origin | null>(null);
   /** Radius of the distance filter, in kilometres. */
@@ -297,6 +306,24 @@ export default function App() {
     setSelectedId(top.id);
   }, [predictions, selectedId, target]);
 
+  /** Least settled dimension first: the guide's own reading of a row. */
+  const compareByOverall = (a: RankedItem, b: RankedItem) =>
+    classificationRank(a.classification) - classificationRank(b.classification) ||
+    a.prediction.siteName.localeCompare(b.prediction.siteName);
+
+  /** One dimension's evidence state, ignoring the other two. */
+  const compareByDimension = (
+    a: RankedItem,
+    b: RankedItem,
+    id: 'terrain' | 'geology' | 'thermal',
+  ) => {
+    const rankOf = (item: RankedItem) => {
+      const dimension = item.classification.dimensions.find((entry) => entry.id === id);
+      return dimension ? STATE_RANK[dimension.state] : Number.MAX_SAFE_INTEGER;
+    };
+    return rankOf(a) - rankOf(b);
+  };
+
   const ranked = useMemo<RankedItem[]>(() => {
     const needle = fold(query.trim());
     const items = predictions
@@ -318,11 +345,14 @@ export default function App() {
       }));
 
     const sorters: Record<SortKey, (a: RankedItem, b: RankedItem) => number> = {
-      // Most settled first: a site whose least-decided dimension sits further up
-      // the state order leads. Nothing is averaged to produce the order.
-      settled: (a, b) =>
-        classificationRank(a.classification) - classificationRank(b.classification) ||
-        a.prediction.siteName.localeCompare(b.prediction.siteName),
+      // The whole set: a site whose least-decided dimension sits further up the
+      // state order leads. Nothing is averaged to produce the order.
+      overall: (a, b) => compareByOverall(a, b),
+      // One dimension at a time, ties broken by how settled the row is and then
+      // by name, so changing the dimension re-orders rather than reshuffles.
+      terrain: (a, b) => compareByDimension(a, b, 'terrain') || compareByOverall(a, b),
+      geology: (a, b) => compareByDimension(a, b, 'geology') || compareByOverall(a, b),
+      thermal: (a, b) => compareByDimension(a, b, 'thermal') || compareByOverall(a, b),
       name: (a, b) => a.prediction.siteName.localeCompare(b.prediction.siteName),
     };
 
@@ -779,7 +809,12 @@ export default function App() {
             <label className="select">
               <span className="sr-only">Sort sites by</span>
               <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
-                <option value="settled">Most settled</option>
+                {/* One entry per dimension the guide grades, plus the whole set
+                    and the alphabet. No Moon fit, no Mars fit, no best fit. */}
+                <option value="overall">Overall evidence</option>
+                <option value="terrain">Terrain &amp; topography</option>
+                <option value="geology">Surface &amp; geology</option>
+                <option value="thermal">Temperature &amp; environment</option>
                 <option value="name">Name</option>
               </select>
             </label>

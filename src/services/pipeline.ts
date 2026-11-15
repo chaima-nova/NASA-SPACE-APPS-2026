@@ -23,6 +23,7 @@ import srtmStats from '../../data/samples/srtm_earth_stats.json';
 import marsReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_mars.json';
 import moonReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_moon.json';
 import screenedRaw from '../../reports/screened_candidates.json';
+import screenedPlacesRaw from '../../config/screened_place_names.json?raw';
 import siteTerrainRaw from '../../reports/site_terrain.json';
 import type { DataSource, EvidenceState, FocusArea, Prediction } from '../data-contracts/types';
 
@@ -386,6 +387,22 @@ interface ScreenedFile {
 
 const screened = screenedRaw as unknown as ScreenedFile;
 
+/**
+ * Reviewed location names for the screened windows.
+ *
+ * The screening pass publishes coordinates, not names, and a row reading
+ * "Screened cell 01, Lanzarote tile" tells a reader nothing about where it is.
+ * `config/screened_place_names.json` names each window after the ground it sits
+ * on and records the evidence for that name beside it, so a label can be
+ * checked against the coordinates rather than taken on trust. A window with no
+ * reviewed name keeps the pipeline's own label instead of guessing.
+ */
+const screenedPlaces = (
+  JSON.parse(screenedPlacesRaw) as {
+    places: Record<string, { name: string; basis: string }>;
+  }
+).places;
+
 /** What was screened and what was not, in the pipeline's own words. */
 export const screeningCoverage = {
   coverage: screened.coverage,
@@ -400,7 +417,7 @@ export const screenedPredictions: Prediction[] = screened.candidates.map((cell) 
   return {
     id: cell.id,
     pointId: cell.id,
-    siteName: cell.siteName,
+    siteName: screenedPlaces[cell.id]?.name ?? cell.siteName,
     lat: cell.lat,
     lon: cell.lon,
     focusArea: 'dual-analog',
