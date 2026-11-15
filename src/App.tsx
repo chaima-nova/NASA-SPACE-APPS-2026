@@ -132,6 +132,19 @@ export default function App() {
     return known.includes(value as TerrainType) ? (value as TerrainType) : 'all';
   });
   const [sort, setSort] = useState<SortKey>('fit');
+  /**
+   * An explicit fit sort follows the target.
+   *
+   * "Moon Fit" and "Mars Fit" name a body as well as an order, so picking one
+   * and then switching the target used to leave the list ordered by a score the
+   * header no longer showed — Mars selected, "Moon Fit" still in the menu. The
+   * reader asked which places suit Mars; re-pointing the key answers that
+   * question instead of freezing the previous one. Best Fit already tracks the
+   * target and Name has no body at all, so only the two explicit keys move.
+   */
+  useEffect(() => {
+    setSort((current) => (current === 'moon' || current === 'mars' ? target : current));
+  }, [target]);
   /** Where "distance from me" is measured from, once the reader has picked it. */
   const [origin, setOrigin] = useState<Origin | null>(null);
   /** Radius of the distance filter, in kilometres. */

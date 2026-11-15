@@ -1653,6 +1653,10 @@ body::before {
   align-items: center;
   gap: 6px;
   margin-top: 7px;
+  /* The overlay ignores pointers so the globe stays draggable underneath it;
+     the clock is a real control and has to opt back in, or the date field and
+     "Now" are painted but never receive a click. */
+  pointer-events: auto;
   font-family: var(--mono);
   font-size: 0.58rem;
   letter-spacing: 0.06em;
