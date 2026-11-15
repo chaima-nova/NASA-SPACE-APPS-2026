@@ -24,6 +24,13 @@ export interface RadarSeries {
   label: string;
   color: string;
   values: number[];
+  /**
+   * Optional spoken/printed form per axis, for charts whose axes are not scores
+   * out of one — a distance, an airport code, a class. The vertex still comes
+   * from `values`, but the caption says what the axis actually measured, so the
+   * shape never has to stand in for the fact.
+   */
+  readouts?: string[];
 }
 
 interface AnalogueRadarProps {
@@ -59,14 +66,16 @@ const shape = (values: number[]) =>
 export function AnalogueRadar({ axes, current, other }: AnalogueRadarProps) {
   const count = axes.length;
 
+  /** What an axis says: the supplied readout when there is one, else the score. */
+  const shown = (series: RadarSeries, index: number) =>
+    series.readouts?.[index] ?? formatScore(series.values[index]);
+
   // Spoken form: a radar is one image to a sighted reader and seven numbers to
   // a listener, so the label carries them all rather than a summary.
   const spoken = axes
     .map(
       (axis, index) =>
-        `${axis.label}: ${current.label} ${formatScore(
-          current.values[index],
-        )}, ${other.label} ${formatScore(other.values[index])}`,
+        `${axis.label}: ${current.label} ${shown(current, index)}, ${other.label} ${shown(other, index)}`,
     )
     .join('. ');
 
@@ -124,7 +133,7 @@ export function AnalogueRadar({ axes, current, other }: AnalogueRadarProps) {
                 {axis.label}
               </text>
               <text x={x} y={y + 11} textAnchor={align} className="radar-values">
-                {formatScore(current.values[index])} · {formatScore(other.values[index])}
+                {shown(current, index)} · {shown(other, index)}
               </text>
             </g>
           );

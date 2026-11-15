@@ -5,7 +5,11 @@ import type { Prediction } from '../../data-contracts/types';
 import type { Origin } from '../../lib/geo';
 import {
   ACCESS_LABELS,
+  formatHours,
+  formatMoney,
   travelAccessOf,
+  tripEstimate,
+  type Access,
   type TravelAccess,
 } from '../../lib/travel';
 import {
@@ -88,13 +92,111 @@ const gateLabel = (access: TravelAccess) =>
 const transferLabel = (access: TravelAccess) =>
   access.gateway ? `${Math.round(access.transferKm).toLocaleString('en-US')} km · ${access.transferMode}` : '—';
 
+/* ---- The logistics web ---------------------------------------------------
+ *
+ * The science side is read as a shape, so the journey side is read as one too:
+ * the same radar, over the four things that decide how a party reaches a site.
+ * The axes are not scientific scores out of one, so each vertex is a position
+ * on a stated scale and each caption prints the fact behind it — an airport
+ * code, a distance, a class. Nothing here is a fare or a timetable.
+ */
+
+/** Access as a class, drawn from best to worst. */
+const ACCESS_SCORE: Record<Access, number> = {
+  scheduled: 1,
+  charter: 0.55,
+  none: 0,
+};
+
+const ACCESS_SHORT: Record<Access, string> = {
+  scheduled: 'Scheduled',
+  charter: 'Charter',
+  none: 'None',
+};
+
+/** The last leg by the mode travel.ts assigns, a road being the reference. */
+const MODE_SCORE: Record<string, number> = {
+  'Road transfer': 1,
+  'Off-road transfer': 0.6,
+  'Charter flight': 0.35,
+  'Ice flight or ship': 0.15,
+};
+
+/** travel.ts's own "beyond commercial travel" ceiling, so the gate axis is read
+ *  against a threshold the app already states rather than one invented here. */
+const GATE_CEILING_KM = 4500;
+
+/** Half the Earth's circumference: the air axis is read against the longest
+ *  route there is, which is a distance rather than a score. */
+const AIR_CEILING_KM = 20000;
+
+const LOGISTICS_AXES = [
+  { id: 'access', label: 'Access' },
+  { id: 'gate', label: 'Gate' },
+  { id: 'leg', label: 'Last leg' },
+  { id: 'season', label: 'Season' },
+];
+
+const kmLabel = (km: number) => `${Math.round(km).toLocaleString('en-US')} km`;
+
+const seasonLabel = (access: TravelAccess) =>
+  access.gateway ? (access.gateway.seasonal ? 'Seasonal' : 'Year-round') : '—';
+
+interface LogisticsRead {
+  /** One value per axis, in LOGISTICS_AXES order, plus the air leg when known. */
+  values: number[];
+  /** The fact each vertex stands for, printed on the axis. */
+  readouts: string[];
+  access: TravelAccess;
+  airKm: number;
+  /** Modelled door-to-door time and cost, and a dash when underivable. */
+  total: string;
+}
+
+/** One site as the logistics web reads it. */
+function logisticsOf(site: Prediction, origin: Origin | null): LogisticsRead {
+  const access = travelAccessOf(site);
+  const values = [
+    ACCESS_SCORE[access.access],
+    access.gateway ? Math.max(0, 1 - access.transferKm / GATE_CEILING_KM) : 0,
+    MODE_SCORE[access.transferMode] ?? 0,
+    access.gateway ? (access.gateway.seasonal ? 0.35 : 1) : 0,
+  ];
+  const readouts = [
+    ACCESS_SHORT[access.access],
+    access.gateway ? `${access.gateway.code} · ${kmLabel(access.transferKm)}` : '—',
+    access.gateway ? access.transferMode : '—',
+    seasonLabel(access),
+  ];
+
+  let airKm = 0;
+  let total = '—';
+  if (origin) {
+    const estimate = tripEstimate(origin, site);
+    airKm = estimate.airKm;
+    values.push(airKm > 0 ? Math.max(0, 1 - airKm / AIR_CEILING_KM) : 0);
+    readouts.push(airKm > 0 ? kmLabel(airKm) : '—');
+
+    const fastest = estimate.options.find((option) => option.id === 'faster');
+    if (fastest) {
+      total = `${formatHours(fastest.hours)} · ${formatMoney(fastest.costLow)}–${formatMoney(
+        fastest.costHigh,
+      )}`;
+    }
+  }
+
+  return { values, readouts, access, airKm, total };
+}
+
 /**
  * The same two sites, read for logistics instead of science.
  *
- * Access, the gate airport and the last leg come from the real airports the
- * app holds, so they are facts about the site. The door-to-door hours and
- * no fare or timetable is shown at all: the app holds neither, so the route
- * hands over to live searches instead of quoting a number.
+ * The shape answers "which of these is easier to reach, and on what"; the rows
+ * underneath carry the facts that have no shape — the airport, the last leg's
+ * mode and length, whether the gate is seasonal. Access and the gate come from
+ * the real airports the app holds; the air leg and the modelled total only
+ * appear once the reader has set a location, and both are labelled estimates
+ * because the app holds no fare or timetable.
  */
 function LogisticsComparison({
   current,
@@ -105,10 +207,28 @@ function LogisticsComparison({
   other: Prediction;
   origin: Origin | null;
 }) {
-  const a = travelAccessOf(current);
-  const b = travelAccessOf(other);
+  const a = logisticsOf(current, origin);
+  const b = logisticsOf(other, origin);
+  const axes = origin ? [...LOGISTICS_AXES, { id: 'air', label: 'Air leg' }] : LOGISTICS_AXES;
+
   return (
     <>
+      <AnalogueRadar
+        axes={axes}
+        current={{
+          label: 'Current analogue',
+          color: '#22d3ee',
+          values: a.values,
+          readouts: a.readouts,
+        }}
+        other={{
+          label: 'Compared with',
+          color: '#fbbf24',
+          values: b.values,
+          readouts: b.readouts,
+        }}
+      />
+
       <div className="cmp-table">
         <div className="cmp-row cmp-head-row">
           <span className="cmp-label">Logistics</span>
@@ -116,26 +236,37 @@ function LogisticsComparison({
           <span className="cmp-value">Comparison</span>
           <span className="cmp-delta" aria-hidden="true" />
         </div>
-        <Row label="Access" a={ACCESS_LABELS[a.access]} b={ACCESS_LABELS[b.access]} />
-        <Row label="Gate airport" a={gateLabel(a)} b={gateLabel(b)} />
-        <Row label="Gate to site" a={transferLabel(a)} b={transferLabel(b)} />
+        <Row label="Access" a={ACCESS_LABELS[a.access.access]} b={ACCESS_LABELS[b.access.access]} />
+        <Row label="Gate airport" a={gateLabel(a.access)} b={gateLabel(b.access)} />
+        <Row label="Gate to site" a={transferLabel(a.access)} b={transferLabel(b.access)} />
+        <Row label="Seasonal gate" a={seasonLabel(a.access)} b={seasonLabel(b.access)} />
+        {origin ? (
+          <>
+            <Row
+              label="You → gate"
+              a={a.airKm ? kmLabel(a.airKm) : '—'}
+              b={b.airKm ? kmLabel(b.airKm) : '—'}
+            />
+            <Row label="Total (modelled)" a={a.total} b={b.total} />
+          </>
+        ) : null}
       </div>
 
       <div className="cmp-verdicts">
         <div>
           <span className="kicker">Current</span>
-          <p>{a.note}</p>
+          <p>{a.access.note}</p>
         </div>
         <div>
           <span className="kicker">Comparison</span>
-          <p>{b.note}</p>
+          <p>{b.access.note}</p>
         </div>
       </div>
 
       <p className="cmp-basis-note">
         {origin
-          ? 'Access and the gate are read from the airports on file. No fare or timetable is shown here: Plan My Trip hands over to live searches for the flight, the bus and rail, and the last leg.'
-          : 'Access and the gate are read from the airports on file. Set a location under Mission constraints › Distance From Me to compare door-to-door routes.'}
+          ? 'Access and the gate are read from the airports on file. Hours and fares are modelled ranges from those distances, not quotes; Plan My Trip hands over to live searches for the flight, the bus and rail, and the last leg.'
+          : 'Access and the gate are read from the airports on file. Set a location under Mission constraints › Distance From Me to add the air leg and the modelled total.'}
       </p>
     </>
   );
