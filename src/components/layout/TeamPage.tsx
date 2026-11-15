@@ -10,8 +10,8 @@ interface TeamPageProps {
  * Who is behind the tool, and what each of them owns.
  *
  * The board this page is built from is a work plan, not a credits strip, so the
- * page keeps that shape: who the team is up top, one card per person with their
- * actual tasks, then the order the work flows through the team. A team page that
+ * page keeps that shape: who the team is up top, one card per person with what they
+ * own in their own words, then the order the work flows through the team. A team page that
  * lists frameworks instead of work reads as filler.
  *
  * All copy lives in `data/team.ts`, so adding a person or fixing a task is a
@@ -50,11 +50,10 @@ export function TeamPage({ still }: TeamPageProps) {
                   <p className="team-role">{member.role}</p>
                 </div>
               </div>
-              <ul className="team-tasks" aria-label={`${member.name}: responsibilities`}>
-                {member.tasks.map((task) => (
-                  <li key={task}>{task}</li>
-                ))}
-              </ul>
+              {/* Prose, not a bullet list: the team asked for their wording to
+                  stay whole, and split at its commas it read as four unrelated
+                  items instead of one remit. */}
+              <p className="team-description">{member.description}</p>
             </li>
           ))}
         </ul>
