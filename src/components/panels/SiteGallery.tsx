@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Prediction } from '../../data-contracts/types';
-import { photosFor, photoPageUrl, photoUrl } from '../../data/sitePhotos';
+import {
+  photoKey,
+  photoPageUrl,
+  photoSourceLabel,
+  photoSourcesSummary,
+  photosFor,
+  photoUrl,
+} from '../../data/sitePhotos';
 import { formatCoords, terrainLabel } from '../../lib/site';
 
 interface SiteGalleryProps {
@@ -166,12 +173,12 @@ export function SiteGallery({ prediction, onClose }: SiteGalleryProps) {
                     <div className="gallery-missing">
                       <p>This photo could not be loaded.</p>
                       <a href={photoPageUrl(current)} target="_blank" rel="noreferrer">
-                        Open it on Wikimedia Commons
+                        Open it on {photoSourceLabel(current)}
                       </a>
                     </div>
                   ) : (
                     <img
-                      key={current.file}
+                      key={photoKey(current)}
                       src={photoUrl(current, 1600)}
                       alt={current.caption}
                       onLoad={() => setLoaded(true)}
@@ -186,7 +193,7 @@ export function SiteGallery({ prediction, onClose }: SiteGalleryProps) {
                   <span className="gallery-caption-meta">
                     {current.credit} · {current.license} ·{' '}
                     <a href={photoPageUrl(current)} target="_blank" rel="noreferrer">
-                      Wikimedia Commons
+                      {photoSourceLabel(current)}
                     </a>
                   </span>
                 </figcaption>
@@ -210,7 +217,7 @@ export function SiteGallery({ prediction, onClose }: SiteGalleryProps) {
               <div className="gallery-thumbs" role="tablist" aria-label="Site photos">
                 {photos.map((photo, photoIndex) => (
                   <button
-                    key={photo.file}
+                    key={photoKey(photo)}
                     type="button"
                     role="tab"
                     aria-selected={photoIndex === index}
@@ -230,7 +237,7 @@ export function SiteGallery({ prediction, onClose }: SiteGalleryProps) {
                 {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
               </span>
               <span>
-                Field references from Wikimedia Commons — near the site, not survey imagery.
+                Field references from {photoSourcesSummary(photos)} — near the site, not survey imagery.
               </span>
               <span className="gallery-keys" aria-hidden="true">
                 <kbd>←</kbd> <kbd>→</kbd> browse · <kbd>Esc</kbd> close

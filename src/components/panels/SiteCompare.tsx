@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '../layout/Modal';
-import { photoPageUrl, photoUrl, type SitePhoto } from '../../data/sitePhotos';
+import { photoKey, photoPageUrl, photoUrl, type SitePhoto } from '../../data/sitePhotos';
 import {
   COMPOSITE_DAYS,
   IMAGERY_WINDOW_DAYS,
@@ -579,7 +579,7 @@ export function SiteCompare({ site, photos, reportPhotoUrl, onClose }: SiteCompa
           <span className="compare-thumbs-label">Field photos</span>
           {photos.map((entry) => (
             <a
-              key={entry.file}
+              key={photoKey(entry)}
               className="compare-thumb"
               href={photoPageUrl(entry)}
               target="_blank"
