@@ -324,10 +324,8 @@ site's own ground photograph into the page background
   half-decoded image. Only the selected site's photo is requested.
 - Sites with no photograph (a report without a picture) hand the surface back to
   plain rather than leaving an unrelated site's photo behind the UI.
-- The **Site backdrop** switch in the top bar turns it off; the fade is skipped
-  entirely under `prefers-reduced-motion`. Turning it off is also the way to get
-  the strictest contrast back for the smallest mono labels, which sit on a
-  marginally lighter surface where a photo is bright.
+- There is no switch for it: the backdrop is always on, and the fade is skipped
+  entirely under `prefers-reduced-motion`.
 
 ## Orbit vs ground
 

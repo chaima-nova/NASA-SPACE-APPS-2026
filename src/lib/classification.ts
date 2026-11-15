@@ -25,7 +25,7 @@
 
 import crosswalkFile from '../../config/geology_crosswalk.json';
 import type { EvidenceState, Prediction, TerrainType } from '../data-contracts/types';
-import { measuredTerrain, terrainMeasurementFor } from '../services/pipeline';
+import { measuredTerrain, terrainMeasurementFor, type TerrainSample } from '../services/pipeline';
 
 /* ------------------------------------------------------------- taxonomy ---- */
 
@@ -220,6 +220,39 @@ export function limitationsFor(target: 'moon' | 'mars'): PhysicalLimitation[] {
 
 /* --------------------------------------------------------- the verdict ---- */
 
+/**
+ * The comparison behind a verdict, in the shape the similarity layer needs.
+ *
+ * A verdict is a word; a percentage needs the numbers. Handing them over here
+ * keeps one source of truth: `similarity.ts` cannot compute a percentage from a
+ * comparison this file never made, and the two can never describe different
+ * measurements.
+ */
+export type DimensionEvidence =
+  | {
+      method: 'span_overlap';
+      /** The two spans, in the dimension's own unit (degrees of slope). */
+      candidate: [number, number];
+      target: [number, number];
+      /** The ratio that decided the state, where it was computed here. */
+      overlap?: number;
+      /** Resolution of the published numbers, in the same unit. */
+      resolution: number;
+      /** True when the candidate side is a reference region, not this ground. */
+      candidateIsReference: boolean;
+      candidateSource: string;
+      targetSource: string;
+    }
+  | {
+      method: 'class_sets';
+      shared: string[];
+      union: string[];
+      /** True when the site's class was inferred rather than registered. */
+      provisional: boolean;
+      candidateSource: string;
+      targetSource: string;
+    };
+
 /** One dimension's decision, with the measurements behind it. */
 export interface DimensionVerdict {
   id: DimensionId;
@@ -229,6 +262,8 @@ export interface DimensionVerdict {
   basis: string;
   /** What this dimension could not decide, in the guide's terms. */
   caveats: string[];
+  /** The comparison itself, when one was made. */
+  evidence?: DimensionEvidence;
 }
 
 export interface SiteClassification {
@@ -244,6 +279,32 @@ export interface SiteClassification {
 
 const targetSample = (target: 'moon' | 'mars') =>
   measuredTerrain.find((sample) => sample.planet === target);
+
+/** The one Earth slope distribution this build publishes, for predictions. */
+const EARTH_REFERENCE = measuredTerrain.find((sample) => sample.planet === 'earth');
+
+/**
+ * Evidence for a terrain prediction.
+ *
+ * The published Earth sample stands in for a site nobody measured. The flag is
+ * what makes `similarity.ts` label the resulting percentage a prediction rather
+ * than a measurement.
+ */
+function referenceEvidence(
+  sample: TerrainSample | undefined,
+  note: string,
+): DimensionEvidence | undefined {
+  if (!sample || !EARTH_REFERENCE) return undefined;
+  return {
+    method: 'span_overlap',
+    candidate: [0, EARTH_REFERENCE.slopeMaxDeg],
+    target: [sample.slopeMinDeg, sample.slopeMaxDeg],
+    resolution: 0.1,
+    candidateIsReference: true,
+    candidateSource: `${EARTH_REFERENCE.region} reference sample (0–${EARTH_REFERENCE.slopeMaxDeg}°), ${note}`,
+    targetSource: `${sample.region} sample, ${sample.slopeMinDeg}–${sample.slopeMaxDeg}°`,
+  };
+}
 
 /**
  * Terrain & topography (§2.2).
@@ -281,6 +342,10 @@ function terrainVerdict(
         state: carried,
         basis: prediction.evidenceNote ?? 'Screening pass verdict over one measured SRTM window.',
         caveats: terrainCaveats('Decided on slope, roughness and peak slope only.'),
+        evidence: referenceEvidence(
+          sample,
+          'screened window; its own arrays are not exposed to the shell',
+        ),
       },
     };
   }
@@ -307,6 +372,7 @@ function terrainVerdict(
           measurement?.reason ??
           'No measured window is published for this site, so its slope distribution has never been read.',
         caveats,
+        evidence: referenceEvidence(sample, 'no measured window for this site'),
       },
     };
   }
@@ -332,6 +398,16 @@ function terrainVerdict(
       caveats: terrainCaveats(
         `Computed on published min–max spans rather than p10–p90, which are not published for this site: the ratio is conservative.`,
       ),
+      evidence: {
+        method: 'span_overlap',
+        candidate: [0, candidateHi],
+        target: [sample.slopeMinDeg, sample.slopeMaxDeg],
+        overlap,
+        resolution: 0.1,
+        candidateIsReference: false,
+        candidateSource: `SRTM ${measurement.tile}, ${measurement.measured.windowCells} cells, steepest cell ${candidateHi}°`,
+        targetSource: `${sample.region} sample, ${sample.slopeMinDeg}–${sample.slopeMaxDeg}° over ${sample.rows.toLocaleString('en-US')} cells`,
+      },
     },
     overlap,
   };
@@ -402,6 +478,16 @@ function geologyVerdict(prediction: Prediction, target: 'moon' | 'mars'): Dimens
         ? `Shared class: ${nameList(shared)} — qualitative match.`
         : 'No class in common — disjoint units.'),
     caveats,
+    evidence: {
+      method: 'class_sets',
+      shared,
+      union: Array.from(new Set([...candidate, ...targetClasses])),
+      provisional: provisional.length > 0,
+      candidateSource: `Site units ${nameList(candidate)}${
+        provisional.length > 0 ? ' (provisional, from the catalogued terrain family)' : ''
+      }`,
+      targetSource: `${target === 'moon' ? 'Lunar south pole' : 'Jezero'} units ${nameList(targetClasses)}`,
+    },
   };
 }
 

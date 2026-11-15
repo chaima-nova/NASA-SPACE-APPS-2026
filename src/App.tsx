@@ -308,7 +308,6 @@ export default function App() {
   /** True while two scored sites are open side by side. */
   const [compareSitesOpen, setCompareSitesOpen] = useState(false);
   /** Ambient site photograph behind the surface; on until switched off. */
-  const [backdrop, setBackdrop] = useState(true);
   /** Reading preferences, applied to the document root by the dock. */
   const { settings: a11y, choose: chooseMode, update: updateA11y } = useAccessibility();
   /** The cover, or the workbench. Everything interactive lives behind `solution`. */
@@ -553,7 +552,7 @@ export default function App() {
   }, [selected, selectedReported]);
 
   useEffect(() => {
-    if (!backdrop || !backdropUrl) {
+    if (!backdropUrl) {
       setPhotoStrength(0);
       return;
     }
@@ -563,7 +562,7 @@ export default function App() {
     // without pushing the smallest labels off their contrast.
     const timer = window.setTimeout(() => setPhotoStrength(0.16), 30);
     return () => window.clearTimeout(timer);
-  }, [backdrop, backdropUrl]);
+  }, [backdropUrl]);
 
   /** Community writes bound to one site id. */
   function communityActionsFor(siteId: string): CommunityActions {
@@ -791,7 +790,7 @@ export default function App() {
         </nav>
       ) : null}
 
-      {route === 'solution' ? <SiteBackdrop url={backdropUrl} enabled={backdrop} /> : null}
+      {route === 'solution' ? <SiteBackdrop url={backdropUrl} enabled /> : null}
 
 
       <header className="topbar">
@@ -825,20 +824,6 @@ export default function App() {
         </nav>
 
         <div className="topbar-right">
-          {route === 'solution' ? (
-            <>
-              <button
-                type="button"
-                className={backdrop ? 'topbar-toggle is-on' : 'topbar-toggle'}
-                aria-pressed={backdrop}
-                onClick={() => setBackdrop((on) => !on)}
-                title="Fade the selected site's photograph into the page background"
-              >
-                <span className="backdrop-dot" aria-hidden="true" />
-                Site backdrop
-              </button>
-            </>
-          ) : null}
           <a
             className="topbar-link"
             href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/"

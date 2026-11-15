@@ -84,7 +84,6 @@ Layout by width:
 
 TOP BAR
   * Brand + one-line purpose.
-  * "Site backdrop": switch for the ambient site photograph (see below).
   * Data-mode badge: "Sample data" or "Live API".
   * Link to the challenge page.
 
@@ -103,8 +102,8 @@ AMBIENT SITE BACKDROP (behind everything)
     site's photo is fetched - one image per site you visit.
   * No photograph means no backdrop: the surface returns to plain. A reported
     site shows the photo the reporter supplied, or nothing.
-  * Turn it off with "Site backdrop" in the top bar. The switch is per
-    session, not saved.
+  * There is no switch for it: the backdrop is always on, and the fade is
+    skipped entirely under "reduce motion".
 
 CONTROL BAND (under the top bar)
   * Target switch: Moon or Mars. Changing it re-scores, re-ranks, re-colours
