@@ -5437,6 +5437,63 @@ html[data-a11y-motion='reduced'] *::after {
   min-height: 200px;
 }
 
+.dossier-top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dossier-expand {
+  padding: 2px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.dossier-expand:hover,
+.dossier-expand:focus-visible,
+.dossier-expand[aria-pressed='true'] {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+
+/* Opened out: the card leaves the column instead of stretching it, so the globe
+   and the ranked list behind it never reflow. The wash comes from a fixed
+   pseudo-element in the card's own stacking context. */
+.dossier-card.is-wide {
+  position: fixed;
+  inset: clamp(10px, 2.5vw, 36px);
+  z-index: 70;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+  padding: clamp(18px, 3vw, 36px);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+}
+
+.dossier-card.is-wide::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(3, 5, 8, 0.74);
+}
+
+/* One measured column, so the meters and the verdict read as a page rather than
+   as a stretched panel. */
+.dossier-card.is-wide .dossier {
+  max-width: 82ch;
+  margin: 0 auto;
+}
+
 .target-panel {
   flex: none;
 }

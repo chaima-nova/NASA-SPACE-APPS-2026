@@ -149,6 +149,26 @@ export default function App() {
   const [distanceOpen, setDistanceOpen] = useState(false);
   /** The Plan My Trip route planner, opened from the dossier. */
   const [tripOpen, setTripOpen] = useState(false);
+
+  /**
+   * The dossier opened out over the page.
+   *
+   * The column is a few hundred pixels of scrolling panel, which is fine beside a
+   * globe and too tight for eight factor meters and a verdict. Expanded, the card
+   * leaves the layout rather than widening it, so nothing behind it reflows.
+   */
+  const [dossierWide, setDossierWide] = useState(false);
+
+  // Escape closes the opened dossier, as it closes a dialog: the reader who
+  // expanded it is reading, not hunting for the button again.
+  useEffect(() => {
+    if (!dossierWide) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDossierWide(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dossierWide]);
   /** When on, only sites commercial travel can reach are listed. */
   const [travelOnly, setTravelOnly] = useState(false);
   const [query, setQuery] = useState('');
@@ -1051,7 +1071,11 @@ export default function App() {
             )}
           </Panel>
 
-          <section className="card dossier-card" id="site-dossier" tabIndex={-1}>
+          <section
+            className={dossierWide ? 'card dossier-card is-wide' : 'card dossier-card'}
+            id="site-dossier"
+            tabIndex={-1}
+          >
           {selectedReported ? (
             <ReportedDossier
               site={selectedReported}
@@ -1080,6 +1104,8 @@ export default function App() {
               onSeeSite={() => selected && setGallerySite(selected)}
               onCompare={() => selected && openCompare(selected)}
               copied={copied}
+              expanded={dossierWide}
+              onToggleExpand={() => setDossierWide((wide) => !wide)}
             />
           )}
           </section>
