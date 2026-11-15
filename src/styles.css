@@ -7126,3 +7126,145 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
   color: var(--ink-3);
   white-space: nowrap;
 }
+
+
+/* ---------------------------------------------------------- evidence states ----
+ *
+ * One colour per state, matching lib/colors.ts. Colour is never the only carrier:
+ * every chip and badge also prints the state's own word, because four hues on a
+ * dark panel are not four readable facts.
+ */
+.state-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.state-chip.is-similar { color: #fbbf24; }
+.state-chip.is-different { color: #8b93ff; }
+.state-chip.is-insufficient_evidence { color: #22d3ee; }
+.state-chip.is-not_comparable { color: #a7b0c0; }
+
+.state-chip-dim { opacity: 0.6; }
+.state-chip-glyph { font-weight: 650; }
+
+.site-states {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+  align-items: center;
+}
+
+.dimensions {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 6px;
+}
+
+.dimensions-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.dimensions-count {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.66rem;
+  color: #8b93a7;
+}
+
+.dimension {
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid rgba(148, 163, 184, 0.28);
+  padding: 2px 0 2px 12px;
+}
+
+.dimension.is-similar { border-left-color: #fbbf24; }
+.dimension.is-different { border-left-color: #5b7cfa; }
+.dimension.is-insufficient_evidence { border-left-color: #22d3ee; }
+.dimension.is-not_comparable { border-left-color: #8b93a7; }
+
+.dimension-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.dimension-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.state-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.state-badge.is-similar { color: #fbbf24; }
+.state-badge.is-different { color: #8b93ff; }
+.state-badge.is-insufficient_evidence { color: #22d3ee; }
+.state-badge.is-not_comparable { color: #a7b0c0; }
+
+.dimension-basis {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #c9d3e0;
+}
+
+.dimension-caveat {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: #8b93a7;
+}
+
+.limits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.limits li {
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  padding-top: 8px;
+}
+
+.limit-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e6ecf2;
+}
+
+.limit-pair {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.66rem;
+  color: #8b93a7;
+}
+
+.limit-why {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #a9b4c4;
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '../layout/Modal';
 import { AnalogueRadar } from '../charts/AnalogueRadar';
-import type { Prediction } from '../../data-contracts/types';
+import type { EvidenceState, Prediction } from '../../data-contracts/types';
 import type { Origin } from '../../lib/geo';
 import {
   ACCESS_LABELS,
@@ -13,17 +13,18 @@ import {
   type TravelAccess,
 } from '../../lib/travel';
 import {
-  FACTOR_LABELS,
-  FACTOR_ORDER,
-  factorsOf,
-  fitFor,
+  classificationSummary,
+  classifySite,
+  DIMENSION_LABELS,
+  DIMENSION_ORDER,
+  STATE_LABELS,
+} from '../../lib/classification';
+import {
   formatCoords,
   formatElevation,
-  formatScore,
   TARGET_LABELS,
   targetSiteOf,
   terrainLabel,
-  verdictOf,
   type Target,
 } from '../../lib/site';
 
@@ -50,23 +51,35 @@ function Row({ label, a, b }: { label: string; a: string; b: string }) {
   );
 }
 
-/** The scored axes, in radar order: the eight dimensions first, then the fits. */
-const RADAR_AXES = [
-  ...FACTOR_ORDER.map((key) => ({ id: key as string, label: FACTOR_LABELS[key] })),
-  { id: 'moon', label: 'Moon Fit' },
-  { id: 'mars', label: 'Mars Fit' },
-  { id: 'confidence', label: 'Confidence' },
-];
-
-/** One site's values, in the same axis order as RADAR_AXES. */
-function radarValues(prediction: Prediction): number[] {
-  const factors = factorsOf(prediction);
-  return [
-    ...FACTOR_ORDER.map((key) => factors[key]),
-    fitFor(prediction, 'moon'),
-    fitFor(prediction, 'mars'),
-    prediction.confidence,
-  ];
+/**
+ * One dimension, one state per site.
+ *
+ * The state is the colour, and the word sits in the cell beside it: a reader
+ * comparing a similar terrain against an unmeasured one is making exactly the
+ * decision this dialog exists for, and that distinction cannot survive being
+ * averaged into a single number.
+ */
+function StateRow({
+  label,
+  a,
+  b,
+}: {
+  label: string;
+  a: EvidenceState;
+  b: EvidenceState;
+}) {
+  return (
+    <div className="cmp-row">
+      <span className="cmp-label">{label}</span>
+      <span className="cmp-value">
+        <span className={`state-chip is-${a}`}>{STATE_LABELS[a]}</span>
+      </span>
+      <span className="cmp-value">
+        <span className={`state-chip is-${b}`}>{STATE_LABELS[b]}</span>
+      </span>
+      <span className="cmp-delta" aria-hidden="true" />
+    </div>
+  );
 }
 
 /**
@@ -75,11 +88,12 @@ function radarValues(prediction: Prediction): number[] {
  * The dossier answers "why this site"; this answers "why this one rather than
  * that one", which is the question a selection panel actually asks. The left
  * column is fixed to the site already open, so the comparison is always against
- * what the reader is looking at; the right column is any other scored site.
+ * what the reader is looking at; the right column is any other classified site.
  *
- * The scored axes are drawn as a radar, because "better on what" is a shape
- * question; the rows below carry only the facts that have no shape — terrain,
- * region, elevation, and the ground each site stands in for.
+ * The science is read dimension by dimension rather than as a radar of weighted
+ * scores, because the project does not compute weights at all: terrain, geology
+ * and thermal are independent, each carries one of four states, and a silhouette
+ * over eight invented axes was the composite score in disguise.
  */
 /** What the comparison is about: the science, or the journey. */
 type Basis = 'scientific' | 'logistics';
@@ -94,11 +108,11 @@ const transferLabel = (access: TravelAccess) =>
 
 /* ---- The logistics web ---------------------------------------------------
  *
- * The science side is read as a shape, so the journey side is read as one too:
- * the same radar, over the four things that decide how a party reaches a site.
- * The axes are not scientific scores out of one, so each vertex is a position
- * on a stated scale and each caption prints the fact behind it — an airport
- * code, a distance, a class. Nothing here is a fare or a timetable.
+ * The journey side is still read as a shape: the same radar, over the four
+ * things that decide how a party reaches a site. The axes are not scientific
+ * scores out of one, so each vertex is a position on a stated scale and each
+ * caption prints the fact behind it — an airport code, a distance, a class.
+ * Nothing here is a fare or a timetable.
  */
 
 /** Access as a class, drawn from best to worst. */
@@ -275,14 +289,11 @@ function LogisticsComparison({
 export function CompareSites({ current, options, target, origin, onClose }: CompareSitesProps) {
   const others = options.filter((option) => option.id !== current.id);
   const [otherId, setOtherId] = useState<string>(
-    () =>
-      [...others].sort(
-        (a, b) => Math.abs(fitFor(b, target) - fitFor(current, target)) - Math.abs(fitFor(a, target) - fitFor(current, target)),
-      )[0]?.id ?? current.id,
+    () => [...others].sort((a, b) => a.siteName.localeCompare(b.siteName))[0]?.id ?? current.id,
   );
   /**
-   * What is being compared. Scientific reads the scored dimensions; logistics
-   * reads how each site is reached. Same two sites either way.
+   * What is being compared. Scientific reads the three dimension verdicts;
+   * logistics reads how each site is reached. Same two sites either way.
    */
   const [basis, setBasis] = useState<Basis>('scientific');
 
@@ -290,6 +301,11 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
 
   const bodyA = targetSiteOf(current, target);
   const bodyB = targetSiteOf(other, target);
+  const classificationA = classifySite(current, target);
+  const classificationB = classifySite(other, target);
+
+  const stateOf = (index: number, side: 'a' | 'b') =>
+    (side === 'a' ? classificationA : classificationB).dimensions[index].state;
 
   return (
     <Modal
@@ -297,7 +313,7 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
       title="Compare Analogue Sites"
       subtitle={
         basis === 'scientific'
-          ? `Both sites scored against ${TARGET_LABELS[target]} on the eight scientific dimensions, both fits and model confidence — with the facts behind the shape underneath.`
+          ? `Both sites classified against ${TARGET_LABELS[target]} on the guide's three independent dimensions — with the facts behind each verdict underneath.`
           : `How each site is reached: the commercial access, the gate airport and the last leg${origin ? ', plus the modelled door-to-door route from you' : ''}.`
       }
       onClose={onClose}
@@ -331,10 +347,10 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
         <label className="cmp-pick">
           <span className="sr-only">Compare with</span>
           <select value={otherId} onChange={(event) => setOtherId(event.target.value)}>
-            {others.length === 0 ? <option value={current.id}>No other scored site</option> : null}
+            {others.length === 0 ? <option value={current.id}>No other classified site</option> : null}
             {others.map((option) => (
               <option key={option.id} value={option.id}>
-                {option.siteName.split(',')[0]} · {formatScore(fitFor(option, target))}
+                {option.siteName.split(',')[0]}
               </option>
             ))}
           </select>
@@ -353,59 +369,60 @@ export function CompareSites({ current, options, target, origin, onClose }: Comp
 
       {basis === 'scientific' ? (
         <>
-      {/* The shape first: the scored axes as one silhouette per site, which is
-          what a comparison is actually read for. The facts follow underneath. */}
-      <AnalogueRadar
-        axes={RADAR_AXES}
-        current={{
-          label: 'Current analogue',
-          color: '#22d3ee',
-          values: radarValues(current),
-        }}
-        other={{
-          label: 'Compared with',
-          color: '#fbbf24',
-          values: radarValues(other),
-        }}
-      />
+          <div className="cmp-table">
+            <div className="cmp-row cmp-head-row">
+              <span className="cmp-label">Dimension</span>
+              <span className="cmp-value">Current</span>
+              <span className="cmp-value">Comparison</span>
+              <span className="cmp-delta" aria-hidden="true" />
+            </div>
+            {DIMENSION_ORDER.map((id, index) => (
+              <StateRow
+                key={id}
+                label={DIMENSION_LABELS[id]}
+                a={stateOf(index, 'a')}
+                b={stateOf(index, 'b')}
+              />
+            ))}
+          </div>
 
-      <div className="cmp-table">
-        <div className="cmp-row cmp-head-row">
-          <span className="cmp-label">Aspect</span>
-          <span className="cmp-value">Current</span>
-          <span className="cmp-value">Comparison</span>
-          <span className="cmp-delta" aria-hidden="true" />
-        </div>
+          <div className="cmp-table">
+            <div className="cmp-row cmp-head-row">
+              <span className="cmp-label">Aspect</span>
+              <span className="cmp-value">Current</span>
+              <span className="cmp-value">Comparison</span>
+              <span className="cmp-delta" aria-hidden="true" />
+            </div>
 
-        <Row label="Terrain" a={terrainLabel(current)} b={terrainLabel(other)} />
-        <Row label="Region" a={current.region ?? '—'} b={other.region ?? '—'} />
-        <Row
-          label="Elevation"
-          a={formatElevation(current.elevationM)}
-          b={formatElevation(other.elevationM)}
-        />
-        <Row
-          label={`${TARGET_LABELS[target]} ground`}
-          a={bodyA ? bodyA.name : 'not crosswalked'}
-          b={bodyB ? bodyB.name : 'not crosswalked'}
-        />
-        <Row
-          label="Target coordinates"
-          a={bodyA ? formatCoords(bodyA.lat, bodyA.lon) : '—'}
-          b={bodyB ? formatCoords(bodyB.lat, bodyB.lon) : '—'}
-        />
-      </div>
+            <Row label="Terrain" a={terrainLabel(current)} b={terrainLabel(other)} />
+            <Row label="Region" a={current.region ?? '—'} b={other.region ?? '—'} />
+            <Row
+              label="Elevation"
+              a={formatElevation(current.elevationM)}
+              b={formatElevation(other.elevationM)}
+            />
+            <Row
+              label={`${TARGET_LABELS[target]} ground`}
+              a={bodyA ? bodyA.name : 'not crosswalked'}
+              b={bodyB ? bodyB.name : 'not crosswalked'}
+            />
+            <Row
+              label="Target coordinates"
+              a={bodyA ? formatCoords(bodyA.lat, bodyA.lon) : '—'}
+              b={bodyB ? formatCoords(bodyB.lat, bodyB.lon) : '—'}
+            />
+          </div>
 
-      <div className="cmp-verdicts">
-        <div>
-          <span className="kicker">Current</span>
-          <p>{verdictOf(current, target)}</p>
-        </div>
-        <div>
-          <span className="kicker">Comparison</span>
-          <p>{verdictOf(other, target)}</p>
-        </div>
-      </div>
+          <div className="cmp-verdicts">
+            <div>
+              <span className="kicker">Current</span>
+              <p>{classificationSummary(classificationA)}</p>
+            </div>
+            <div>
+              <span className="kicker">Comparison</span>
+              <p>{classificationSummary(classificationB)}</p>
+            </div>
+          </div>
         </>
       ) : (
         <LogisticsComparison current={current} other={other} origin={origin} />

@@ -1,5 +1,3 @@
-import { formatScore } from '../../lib/site';
-
 /**
  * The comparison as a shape rather than a table.
  *
@@ -68,7 +66,7 @@ export function AnalogueRadar({ axes, current, other }: AnalogueRadarProps) {
 
   /** What an axis says: the supplied readout when there is one, else the score. */
   const shown = (series: RadarSeries, index: number) =>
-    series.readouts?.[index] ?? formatScore(series.values[index]);
+    series.readouts?.[index] ?? series.values[index].toFixed(2);
 
   // Spoken form: a radar is one image to a sighted reader and seven numbers to
   // a listener, so the label carries them all rather than a summary.

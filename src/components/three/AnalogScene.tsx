@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Prediction } from '../../data-contracts/types';
-import { scoreColorHex } from '../../lib/colors';
+import { stateColorHex } from '../../lib/colors';
+import { classifySite } from '../../lib/classification';
 
 interface AnalogSceneProps {
   predictions: Prediction[];
@@ -65,11 +66,13 @@ export function AnalogScene({ predictions }: AnalogSceneProps) {
     predictions.slice(0, MAX_CELLS).forEach((p, i) => {
       const gx = i % COLS;
       const gz = Math.floor(i / COLS);
-      const height = 0.5 + p.analogScore * 8;
+      // One height for every cell: the states are categorical, so height would be
+      // a second, invented ordering stacked on top of them.
+      const height = 4;
 
       const geometry = new THREE.BoxGeometry(2.2, height, 2.2);
       const material = new THREE.MeshStandardMaterial({
-        color: scoreColorHex(p.analogScore),
+        color: stateColorHex(classifySite(p, 'moon').dimensions[0].state),
         roughness: 0.6,
         metalness: 0.1,
       });

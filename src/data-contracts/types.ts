@@ -21,20 +21,14 @@ export type FocusArea =
   | 'mars-base-analog'
   | 'dual-analog';
 
-/**
- * Score bands, in one place. The model writes a site's label from these and the
- * UI reads the same numbers, so a site cannot be "Strong" on the map and
- * "Promising" in the dossier after the scoring changed underneath.
- */
-export const SCORE_BANDS = { strong: 0.54, promising: 0.48 } as const;
 
 /**
  * Zehra's four evidence states, as the engine writes them.
  *
- * They exist so a comparison can say it could not decide. A score alone cannot:
- * 0.42 reads as a weak match whether the ground was measured and found wanting
- * or was never measured at all. The interface carries the word alongside the
- * number, so the difference survives to the screen.
+ * They exist so a comparison can say it could not decide. A single fit number
+ * cannot: 0.42 reads as a weak match whether the ground was measured and found
+ * wanting or was never measured at all. The interface carries the word, and the
+ * composite number it used to carry is gone.
  */
 export type EvidenceState =
   | 'similar'
@@ -89,6 +83,18 @@ export interface GeoPoint {
 }
 
 /**
+ * Which of the three dimensions an upstream pass has already decided.
+ *
+ * The guide classifies a site per dimension, not overall, so a payload carries a
+ * state per dimension rather than one number. A dimension absent here is one
+ * nothing has measured yet, which the classifier reports as insufficient
+ * evidence instead of guessing.
+ */
+export type DimensionStates = Partial<
+  Record<'terrain' | 'geology' | 'thermal', EvidenceState>
+>;
+
+/**
  * A location on a target body that a terrestrial site is being compared
  * against — the lunar or martian ground the score is really about.
  */
@@ -117,12 +123,6 @@ export interface Prediction {
   };
   /** ISO-8601 */
   predictedAt: string;
-  /** Primary analog-fit score in [0, 1]. Higher = better terrestrial analog. */
-  analogScore: number;
-  /** Optional sister score for Moon base sites specifically, [0, 1]. */
-  moonFit?: number;
-  /** Optional sister fit for Mars base sites specifically, [0, 1]. */
-  marsFit?: number;
   /** Optional terrain family, carried through from the GeoPoint. */
   terrainType?: TerrainType;
   /** Optional region label. */
@@ -136,39 +136,14 @@ export interface Prediction {
    * reports and on payloads written before the crosswalk existed.
    */
   targetSites?: Partial<Record<'moon' | 'mars', TargetSite>>;
-  /**
-   * Optional per-axis scores for the eight scientific dimensions of the
-   * comparison table, each in [0, 1]: terrain and topography, surface and
-   * geology, temperature and environment, water and ice, atmospheric processes,
-   * biology and habitability, subsurface environments, and exploration
-   * relevance. When absent the dossier derives them from
-   * `featureContributions` so the UI is never blocked on the model.
-   */
-  factors?: {
-    terrain: number;
-    surface: number;
-    thermal: number;
-    water: number;
-    atmosphere: number;
-    biology: number;
-    subsurface: number;
-    exploration: number;
-  };
   /** Optional provenance links into DataSource[]. */
   datasetIds?: string[];
   /** Optional one-sentence plain-language verdict. */
   verdict?: string;
-  /** The engine's state for this comparison, where one has been run. */
-  evidence?: EvidenceState;
-  /** One line naming what the score was computed from, and what was not. */
-  evidenceNote?: string;
-  /** Human-readable bucket, e.g. "Strong" / "Promising" / "Weak". */
-  label: string;
-  /** Model confidence in [0, 1]. */
-  confidence: number;
-  /** Feature name -> signed contribution to the score. */
-  featureContributions: Record<string, number>;
-}
+  /** Settled states, per target body, where an engine pass has run on this site. */
+  dimensionStates?: Partial<Record<'moon' | 'mars', DimensionStates>>;
+  /** One line naming what was measured here, and what was not. */
+  evidenceNote?: string;}
 
 /** Where a record came from: this browser, or a shared backend. */
 export type RecordSource = 'local' | 'remote';

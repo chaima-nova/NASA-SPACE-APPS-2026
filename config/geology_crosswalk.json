@@ -138,6 +138,10 @@
       "note": "Added for the brief, which names caves among the terrains to screen. Lunar and martian tube interiors are not mapped at this resolution, so the target-side groups describe the roof material rather than the void itself; treat any match as a surface proxy."
     }
   ],
+  "site_bindings": {
+    "_note": "Which region assignment stands in for a catalogued site. The Atacama fixture is the site the engine has been run on, so it inherits that region's classes instead of a provisional one.",
+    "site-000": "earth_atacama_s24w069"
+  },
   "region_assignments": {
     "earth_atacama_s24w069": {
       "primary_class": "plains_and_lowlands",

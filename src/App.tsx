@@ -40,12 +40,12 @@ import type {
   ReportedSite,
   TerrainType,
 } from './data-contracts/types';
-import { SCORE_BANDS } from './data-contracts/types';
 import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
-import { BAND_COLORS, scoreColor } from './lib/colors';
+import { STATE_COLORS } from './lib/colors';
+import { classifySite, classificationRank, STATE_LABELS } from './lib/classification';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
@@ -55,9 +55,7 @@ import {
   newestAvailableImageryDate,
 } from './lib/earthImagery';
 import {
-  fitFor,
   formatCoords,
-  formatScore,
   siteRefOf,
   targetSiteOf,
   TARGET_LABELS,
@@ -78,7 +76,7 @@ interface CompareRequest {
 /** Which report dialog is open: a new one, one being edited, or none. */
 type ReportDraft = { mode: 'new' } | { mode: 'edit'; site: ReportedSite } | null;
 
-type SortKey = 'fit' | 'moon' | 'mars' | 'name';
+type SortKey = 'settled' | 'name';
 
 const readParam = (key: string) =>
   typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get(key);
@@ -131,20 +129,7 @@ export default function App() {
     const known = Object.keys(TERRAIN_LABELS) as TerrainType[];
     return known.includes(value as TerrainType) ? (value as TerrainType) : 'all';
   });
-  const [sort, setSort] = useState<SortKey>('fit');
-  /**
-   * An explicit fit sort follows the target.
-   *
-   * "Moon Fit" and "Mars Fit" name a body as well as an order, so picking one
-   * and then switching the target used to leave the list ordered by a score the
-   * header no longer showed — Mars selected, "Moon Fit" still in the menu. The
-   * reader asked which places suit Mars; re-pointing the key answers that
-   * question instead of freezing the previous one. Best Fit already tracks the
-   * target and Name has no body at all, so only the two explicit keys move.
-   */
-  useEffect(() => {
-    setSort((current) => (current === 'moon' || current === 'mars' ? target : current));
-  }, [target]);
+  const [sort, setSort] = useState<SortKey>('settled');
   /** Where "distance from me" is measured from, once the reader has picked it. */
   const [origin, setOrigin] = useState<Origin | null>(null);
   /** Radius of the distance filter, in kilometres. */
@@ -304,7 +289,11 @@ export default function App() {
   // Open on the strongest site for the active target.
   useEffect(() => {
     if (selectedId || predictions.length === 0) return;
-    const top = [...predictions].sort((a, b) => fitFor(b, target) - fitFor(a, target))[0];
+    const top = [...predictions].sort(
+      (a, b) =>
+        classificationRank(classifySite(a, target)) - classificationRank(classifySite(b, target)) ||
+        a.siteName.localeCompare(b.siteName),
+    )[0];
     setSelectedId(top.id);
   }, [predictions, selectedId, target]);
 
@@ -324,17 +313,16 @@ export default function App() {
       .filter((p) => !travelOnly || travelAccessOf(p).access !== 'none')
       .map((prediction) => ({
         prediction,
-        fit: fitFor(prediction, target),
+        classification: classifySite(prediction, target),
         distanceKm: origin ? distanceBetween(origin, prediction) : undefined,
       }));
 
-    const byFit = (t: Target) => (a: RankedItem, b: RankedItem) =>
-      fitFor(b.prediction, t) - fitFor(a.prediction, t);
-
     const sorters: Record<SortKey, (a: RankedItem, b: RankedItem) => number> = {
-      fit: byFit(target),
-      moon: byFit('moon'),
-      mars: byFit('mars'),
+      // Most settled first: a site whose least-decided dimension sits further up
+      // the state order leads. Nothing is averaged to produce the order.
+      settled: (a, b) =>
+        classificationRank(a.classification) - classificationRank(b.classification) ||
+        a.prediction.siteName.localeCompare(b.prediction.siteName),
       name: (a, b) => a.prediction.siteName.localeCompare(b.prediction.siteName),
     };
 
@@ -381,7 +369,7 @@ export default function App() {
    * against every other one, and a one-site field would show nothing.
    */
   const exportReport = useMemo(
-    () => (selected ? siteReport(selected, target, predictions) : null),
+    () => (selected ? siteReport(selected, target) : null),
     [selected, target, predictions],
   );
 
@@ -402,9 +390,9 @@ export default function App() {
       : selected
         ? `Site ${selectedRank ?? '?'} of ${ranked.length}: ${selected.siteName}. ${terrainLabel(
             selected,
-          )}. Moon fit ${formatScore(fitFor(selected, 'moon'))} of 1. Mars fit ${formatScore(
-            fitFor(selected, 'mars'),
-          )} of 1.`
+          )}. ${classifySite(selected, target)
+            .dimensions.map((dimension) => `${dimension.label}: ${STATE_LABELS[dimension.state].toLowerCase()}`)
+            .join('. ')}.`
         : selectedReported
           ? `Reported site ${selectedReported.name}, unscored.`
           : 'No site selected.';
@@ -485,10 +473,15 @@ export default function App() {
     }
   }, [ranked, selectedId, community.reportedSites]);
 
+  /** Two honest counts instead of a mean fit and a "strong" count. */
   const stats = useMemo(() => {
-    if (ranked.length === 0) return { meanFit: 0, strong: 0 };
-    const meanFit = ranked.reduce((sum, item) => sum + item.fit, 0) / ranked.length;
-    return { meanFit, strong: ranked.filter((item) => item.fit >= SCORE_BANDS.strong).length };
+    const similarTerrain = ranked.filter(
+      (item) => item.classification.dimensions[0].state === 'similar',
+    ).length;
+    const unmeasured = ranked.filter((item) =>
+      item.classification.dimensions.some((dimension) => dimension.state === 'insufficient_evidence'),
+    ).length;
+    return { similarTerrain, unmeasured };
   }, [ranked]);
 
   const terrainCounts = useMemo(() => {
@@ -763,8 +756,8 @@ export default function App() {
         counts={terrainCounts}
         shown={ranked.length}
         total={predictions.length}
-        meanFit={stats.meanFit}
-        strong={stats.strong}
+        terrainSimilar={stats.similarTerrain}
+        unmeasured={stats.unmeasured}
         datasetCount={datasets.length}
         origin={origin}
         radiusKm={radiusKm}
@@ -781,14 +774,12 @@ export default function App() {
           <header className="card-head">
             <div className="card-head-text">
               <h2>Ranked sites</h2>
-              <p>{target === 'moon' ? 'Moon' : 'Mars'} analog fit</p>
+              <p>{target === 'moon' ? 'Moon' : 'Mars'} classification</p>
             </div>
             <label className="select">
               <span className="sr-only">Sort sites by</span>
               <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
-                <option value="fit">Best Fit</option>
-                <option value="moon">Moon Fit</option>
-                <option value="mars">Mars Fit</option>
+                <option value="settled">Most settled</option>
                 <option value="name">Name</option>
               </select>
             </label>
@@ -912,9 +903,9 @@ export default function App() {
               carries and where the same information lives in text. */}
           <p className="sr-only">
             A 3D globe marks the {visiblePredictions.length} matching sites as beacons
-            sized and coloured by {target} analog fit. It holds nothing the ranked list does
-            not: the same sites appear there in the same order, each with its terrain, its
-            Moon fit and its Mars fit.
+            coloured by terrain evidence state. It holds nothing the ranked list does not:
+            the same sites appear there in the same order, each with its three dimension
+            states — terrain, geology and thermal.
           </p>
           {/* The terminator in words: which half of the planet is lit, and where
               the Sun stands at the chosen moment. */}
@@ -976,16 +967,26 @@ export default function App() {
               <div className="globe-side">
                 <ul className="legend" aria-label="Marker legend">
                   <li>
-                    <span className="legend-dot" style={{ background: BAND_COLORS.strong }} />
-                    Strong
+                    <span className="legend-dot" style={{ background: STATE_COLORS.similar }} />
+                    Similar
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: BAND_COLORS.promising }} />
-                    Promising
+                    <span className="legend-dot" style={{ background: STATE_COLORS.different }} />
+                    Different
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: BAND_COLORS.weak }} />
-                    Weak
+                    <span
+                      className="legend-dot"
+                      style={{ background: STATE_COLORS.insufficient_evidence }}
+                    />
+                    Insufficient evidence
+                  </li>
+                  <li>
+                    <span
+                      className="legend-dot"
+                      style={{ background: STATE_COLORS.not_comparable }}
+                    />
+                    Not comparable
                   </li>
                   <li>
                     <span className="legend-ring" />
@@ -1014,9 +1015,12 @@ export default function App() {
                   <span className="strip-name">{selected.siteName}</span>
                   <span className="strip-meta">{formatCoords(selected.lat, selected.lon)}</span>
                   <span className="strip-meta">{terrainLabel(selected)}</span>
-                  <span className="strip-score" style={{ color: scoreColor(fitFor(selected, target)) }}>
-                    {formatScore(fitFor(selected, target))}
-                    <span className="strip-score-unit">{target} fit</span>
+                  <span
+                    className="strip-score"
+                    style={{ color: STATE_COLORS[classifySite(selected, target).dimensions[0].state] }}
+                  >
+                    {STATE_LABELS[classifySite(selected, target).dimensions[0].state]}
+                    <span className="strip-score-unit">terrain</span>
                   </span>
                 </>
               ) : selectedReported ? (
@@ -1193,7 +1197,6 @@ export default function App() {
           subtitle={exportReport.subtitle}
           table={exportReport.table}
           html={exportReport.html}
-          plate={exportReport.plate}
           travel={exportTravel}
           onClose={() => setExportOpen(false)}
         />

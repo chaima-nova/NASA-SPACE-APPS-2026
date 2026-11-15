@@ -1,19 +1,23 @@
-import type { Prediction } from '../../data-contracts/types';
-import { bandOf } from '../../lib/colors';
-import { formatScore, terrainLabel, type Target } from '../../lib/site';
-import type { EvidenceState } from '../../data-contracts/types';
+import type { EvidenceState, Prediction } from '../../data-contracts/types';
+import type { SiteClassification } from '../../lib/classification';
+import { STATE_LABELS } from '../../lib/classification';
+import { formatCoords, terrainLabel } from '../../lib/site';
 
-/** The state in three words, because a four-word taxonomy breaks the row. */
-const STATE_LABELS: Record<EvidenceState, string> = {
-  similar: 'terrain similar',
-  different: 'terrain differs',
-  insufficient_evidence: 'terrain only',
-  not_comparable: 'not comparable',
+/** The three dimensions as one letter each, in the order the guide lists them. */
+const STATE_GLYPHS: Record<EvidenceState, string> = {
+  similar: '✓',
+  different: '✕',
+  insufficient_evidence: '?',
+  not_comparable: '–',
 };
+
+/** One letter per dimension, so a row can carry all three in ~90 px. */
+const SHORT_LABELS = { terrain: 'T', geology: 'G', thermal: 'Th' } as const;
 
 export interface RankedItem {
   prediction: Prediction;
-  fit: number;
+  /** The guide's three verdicts for this site against the active target. */
+  classification: SiteClassification;
   /** Kilometres from the reader's chosen origin, when that facet is on. */
   distanceKm?: number;
 }
@@ -21,15 +25,19 @@ export interface RankedItem {
 interface SiteListProps {
   items: RankedItem[];
   selectedId: string | null;
-  target: Target;
+  target: 'moon' | 'mars';
   total: number;
   onSelect: (id: string) => void;
 }
 
 /**
- * The discovery queue: candidate analog sites, ranked against the active
- * target. Rows are buttons so keyboard users get selection for free; the
- * global arrow-key handler in App.tsx moves between them.
+ * The discovery queue: candidate analog sites, ordered by how settled their
+ * classification is against the active target.
+ *
+ * Each row carries its three dimension states rather than one number, because
+ * there is no number: a site can be similar on terrain, different on geology and
+ * unmeasured on thermal at the same time, and a single percentage would have to
+ * hide two of those three facts to exist.
  */
 export function SiteList({ items, selectedId, target, total, onSelect }: SiteListProps) {
   if (items.length === 0) {
@@ -42,9 +50,12 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
   }
 
   return (
-    <ol className="ranked-list" aria-label={`Sites ranked by ${target} analog fit`}>
-      {items.map(({ prediction, fit, distanceKm }, index) => {
+    <ol className="ranked-list" aria-label={`Sites classified against ${target}`}>
+      {items.map(({ prediction, classification, distanceKm }, index) => {
         const selected = prediction.id === selectedId;
+        const spoken = classification.dimensions
+          .map((dimension) => `${dimension.label}: ${STATE_LABELS[dimension.state].toLowerCase()}`)
+          .join(', ');
         return (
           <li key={prediction.id}>
             <button
@@ -58,35 +69,31 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
               <span className="site-main">
                 <span className="site-name">{prediction.siteName.split(',')[0]}</span>
                 <span className="site-meta">
-                  {terrainLabel(prediction)} · {prediction.label}
+                  {terrainLabel(prediction)} · {formatCoords(prediction.lat, prediction.lon)}
                   {distanceKm === undefined
                     ? null
                     : ' · ' + Math.round(distanceKm).toLocaleString('en-US') + ' km away'}
-                  {prediction.evidence ? (
-                    <>
-                      {' · '}
-                      <span className={`site-state is-${prediction.evidence}`}>
-                        {STATE_LABELS[prediction.evidence]}
-                      </span>
-                    </>
-                  ) : null}
                 </span>
-                <span className="site-bar" aria-hidden="true">
+              </span>
+              <span className="site-states">
+                {classification.dimensions.map((dimension) => (
                   <span
-                    className="site-bar-fill"
-                    style={{
-                      width: `${Math.round(fit * 100)}%`,
-                      background: bandOf(fit).color,
-                    }}
-                  />
-                </span>
+                    key={dimension.id}
+                    className={`state-chip is-${dimension.state}`}
+                    title={`${dimension.label}: ${STATE_LABELS[dimension.state]}`}
+                  >
+                    <span className="state-chip-dim" aria-hidden="true">
+                      {SHORT_LABELS[dimension.id]}
+                    </span>
+                    <span className="state-chip-glyph" aria-hidden="true">
+                      {STATE_GLYPHS[dimension.state]}
+                    </span>
+                  </span>
+                ))}
               </span>
-              <span className="site-score" style={{ color: bandOf(fit).color }}>
-                {formatScore(fit)}
-              </span>
-              {/* The band in words, for a reader who is listening or cannot tell
-                  the four colours apart: colour is never the only carrier. */}
-              <span className="sr-only">{bandOf(fit).band}</span>
+              {/* The three states as a sentence, for a reader who is listening or
+                  cannot separate the glyphs: the chips never carry it alone. */}
+              <span className="sr-only">{spoken}</span>
             </button>
           </li>
         );

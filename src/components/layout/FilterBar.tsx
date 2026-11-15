@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { TerrainType } from '../../data-contracts/types';
 import type { Origin } from '../../lib/geo';
-import { formatScore, TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
+import { TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
 
 interface FilterBarProps {
   target: Target;
@@ -11,8 +11,8 @@ interface FilterBarProps {
   counts: Partial<Record<TerrainType, number>>;
   shown: number;
   total: number;
-  meanFit: number;
-  strong: number;
+  terrainSimilar: number;
+  unmeasured: number;
   datasetCount: number;
   /** Where distances are measured from, or null while the facet is off. */
   origin: Origin | null;
@@ -42,8 +42,8 @@ export function FilterBar({
   counts,
   shown,
   total,
-  meanFit,
-  strong,
+  terrainSimilar,
+  unmeasured,
   datasetCount,
   origin,
   radiusKm,
@@ -223,12 +223,12 @@ export function FilterBar({
           <dd title={`${shown} of ${total} sites shown`}>{shown}</dd>
         </div>
         <div>
-          <dt>Mean fit</dt>
-          <dd>{formatScore(meanFit)}</dd>
+          <dt>Terrain similar</dt>
+          <dd>{terrainSimilar}</dd>
         </div>
         <div>
-          <dt>Strong</dt>
-          <dd>{strong}</dd>
+          <dt>Unmeasured</dt>
+          <dd>{unmeasured}</dd>
         </div>
         <div>
           <dt>Datasets</dt>
