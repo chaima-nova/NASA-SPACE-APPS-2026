@@ -4,6 +4,7 @@ import {
   type DimensionEvidence,
   type DimensionId,
   type DimensionVerdict,
+  type SiteClassification,
 } from './classification';
 import { measuredTerrain } from '../services/pipeline';
 
@@ -375,4 +376,92 @@ export function similarityFor(
   return evidence.method === 'span_overlap'
     ? terrainSimilarity(verdict, evidence)
     : geologySimilarity(verdict, evidence);
+}
+
+/* ------------------------------------------------------------ fit bands ---- */
+
+/**
+ * How one fit is said out loud: strong, promising or weak.
+ *
+ * These are the words for one dimension's ratio, cut where the numbers already
+ * cut themselves. 40% is the guide's own overlap threshold (§2.2C,
+ * TERRAIN_OVERLAP_THRESHOLD), so below 40% is the band the guide already calls a
+ * mismatch, and 60% is the same distance again above it. Nothing here adds two
+ * dimensions together: a band is one dimension's percentage in words, and one
+ * site can carry three different bands on three dimensions.
+ */
+export type FitBand = 'strong' | 'promising' | 'weak';
+
+export const FIT_BAND_LABELS: Record<FitBand, string> = {
+  strong: 'Strong',
+  promising: 'Promising',
+  weak: 'Weak',
+};
+
+/** The two cuts, in per cent. 40 is the guide's threshold; 60 sits 20 above it. */
+export const FIT_BAND_CUTS = { strong: 60, promising: 40 } as const;
+
+/** Strong beats promising beats weak, when three bands have to become one. */
+export const BAND_RANK: Record<FitBand, number> = { strong: 3, promising: 2, weak: 1 };
+
+/** Which band a percentage falls in, or null where there is no percentage. */
+export function fitBandOf(percent: number | null): FitBand | null {
+  if (percent === null) return null;
+  if (percent >= FIT_BAND_CUTS.strong) return 'strong';
+  if (percent >= FIT_BAND_CUTS.promising) return 'promising';
+  return 'weak';
+}
+
+/** What the ranking's sort menu is reading, named the way the menu names it. */
+export type FitType = 'overall' | DimensionId | 'waterIce' | 'illumination' | 'name';
+
+/** The same seven, in the few words a strip or a tooltip has room for. */
+export const FIT_TYPE_LABELS: Record<FitType, string> = {
+  overall: 'overall evidence',
+  terrain: 'terrain',
+  geology: 'geology',
+  thermal: 'thermal',
+  waterIce: 'water & ice',
+  illumination: 'illumination',
+  name: 'name',
+};
+
+/**
+ * The band for one site under the selected fit type, or null where that fit
+ * carries no ratio at all.
+ *
+ * A band is one dimension's percentage said in a word, and the percentage does
+ * not change kind because it was predicted. A substituted reference span or a
+ * body-wide thermal envelope is still a ratio, and the dossier prints it with its
+ * provenance, its `Prediction` label and its ±. What gets no band is a dimension
+ * with no ratio behind it: a comparison the guide calls not comparable, an input
+ * this build never ingested. Those stay neutral grey, because a colour cannot
+ * carry the word "Prediction" and a colour invented for a gap would read as a
+ * measurement.
+ *
+ * `overall` has no ratio of its own and does not acquire one here. Its band is the
+ * strongest of the three dimensions — the fit a site can actually claim is the
+ * best thing it shares with the target — and the other two are still printed
+ * beside it in the dossier. Nothing is averaged and no fourth number is made: the
+ * three percentages stand exactly where they stood.
+ */
+export function fitBandFor(
+  fit: FitType,
+  classification: SiteClassification,
+  target: 'moon' | 'mars',
+): FitBand | null {
+  if (fit === 'name' || fit === 'waterIce' || fit === 'illumination') return null;
+
+  const percentOf = (verdict: DimensionVerdict) => similarityFor(verdict, target).percent;
+
+  if (fit === 'overall') {
+    return classification.dimensions.reduce<FitBand | null>((best, verdict) => {
+      const band = fitBandOf(percentOf(verdict));
+      if (!band) return best;
+      return !best || BAND_RANK[band] > BAND_RANK[best] ? band : best;
+    }, null);
+  }
+
+  const verdict = classification.dimensions.find((dimension) => dimension.id === fit);
+  return verdict ? fitBandOf(percentOf(verdict)) : null;
 }

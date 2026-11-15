@@ -33,7 +33,11 @@
   --danger: #f87171;
 
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Roboto Mono, not JetBrains Mono: this build prints a lot of numbers — slope
+     spans, percentages, coordinates, tile ids — and JetBrains Mono puts a dot
+     inside its zero, so 0 read as 8 at the sizes the rail and the dossier use.
+     Roboto Mono's zero is a plain oval with the same fixed advance. */
+  --mono: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-synthesis-weight: none;
@@ -701,10 +705,9 @@ body::before {
 /*
  * The rank integer.
  *
- * Set in the sans stack, not the mono one. JetBrains Mono draws its zero with a
- * slash, and at 0.6rem that slash closes up: "08" read as an "8" beside a "1",
- * so rows 06 and 08 looked like the same number. Inter's zero is a plain oval,
- * and tabular figures keep the column steady as the queue reorders.
+ * Kept in the sans stack: it is a list index, not a figure to be read against the
+ * numbers in the dossier, and a hairline weight beside the site name is what the
+ * row wants. Tabular figures keep it steady as the queue reorders.
  */
 .site-rank {
   font-family: inherit;
@@ -715,6 +718,23 @@ body::before {
 
 .site-row.is-selected .site-rank {
   color: var(--signal);
+}
+
+/* The discovery label: a row this project found itself, out of the committed
+   SRTM grids. Small and quiet, because it qualifies the row rather than ranking
+   it, and in the signal colour the rest of the interface uses for its own work. */
+.site-found {
+  justify-self: start;
+  margin: 1px 0 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--signal-rgb), 0.4);
+  color: var(--signal);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .site-main {
@@ -735,6 +755,15 @@ body::before {
 .site-row.is-selected .site-name {
   color: #fff;
 }
+
+/* One dimension's ratio, named in the row: strong at 60% and up, promising at the
+   40% the guide already calls a match, weak below it. A selected row stays white,
+   because selection is the stronger statement. Names with no measured fit behind
+   them — a not-comparable dimension, or a factor nothing in this build ingests —
+   keep the ink colour and get no band at all. */
+.site-name.is-strong { color: #34d399; }
+.site-name.is-promising { color: #22d3ee; }
+.site-name.is-weak { color: #8b93ff; }
 
 .site-meta {
   font-size: 0.72rem;
@@ -5735,12 +5764,11 @@ html[data-a11y-motion='reduced'] *::after {
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid var(--line-2);
-  border-radius: 4px;
-  background: var(--surface-2);
-  color: #ffffff;
+  border: 0;
+  background: transparent;
+  color: #c3ccda;
   cursor: pointer;
-  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  transition: color 0.15s var(--ease);
 }
 
 .dossier-expand-glyph {
@@ -5754,11 +5782,12 @@ html[data-a11y-motion='reduced'] *::after {
   transition: transform 0.18s var(--ease);
 }
 
-/* Open: the same arrow turns to point back into the column. */
+/* Pointer or keyboard on the control: the glyph goes to full white. Pressed (the
+   dossier opened out) reads the same, because the arrow pair already says which
+   state the control is in. */
 .dossier-expand:hover,
 .dossier-expand[aria-pressed='true'] {
-  border-color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
 }
 
 .dossier-expand:focus-visible {
@@ -7237,6 +7266,22 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 .state-chip.is-not_comparable { color: #a7b0c0; }
 
 /* The dimension is the quiet half of the chip; the state is the claim. */
+
+/* The three verdicts read as one group: a header naming the target and the
+   "n of 3" count, the line saying the percentages are never averaged, then the
+   three blocks. The gap here is wider than the dossier's own so three dimensions
+   look like three and not like one wall of text. */
+.dimensions {
+  display: grid;
+  gap: 12px;
+}
+
+.dimensions-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
 
 .dimensions-count {
   font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);

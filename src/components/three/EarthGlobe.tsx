@@ -1,9 +1,16 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { EvidenceState, Prediction } from '../../data-contracts/types';
-import { stateColorHex } from '../../lib/colors';
-import { classifySite, STATE_LABELS } from '../../lib/classification';
+import type { Prediction } from '../../data-contracts/types';
+import { bandColor } from '../../lib/colors';
+import { classifySite } from '../../lib/classification';
+import {
+  FIT_BAND_LABELS,
+  FIT_TYPE_LABELS,
+  fitBandFor,
+  type FitBand,
+  type FitType,
+} from '../../lib/similarity';
 import { reducedMotion } from '../../lib/accessibility';
 import { createStarfield } from '../../lib/starfield';
 import { latLonToVec } from '../../lib/globe';
@@ -29,6 +36,11 @@ interface EarthGlobeProps {
   predictions: Prediction[];
   selectedId: string | null;
   target: Target;
+  /**
+   * Which fit the ranking menu is reading. Beacons are painted with the band of
+   * that fit, so the globe and the queue name a site the same way.
+   */
+  fit: FitType;
   onSelect: (id: string) => void;
   /** UTC day of NASA VIIRS true-colour imagery to show on the globe. */
   imageryDate: string;
@@ -122,7 +134,8 @@ interface MarkerItem {
   name: string;
   lat: number;
   lon: number;
-  state: EvidenceState;
+  /** The band this beacon shows, or null where nothing measured backs one. */
+  band: FitBand | null;
   label: string;
   terrain: string;
   /** Model-scored beacon, or an unscored researcher report. */
@@ -202,6 +215,7 @@ export function EarthGlobe({
   predictions,
   selectedId,
   target,
+  fit,
   onSelect,
   imageryDate,
   sunAt,
@@ -703,7 +717,7 @@ export function EarthGlobe({
         const reported = item.kind === 'reported';
         const material = new THREE.SpriteMaterial({
           map: reported ? ringTexture : markerTexture,
-          color: new THREE.Color(reported ? REPORTED_COLOR : stateColorHex(item.state)),
+          color: new THREE.Color(reported ? REPORTED_COLOR : bandColor(item.band)),
           transparent: true,
           opacity: reported ? 0.9 : 0.95,
           depthTest: true,
@@ -1030,17 +1044,21 @@ export function EarthGlobe({
     if (!api) return;
     api.rebuild([
       ...predictions.map((p) => {
-        const terrainState = classifySite(p, target).dimensions[0].state;
+        // One band per beacon, under the fit the menu is reading. A fit with no
+        // ratio behind it leaves the beacon neutral rather than coloured: the
+        // tooltip says "No fit figure" in words.
+        const band = fitBandFor(fit, classifySite(p, target), target);
+        const word = band ? `${FIT_BAND_LABELS[band]} ${FIT_TYPE_LABELS[fit]}` : 'No fit figure';
         return {
           id: p.id,
           name: p.siteName,
           lat: p.lat,
           lon: p.lon,
-          state: terrainState,
-          label: STATE_LABELS[terrainState],
+          band,
+          label: word,
           terrain: terrainLabel(p),
           kind: 'model' as const,
-          meta: `${terrainLabel(p)} · terrain ${STATE_LABELS[terrainState].toLowerCase()} · ${TARGET_LABELS[target]}`,
+          meta: `${terrainLabel(p)} · ${word.toLowerCase()} · ${TARGET_LABELS[target]}`,
         };
       }),
       ...reportedSites.map((site) => ({
@@ -1048,14 +1066,14 @@ export function EarthGlobe({
         name: site.name,
         lat: site.lat,
         lon: site.lon,
-        state: 'insufficient_evidence' as const,
+        band: null,
         label: 'Unreviewed',
         terrain: site.terrain,
         kind: 'reported' as const,
         meta: `${site.terrain} · not classified · ${site.targets}`,
       })),
     ]);
-  }, [predictions, reportedSites, target]);
+  }, [predictions, reportedSites, target, fit]);
 
   useEffect(() => {
     apiRef.current?.select(selectedId);

@@ -44,7 +44,13 @@ import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
-import { STATE_COLORS } from './lib/colors';
+import { BAND_COLORS, NO_FIT_COLOR, bandColor } from './lib/colors';
+import {
+  FIT_BAND_LABELS,
+  FIT_TYPE_LABELS,
+  fitBandFor,
+  type FitType,
+} from './lib/similarity';
 import { classifySite, classificationRank, STATE_LABELS, STATE_RANK } from './lib/classification';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
@@ -91,14 +97,7 @@ type ReportDraft = { mode: 'new' } | { mode: 'edit'; site: ReportedSite } | null
  * to name, and no Moon/Mars entry because the target button already says which
  * body every row is being read against.
  */
-type SortKey =
-  | 'overall'
-  | 'terrain'
-  | 'geology'
-  | 'thermal'
-  | 'waterIce'
-  | 'illumination'
-  | 'name';
+type SortKey = FitType;
 
 /**
  * The sort menu, in the order a reader meets the factors.
@@ -952,6 +951,7 @@ export default function App() {
               selectedId={selected?.id ?? null}
               target={target}
               total={predictions.length}
+              fit={sort}
               onSelect={setSelectedId}
             />
 
@@ -1046,6 +1046,7 @@ export default function App() {
             {/* Remounted when the motion preference changes: the scene reads the
                 setting once, when it builds its animation loop. */}
             <EarthGlobe
+              fit={sort}
               key={a11y.reduceMotion ? 'globe-reduced-motion' : 'globe-free'}
               predictions={visiblePredictions}
               selectedId={selectedId}
@@ -1097,28 +1098,24 @@ export default function App() {
                 </div>
               </div>
               <div className="globe-side">
-                <ul className="legend" aria-label="Marker legend">
+                <ul className="legend" aria-label="Beacon legend">
+                  {/* The bands of whichever fit the ranking menu is reading, so a
+                      beacon's colour and a row's name say the same word. */}
                   <li>
-                    <span className="legend-dot" style={{ background: STATE_COLORS.similar }} />
-                    Similar
+                    <span className="legend-dot" style={{ background: BAND_COLORS.strong }} />
+                    Strong
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: STATE_COLORS.different }} />
-                    Different
+                    <span className="legend-dot" style={{ background: BAND_COLORS.promising }} />
+                    Promising
                   </li>
                   <li>
-                    <span
-                      className="legend-dot"
-                      style={{ background: STATE_COLORS.insufficient_evidence }}
-                    />
-                    Insufficient evidence
+                    <span className="legend-dot" style={{ background: BAND_COLORS.weak }} />
+                    Weak
                   </li>
                   <li>
-                    <span
-                      className="legend-dot"
-                      style={{ background: STATE_COLORS.not_comparable }}
-                    />
-                    Not comparable
+                    <span className="legend-dot" style={{ background: NO_FIT_COLOR }} />
+                    No fit figure
                   </li>
                   <li>
                     <span className="legend-ring" />
@@ -1149,10 +1146,17 @@ export default function App() {
                   <span className="strip-meta">{terrainLabel(selected)}</span>
                   <span
                     className="strip-score"
-                    style={{ color: STATE_COLORS[classifySite(selected, target).dimensions[0].state] }}
+                    style={{
+                      color: bandColor(
+                        fitBandFor(sort, classifySite(selected, target), target),
+                      ),
+                    }}
                   >
-                    {STATE_LABELS[classifySite(selected, target).dimensions[0].state]}
-                    <span className="strip-score-unit">terrain</span>
+                    {(() => {
+                      const band = fitBandFor(sort, classifySite(selected, target), target);
+                      return band ? FIT_BAND_LABELS[band] : 'No fit figure';
+                    })()}
+                    <span className="strip-score-unit">{FIT_TYPE_LABELS[sort]}</span>
                   </span>
                 </>
               ) : selectedReported ? (

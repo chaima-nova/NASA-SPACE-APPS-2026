@@ -23,6 +23,7 @@ import { UncertaintyDialog } from './UncertaintyDialog';
 import {
   datasetsFor,
   formatCoords,
+  foundByTerraNexus,
   formatElevation,
   TARGET_LABELS,
   terrainLabel,
@@ -246,6 +247,40 @@ export function SiteInspector({
         </div>
       </dl>
 
+      {/* The three verdicts, which are the whole classification, come straight
+          after the coordinates: what the site is, then how it compares. The limits
+          and measured ground that follow are the evidence for these three lines. */}
+      <div className="dimensions">
+        <div className="dimensions-head">
+          <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
+          <span className="dimensions-count">
+            {classification.agreements} of 3 similar
+          </span>
+        </div>
+        <p className="dimensions-note">
+          Each percentage belongs to its own dimension and is never averaged into a site score.
+        </p>
+        {/* All three verdicts, in the guide's order. A dimension that matched keeps
+            the bright badge; the ones that did not keep their numbers and their basis
+            text but lose the emphasis, so a site always shows what it shares with the
+            target as well as where it departs — the analogue claim is not hidden
+            behind a heading that only appears when something matches. */}
+        {classification.dimensions.map((verdict) => {
+          const similarity = similarityFor(verdict, target);
+          return (
+            <DimensionBlock
+              key={verdict.id}
+              verdict={verdict}
+              similarity={similarity}
+              onExplain={() => setExplained(similarity)}
+              muted={verdict.state !== 'similar'}
+            />
+          );
+        })}
+      </div>
+
+      <p className="verdict">{classificationSummary(classification)}</p>
+
       {/* The four limits, which apply to every site on the list. */}
       <h3 className="section-title">
         Physical limits <span className="section-count">All sites</span>
@@ -432,6 +467,12 @@ export function SiteInspector({
             {prediction.model.id} {prediction.model.version}
           </dd>
         </div>
+        {/* Who found this ground: our own screening pass over the committed SRTM
+            grids, or a person who catalogued the site from the literature. */}
+        <div>
+          <dt>Found by</dt>
+          <dd>{foundByTerraNexus(prediction) ? 'TerraNexus screening pass' : 'Catalogued'}</dd>
+        </div>
       </dl>
 
       <SiteCommunity
@@ -470,39 +511,6 @@ export function SiteInspector({
         </div>
       </div>
 
-      {/* How the site compares, below the actions that act on it: the dossier
-          opens with what the site is and closes with the verdict. */}
-      {/* The three verdicts, which are the whole classification. */}
-      <div className="dimensions">
-        <div className="dimensions-head">
-          <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
-          <span className="dimensions-count">
-            {classification.agreements} of 3 similar
-          </span>
-        </div>
-        <p className="dimensions-note">
-          Each percentage belongs to its own dimension and is never averaged into a site score.
-        </p>
-        {/* All three verdicts, in the guide's order. A dimension that matched keeps
-            the bright badge; the ones that did not keep their numbers and their basis
-            text but lose the emphasis, so a site always shows what it shares with the
-            target as well as where it departs — the analogue claim is not hidden
-            behind a heading that only appears when something matches. */}
-        {classification.dimensions.map((verdict) => {
-          const similarity = similarityFor(verdict, target);
-          return (
-            <DimensionBlock
-              key={verdict.id}
-              verdict={verdict}
-              similarity={similarity}
-              onExplain={() => setExplained(similarity)}
-              muted={verdict.state !== 'similar'}
-            />
-          );
-        })}
-      </div>
-
-      <p className="verdict">{classificationSummary(classification)}</p>
 
       {explained ? (
         <UncertaintyDialog
