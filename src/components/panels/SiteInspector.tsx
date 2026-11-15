@@ -119,16 +119,11 @@ function DimensionBlock({
  * the datasets behind the numbers, and an export that survives the demo.
  */
 /**
- * The dossier's open/close control: a pair of diagonal arrows.
- *
- * Two arrows, not one, because the control does two things: outward towards the
- * corners says "open this out across the page", inward towards the middle says
- * "put it back". Drawn as a pair of shafts with corner heads at a 2.6 px stroke,
- * so the shape survives the card's dark surface at 20 px. The glyph carries both
- * states itself, which is why the old 180° rotation is gone: rotating a symmetric
- * pair of arrows lands on the same picture, so it signalled nothing.
+ * The dossier's open control: a pair of diagonal arrows pointing out to the
+ * corners, at a 2.6 px stroke so the shape survives the card's dark surface at
+ * 20 px.
  */
-function ExpandGlyph({ open }: { open: boolean }) {
+function ExpandGlyph() {
   return (
     <svg
       className="dossier-expand-glyph"
@@ -136,23 +131,34 @@ function ExpandGlyph({ open }: { open: boolean }) {
       aria-hidden="true"
       focusable="false"
     >
-      {open ? (
-        <>
-          {/* Head at the inner end: the arrows point back towards the middle. */}
-          <path d="M12.9 11.1h5.5v-5.5" />
-          <path d="M18.5 5.5 12.9 11.1" />
-          <path d="M11.1 12.9H5.6v5.5" />
-          <path d="M5.5 18.5 11.1 12.9" />
-        </>
-      ) : (
-        <>
-          {/* Head at the outer end: the arrows point out towards the corners. */}
-          <path d="M13 5.5h5.5V11" />
-          <path d="M12.9 11.1 18.5 5.5" />
-          <path d="M11 18.5H5.5V13" />
-          <path d="M11.1 12.9 5.5 18.5" />
-        </>
-      )}
+      {/* Head at the outer end: the arrows point out towards the corners. */}
+      <path d="M13 5.5h5.5V11" />
+      <path d="M12.9 11.1 18.5 5.5" />
+      <path d="M11 18.5H5.5V13" />
+      <path d="M11.1 12.9 5.5 18.5" />
+    </svg>
+  );
+}
+
+/**
+ * Close, once the dossier is opened out.
+ *
+ * An X rather than the arrows turned inward: the panel is a sheet over the
+ * workbench at that point, and a sheet is dismissed rather than collapsed. It
+ * sits in the same box as the arrows, so the control does not move when the
+ * state changes under the pointer, and it is the one control that also answers
+ * the click on the backdrop.
+ */
+function CloseGlyph() {
+  return (
+    <svg
+      className="dossier-expand-glyph"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6.5 6.5 17.5 17.5" />
+      <path d="M17.5 6.5 6.5 17.5" />
     </svg>
   );
 }
@@ -189,10 +195,10 @@ export function SiteInspector({
             type="button"
             className="dossier-expand"
             onClick={onToggleExpand}
-            aria-label="Collapse the dossier"
-            title="Return the dossier to its column"
+            aria-label="Close the dossier"
+            title="Close the dossier and go back to the workbench"
           >
-            <ExpandGlyph open={expanded} />
+            <CloseGlyph />
           </button>
         ) : null}
       </div>
@@ -217,15 +223,15 @@ export function SiteInspector({
             type="button"
             className="dossier-expand"
             aria-pressed={expanded}
-            aria-label={expanded ? 'Collapse the dossier' : 'Expand the dossier'}
+            aria-label={expanded ? 'Close the dossier' : 'Expand the dossier'}
             onClick={onToggleExpand}
             title={
               expanded
-                ? 'Return the dossier to its column'
+                ? 'Close the dossier and go back to the workbench'
                 : 'Open the dossier across the page to read it'
             }
           >
-            <ExpandGlyph open={expanded} />
+            {expanded ? <CloseGlyph /> : <ExpandGlyph />}
           </button>
         </span>
       </div>

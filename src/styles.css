@@ -752,15 +752,19 @@ body::before {
   overflow-wrap: anywhere;
 }
 
-.site-row.is-selected .site-name {
+/* A selected row keeps its band colour. The wash and the amber rank already say
+   which row is selected, and whitening the name threw away the one thing the row
+   was coloured for. A name with no band behind it is the only one that goes
+   white under selection, which is what keeps it readable against the wash. */
+.site-row.is-selected .site-name:not(.is-strong):not(.is-promising):not(.is-weak) {
   color: #fff;
 }
 
 /* One dimension's ratio, named in the row: strong at 60% and up, promising at the
-   40% the guide already calls a match, weak below it. A selected row stays white,
-   because selection is the stronger statement. Names with no measured fit behind
-   them — a not-comparable dimension, or a factor nothing in this build ingests —
-   keep the ink colour and get no band at all. */
+   40% the guide already calls a match, weak below it. Selection does not override
+   any of them — the row's wash is the selection. Names with no ratio behind them —
+   a not-comparable dimension, or a factor nothing in this build ingests — keep the
+   ink colour and get no band at all. */
 .site-name.is-strong { color: #34d399; }
 .site-name.is-promising { color: #22d3ee; }
 .site-name.is-weak { color: #8b93ff; }
@@ -5810,11 +5814,28 @@ html[data-a11y-motion='reduced'] *::after {
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
 }
 
+/* The page behind the sheet. A button, not the painted ::before below, so a
+   click outside the panel is a click and not a nothing; the wash stays on the
+   pseudo-element because it has to sit under the card in its own stacking context. */
+.dossier-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+/* The wash. It covers the whole viewport, so it must not take the pointer: a
+   click that lands on it is a click outside the sheet, and the scrim underneath
+   is what turns that into a close. */
 .dossier-card.is-wide::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
+  pointer-events: none;
   background: rgba(3, 5, 8, 0.74);
 }
 
