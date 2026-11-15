@@ -23,6 +23,7 @@ import srtmStats from '../../data/samples/srtm_earth_stats.json';
 import marsReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_mars.json';
 import moonReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_moon.json';
 import screenedRaw from '../../reports/screened_candidates.json';
+import siteTerrainRaw from '../../reports/site_terrain.json';
 import type { DataSource, EvidenceState, FocusArea, Prediction } from '../data-contracts/types';
 import { SCORE_BANDS } from '../data-contracts/types';
 
@@ -250,6 +251,84 @@ export const measuredTerrain: TerrainSample[] = [
   toSample(lolaStats as unknown as RawStats),
 ];
 
+/* ---------------------------------------------- measured site terrain ---- */
+
+/**
+ * The curated sites measured from their own SRTM tiles.
+ *
+ * `scripts/measure_sites.mjs` walks every fixture, reads the tile that contains
+ * its coordinates and publishes slope, roughness, relief and elevation over a
+ * 601-cell (about 18.5 km) window. Ten of the thirteen are inside SRTM's
+ * 56°S–60°N band and carry numbers; the three polar and sub-Arctic sites are
+ * published as outside coverage with the reason, because a window from the
+ * nearest tile would describe ground hundreds of kilometres away.
+ *
+ * This is what turns "the fixtures' features are illustrative" into a per-site
+ * statement. The dossier prints these beside the model's own axes and says
+ * which of the two was measured — the difference between an assumption and a
+ * reading, in one block, where the reader is already looking.
+ */
+interface SiteTerrainFile {
+  generated_by: string;
+  method: string;
+  window: { cells: number; km: number };
+  coverage: string;
+  citation: string;
+  source: {
+    dataset_id: string;
+    resolution: string;
+    catalogue: string;
+    tiles: Array<{ tile: string; bbox: number[]; grid: string }>;
+  };
+  sites: Array<{
+    siteId: string;
+    siteName: string;
+    lat: number;
+    lon: number;
+    status: 'measured' | 'outside_coverage' | 'tile_not_downloaded';
+    tile: string;
+    reason?: string;
+    windowCentre?: { lat: number; lon: number; offsetKm: number };
+    cellMetres?: { northSouth: number; eastWest: number };
+    measured?: {
+      slopeMeanDeg: number;
+      slopeMaxDeg: number;
+      triMeanM: number;
+      reliefM: number;
+      elevationMeanM: number;
+      elevationStdM: number | null;
+      elevationMinM: number;
+      elevationMaxM: number;
+      validPct: number;
+      windowCells: number;
+    };
+  }>;
+}
+
+const siteTerrain = siteTerrainRaw as unknown as SiteTerrainFile;
+
+export type SiteTerrainSite = SiteTerrainFile['sites'][number];
+
+const terrainBySite = new Map(siteTerrain.sites.map((site) => [site.siteId, site]));
+
+/** The SRTM measurement for one curated site, if this build published one. */
+export function terrainMeasurementFor(siteId: string | undefined): SiteTerrainSite | undefined {
+  return siteId ? terrainBySite.get(siteId) : undefined;
+}
+
+/** Every published measurement row, measured or not. */
+export const siteTerrainRows: SiteTerrainSite[] = siteTerrain.sites;
+
+/** What the measurement pass covered, in the pipeline's own words. */
+export const siteTerrainCoverage = {
+  method: siteTerrain.method,
+  coverage: siteTerrain.coverage,
+  citation: siteTerrain.citation,
+  window: siteTerrain.window,
+  tiles: siteTerrain.source.tiles,
+  resolution: siteTerrain.source.resolution,
+};
+
 
 /* ------------------------------------------------ screened candidates ---- */
 
@@ -272,17 +351,29 @@ export const measuredTerrain: TerrainSample[] = [
 interface ScreenedFile {
   coverage: string;
   method: string;
-  earth_tile: { dataset_id: string; bbox: number[]; grid: string; citation: string };
+  window: { cells: number; metres: number };
+  earth_tiles: Array<{
+    dataset_id: string;
+    tile: string;
+    label: string;
+    bbox: number[];
+    grid: string;
+    arc_seconds: number;
+    screened_windows: number;
+    citation: string;
+  }>;
   candidates: Array<{
     id: string;
     siteName: string;
     region: string;
+    tile: string;
     lat: number;
     lon: number;
-    terrainType: 'desert';
+    terrainType: 'desert' | 'volcanic';
     elevationM: number;
     measured: {
       slopeMeanDeg: number;
+      slopeMaxDeg: number;
       triMeanM: number;
       reliefM: number;
       windowCells: number;
@@ -300,7 +391,8 @@ const screened = screenedRaw as unknown as ScreenedFile;
 export const screeningCoverage = {
   coverage: screened.coverage,
   method: screened.method,
-  tile: screened.earth_tile,
+  window: screened.window,
+  tiles: screened.earth_tiles,
 };
 
 const bandOf = (score: number) =>
@@ -334,7 +426,7 @@ export const screenedPredictions: Prediction[] = screened.candidates.map((cell) 
       terrainRoughness: Number((cell.measured.triMeanM / 1000).toFixed(3)),
     },
     evidence: strongest.overallState,
-    evidenceNote: `Terrain-only screen of one SRTM window: mean slope ${cell.measured.slopeMeanDeg} degrees, TRI ${cell.measured.triMeanM} m, relief ${cell.measured.reliefM} m. Thermal, geological and resource dimensions were not compared.`,
+    evidenceNote: `Terrain-only screen of one SRTM window: mean slope ${cell.measured.slopeMeanDeg} degrees (steepest cell ${cell.measured.slopeMaxDeg} degrees), TRI ${cell.measured.triMeanM} m, relief ${cell.measured.reliefM} m. Thermal, geological and resource dimensions were not compared.`,
     verdict: `Screened from the Atacama SRTM tile: terrain ${strongest.terrainState.replace('_', ' ')} the ${
       moonWins ? 'lunar south pole' : 'Jezero'
     } reference, with no thermal or geological check — evidence is incomplete, not favourable.`,

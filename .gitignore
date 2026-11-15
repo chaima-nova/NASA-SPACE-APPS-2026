@@ -71,3 +71,6 @@ dist-ssr
 !.env.example
 .DS_Store
 .freebuff/
+
+# SRTM tiles (large, downloaded on demand by scripts/measure_sites.mjs)
+data/tiles/

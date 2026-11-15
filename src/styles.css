@@ -1180,6 +1180,58 @@ body::before {
   color: var(--ink-2);
 }
 
+.evidence-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.evidence-badge {
+  width: max-content;
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--ink-3);
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+}
+
+.evidence-row.is-insufficient_evidence .evidence-badge {
+  color: var(--amber);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.evidence-row.is-different .evidence-badge {
+  color: var(--mars);
+  border-color: rgba(251, 146, 60, 0.4);
+}
+
+.evidence-row.is-similar .evidence-badge {
+  color: var(--signal);
+  border-color: rgba(var(--signal-rgb), 0.4);
+}
+
+.evidence-text,
+.measured-note,
+.dossier-caveat {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.dossier-caveat {
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+}
+
 .facts {
   display: grid;
   grid-template-columns: 1fr 1fr;

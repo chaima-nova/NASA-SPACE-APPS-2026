@@ -1,19 +1,88 @@
 {
   "generated_by": "scripts/screen_analogues.mjs",
-  "method": "Windows of 16x16 SRTM cells, mean slope / mean TRI / relief, distance to each target reference scaled by that reference spread, fit = 1 - distance/2.",
-  "coverage": "One 1x1 degree SRTM GL1 tile over the Atacama (24S 069W, 601x601 cells at 30 m). This demonstrates the screening method; it is not a global survey, and cells outside this tile have not been screened.",
-  "window_cells": 256,
-  "earth_tile": {
-    "dataset_id": "srtm_gl1",
-    "bbox": [
-      -69,
-      -24,
-      -68,
-      -23
-    ],
-    "grid": "601 x 601",
-    "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+  "method": "Windows of 64x64 SRTM cells (about 2 km), mean slope / mean TRI / relief, distance to each target reference scaled by that reference spread, fit = 1 - distance/2. Slope is Horn's 3x3 gradient, roughness is Riley's TRI.",
+  "coverage": "5 one-degree SRTM GL1 tiles — Atacama (S24W069), Lanzarote (N29W014), Snake River (N43W114), Modoc (N41W122), Qaidam (N37E094) — 15,680 windows scored, the best three per tile published. Terrain was screened over these five tiles only; every other tile in the SRTM set, and every area outside its 56°S–60°N band, is unscreened. The forbidding part of the comparison is scale: a 2 km window at 30 m and a target reference built from much coarser cells do not measure the same thing, so a fit here is a screening signal, not a verdict.",
+  "window": {
+    "cells": 4096,
+    "metres": 1975
   },
+  "earth_tiles": [
+    {
+      "dataset_id": "srtm_gl1",
+      "tile": "S24W069",
+      "label": "Atacama — Antofagasta, Chile",
+      "bbox": [
+        -69,
+        -24,
+        -68,
+        -23
+      ],
+      "grid": "3601 x 3601",
+      "arc_seconds": 1,
+      "screened_windows": 3136,
+      "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+    },
+    {
+      "dataset_id": "srtm_gl1",
+      "tile": "N29W014",
+      "label": "Lanzarote — Lanzarote, Canary Islands",
+      "bbox": [
+        -14,
+        29,
+        -13,
+        30
+      ],
+      "grid": "3601 x 3601",
+      "arc_seconds": 1,
+      "screened_windows": 3136,
+      "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+    },
+    {
+      "dataset_id": "srtm_gl1",
+      "tile": "N43W114",
+      "label": "Snake River — Snake River Plain, Idaho",
+      "bbox": [
+        -114,
+        43,
+        -113,
+        44
+      ],
+      "grid": "3601 x 3601",
+      "arc_seconds": 1,
+      "screened_windows": 3136,
+      "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+    },
+    {
+      "dataset_id": "srtm_gl1",
+      "tile": "N41W122",
+      "label": "Modoc — Modoc Plateau, California",
+      "bbox": [
+        -122,
+        41,
+        -121,
+        42
+      ],
+      "grid": "3601 x 3601",
+      "arc_seconds": 1,
+      "screened_windows": 3136,
+      "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+    },
+    {
+      "dataset_id": "srtm_gl1",
+      "tile": "N37E094",
+      "label": "Qaidam — Qaidam Basin, Qinghai, China",
+      "bbox": [
+        94,
+        37,
+        95,
+        38
+      ],
+      "grid": "3601 x 3601",
+      "arc_seconds": 1,
+      "screened_windows": 3136,
+      "citation": "Farr et al. (2007). The Shuttle Radar Topography Mission. Reviews of Geophysics."
+    }
+  ],
   "references": [
     {
       "body": "moon",
@@ -22,6 +91,7 @@
       "slopeMax": 69.64,
       "triMean": 1795.03,
       "triMax": 6945.45,
+      "resolutionDeg": 0.25,
       "thermal": false
     },
     {
@@ -31,184 +101,476 @@
       "slopeMax": 3.27,
       "triMean": 754.01,
       "triMax": 2037.56,
+      "resolutionDeg": 0.25,
       "thermal": false
     }
   ],
-  "screened_windows": 1369,
+  "screened_windows": 15680,
   "candidates": [
     {
-      "id": "screened-01",
+      "id": "screened-n29w014-01",
+      "siteName": "Screened cell 01, Lanzarote tile",
+      "region": "Lanzarote, Canary Islands (SRTM N29W014)",
+      "tile": "N29W014",
+      "lat": 29.4399,
+      "lon": -13.2621,
+      "terrainType": "volcanic",
+      "elevationM": -169,
+      "measured": {
+        "slopeMeanDeg": 1.21,
+        "slopeMaxDeg": 3.33,
+        "triMeanM": 0.4,
+        "reliefM": 45,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.216,
+        "distance": 1.568,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.519,
+        "distance": 0.962,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n29w014-02",
+      "siteName": "Screened cell 02, Lanzarote tile",
+      "region": "Lanzarote, Canary Islands (SRTM N29W014)",
+      "tile": "N29W014",
+      "lat": 29.4043,
+      "lon": -13.2799,
+      "terrainType": "volcanic",
+      "elevationM": -152,
+      "measured": {
+        "slopeMeanDeg": 1.25,
+        "slopeMaxDeg": 3.32,
+        "triMeanM": 0.4,
+        "reliefM": 45,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.218,
+        "distance": 1.565,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.519,
+        "distance": 0.962,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n29w014-03",
+      "siteName": "Screened cell 03, Lanzarote tile",
+      "region": "Lanzarote, Canary Islands (SRTM N29W014)",
+      "tile": "N29W014",
+      "lat": 29.2976,
+      "lon": -13.3332,
+      "terrainType": "volcanic",
+      "elevationM": -55,
+      "measured": {
+        "slopeMeanDeg": 1.17,
+        "slopeMaxDeg": 3.32,
+        "triMeanM": 0.4,
+        "reliefM": 34,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.215,
+        "distance": 1.57,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.519,
+        "distance": 0.962,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-s24w069-01",
       "siteName": "Screened cell 01, Atacama tile",
       "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.0666,
-      "lon": -68.6406,
+      "tile": "S24W069",
+      "lat": -23.4713,
+      "lon": -68.1376,
       "terrainType": "desert",
-      "elevationM": 3450,
+      "elevationM": 2303,
       "measured": {
-        "slopeMeanDeg": 9.35,
-        "triMeanM": 90,
-        "reliefM": 393,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.09,
+        "slopeMaxDeg": 3.44,
+        "triMeanM": 0.5,
+        "reliefM": 5,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.44,
-        "distance": 1.121,
+        "fit": 0.213,
+        "distance": 1.573,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.518,
+        "distance": 0.965,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n43w114-01",
+      "siteName": "Screened cell 01, Snake River tile",
+      "region": "Snake River Plain, Idaho (SRTM N43W114)",
+      "tile": "N43W114",
+      "lat": 43.9021,
+      "lon": -113.4754,
+      "terrainType": "volcanic",
+      "elevationM": 1774,
+      "measured": {
+        "slopeMeanDeg": 1.36,
+        "slopeMaxDeg": 3.17,
+        "triMeanM": 0.5,
+        "reliefM": 50,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.22,
+        "distance": 1.56,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.517,
+        "distance": 0.967,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n41w122-01",
+      "siteName": "Screened cell 01, Modoc tile",
+      "region": "Modoc Plateau, California (SRTM N41W122)",
+      "tile": "N41W122",
+      "lat": 41.8665,
+      "lon": -121.3865,
+      "terrainType": "volcanic",
+      "elevationM": 1287,
+      "measured": {
+        "slopeMeanDeg": 8.54,
+        "slopeMaxDeg": 62.53,
+        "triMeanM": 3.2,
+        "reliefM": 233,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.517,
+        "distance": 0.966,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
         "fit": 0,
-        "distance": 5.859,
+        "distance": 17.971,
         "terrainState": "different",
         "overallState": "different"
       },
       "strongest": "moon"
     },
     {
-      "id": "screened-02",
+      "id": "screened-s24w069-02",
       "siteName": "Screened cell 02, Atacama tile",
       "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.1198,
-      "lon": -68.7471,
+      "tile": "S24W069",
+      "lat": -23.1868,
+      "lon": -68.3154,
       "terrainType": "desert",
-      "elevationM": 3462,
+      "elevationM": 2312,
       "measured": {
-        "slopeMeanDeg": 8.9,
-        "triMeanM": 85.1,
-        "reliefM": 370,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.08,
+        "slopeMaxDeg": 3.55,
+        "triMeanM": 0.5,
+        "reliefM": 7,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.439,
-        "distance": 1.123,
+        "fit": 0.213,
+        "distance": 1.573,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.516,
+        "distance": 0.968,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n41w122-02",
+      "siteName": "Screened cell 02, Modoc tile",
+      "region": "Modoc Plateau, California (SRTM N41W122)",
+      "tile": "N41W122",
+      "lat": 41.4932,
+      "lon": -121.9199,
+      "terrainType": "volcanic",
+      "elevationM": 1671,
+      "measured": {
+        "slopeMeanDeg": 9.09,
+        "slopeMaxDeg": 61.04,
+        "triMeanM": 3.8,
+        "reliefM": 265,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.516,
+        "distance": 0.968,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
         "fit": 0,
-        "distance": 5.544,
+        "distance": 17.627,
         "terrainState": "different",
         "overallState": "different"
       },
       "strongest": "moon"
     },
     {
-      "id": "screened-03",
+      "id": "screened-n37e094-01",
+      "siteName": "Screened cell 01, Qaidam tile",
+      "region": "Qaidam Basin, Qinghai, China (SRTM N37E094)",
+      "tile": "N37E094",
+      "lat": 37.1554,
+      "lon": 94.3646,
+      "terrainType": "desert",
+      "elevationM": 2682,
+      "measured": {
+        "slopeMeanDeg": 1.2,
+        "slopeMaxDeg": 3.63,
+        "triMeanM": 0.5,
+        "reliefM": 5,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.217,
+        "distance": 1.566,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.516,
+        "distance": 0.967,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-s24w069-03",
       "siteName": "Screened cell 03, Atacama tile",
       "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.7055,
-      "lon": -68.3478,
+      "tile": "S24W069",
+      "lat": -23.3646,
+      "lon": -68.2265,
       "terrainType": "desert",
-      "elevationM": 2647,
+      "elevationM": 2303,
       "measured": {
-        "slopeMeanDeg": 9.28,
-        "triMeanM": 86.7,
-        "reliefM": 372,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.16,
+        "slopeMaxDeg": 3.71,
+        "triMeanM": 0.5,
+        "reliefM": 5,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.439,
-        "distance": 1.123,
+        "fit": 0.217,
+        "distance": 1.567,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
-        "fit": 0,
-        "distance": 5.808,
+        "fit": 0.515,
+        "distance": 0.97,
         "terrainState": "different",
         "overallState": "different"
       },
-      "strongest": "moon"
+      "strongest": "mars"
     },
     {
-      "id": "screened-04",
-      "siteName": "Screened cell 04, Atacama tile",
-      "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.1198,
-      "lon": -68.7205,
-      "terrainType": "desert",
-      "elevationM": 3516,
+      "id": "screened-n43w114-02",
+      "siteName": "Screened cell 02, Snake River tile",
+      "region": "Snake River Plain, Idaho (SRTM N43W114)",
+      "tile": "N43W114",
+      "lat": 43.9021,
+      "lon": -113.4399,
+      "terrainType": "volcanic",
+      "elevationM": 1799,
       "measured": {
-        "slopeMeanDeg": 9.06,
-        "triMeanM": 84.3,
-        "reliefM": 393,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.4,
+        "slopeMaxDeg": 3.17,
+        "triMeanM": 0.5,
+        "reliefM": 49,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.438,
-        "distance": 1.123,
+        "fit": 0.221,
+        "distance": 1.558,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
-        "fit": 0,
-        "distance": 5.658,
+        "fit": 0.515,
+        "distance": 0.969,
         "terrainState": "different",
         "overallState": "different"
       },
-      "strongest": "moon"
+      "strongest": "mars"
     },
     {
-      "id": "screened-05",
-      "siteName": "Screened cell 05, Atacama tile",
-      "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.1198,
-      "lon": -68.5607,
+      "id": "screened-n37e094-02",
+      "siteName": "Screened cell 02, Qaidam tile",
+      "region": "Qaidam Basin, Qinghai, China (SRTM N37E094)",
+      "tile": "N37E094",
+      "lat": 37.0665,
+      "lon": 94.5957,
       "terrainType": "desert",
-      "elevationM": 3173,
+      "elevationM": 2683,
       "measured": {
-        "slopeMeanDeg": 10.02,
-        "triMeanM": 97.4,
-        "reliefM": 419,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.14,
+        "slopeMaxDeg": 3.71,
+        "triMeanM": 0.5,
+        "reliefM": 6,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.438,
-        "distance": 1.124,
+        "fit": 0.216,
+        "distance": 1.568,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
-        "fit": 0,
-        "distance": 6.321,
+        "fit": 0.515,
+        "distance": 0.971,
         "terrainState": "different",
         "overallState": "different"
       },
-      "strongest": "moon"
+      "strongest": "mars"
     },
     {
-      "id": "screened-06",
-      "siteName": "Screened cell 06, Atacama tile",
-      "region": "Antofagasta, Chile (SRTM S24W069)",
-      "lat": -23.2529,
-      "lon": -68.614,
-      "terrainType": "desert",
-      "elevationM": 2695,
+      "id": "screened-n43w114-03",
+      "siteName": "Screened cell 03, Snake River tile",
+      "region": "Snake River Plain, Idaho (SRTM N43W114)",
+      "tile": "N43W114",
+      "lat": 43.8665,
+      "lon": -113.031,
+      "terrainType": "volcanic",
+      "elevationM": 1513,
       "measured": {
-        "slopeMeanDeg": 9.12,
-        "triMeanM": 83.1,
-        "reliefM": 373,
-        "windowCells": 256,
+        "slopeMeanDeg": 1.08,
+        "slopeMaxDeg": 3.71,
+        "triMeanM": 0.4,
+        "reliefM": 40,
+        "windowCells": 4096,
         "validPct": 100
       },
       "moon": {
-        "fit": 0.438,
-        "distance": 1.124,
+        "fit": 0.214,
+        "distance": 1.572,
         "terrainState": "different",
         "overallState": "different"
       },
       "mars": {
-        "fit": 0,
-        "distance": 5.699,
+        "fit": 0.514,
+        "distance": 0.973,
         "terrainState": "different",
         "overallState": "different"
       },
-      "strongest": "moon"
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n41w122-03",
+      "siteName": "Screened cell 03, Modoc tile",
+      "region": "Modoc Plateau, California (SRTM N41W122)",
+      "tile": "N41W122",
+      "lat": 41.6532,
+      "lon": -121.0132,
+      "terrainType": "volcanic",
+      "elevationM": 1522,
+      "measured": {
+        "slopeMeanDeg": 0.97,
+        "slopeMaxDeg": 3.1,
+        "triMeanM": 0.3,
+        "reliefM": 30,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.208,
+        "distance": 1.583,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.514,
+        "distance": 0.972,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
+    },
+    {
+      "id": "screened-n37e094-03",
+      "siteName": "Screened cell 03, Qaidam tile",
+      "region": "Qaidam Basin, Qinghai, China (SRTM N37E094)",
+      "tile": "N37E094",
+      "lat": 37.2443,
+      "lon": 94.5957,
+      "terrainType": "desert",
+      "elevationM": 2687,
+      "measured": {
+        "slopeMeanDeg": 1.22,
+        "slopeMaxDeg": 3.89,
+        "triMeanM": 0.5,
+        "reliefM": 7,
+        "windowCells": 4096,
+        "validPct": 100
+      },
+      "moon": {
+        "fit": 0.219,
+        "distance": 1.562,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "mars": {
+        "fit": 0.511,
+        "distance": 0.979,
+        "terrainState": "different",
+        "overallState": "different"
+      },
+      "strongest": "mars"
     }
   ]
 }
