@@ -1,6 +1,6 @@
 import { Panel } from './Panel';
 import { scoreColor } from '../../lib/colors';
-import { formatScore, TERRAIN_LABELS, terrainOf } from '../../lib/site';
+import { fitFor, formatScore, TERRAIN_LABELS, terrainOf } from '../../lib/site';
 import { engineComparisons, measuredTerrain, pipelineDatasets } from '../../services/pipeline';
 import type { Prediction, TerrainType } from '../../data-contracts/types';
 import { SCORE_BANDS } from '../../data-contracts/types';
@@ -71,6 +71,25 @@ export function SummaryPage({ predictions, datasetCount }: SummaryPageProps) {
   const insufficient = engineComparisons
     .flatMap((comparison) => comparison.dimensions)
     .filter((dimension) => dimension.status === 'INSUFFICIENT_EVIDENCE').length;
+
+  // The challenge names two destinations, so the collection has to be readable
+  // per destination. The workbench already scores every site against both.
+  const targets = (['moon', 'mars'] as const).map((target) => ({
+    label: target === 'moon' ? 'Moon base' : 'Mars base',
+    mean:
+      predictions.length === 0
+        ? 0
+        : predictions.reduce((total, prediction) => total + fitFor(prediction, target), 0) /
+          predictions.length,
+    tagged: predictions.filter((prediction) =>
+      target === 'moon'
+        ? prediction.focusArea !== 'mars-base-analog'
+        : prediction.focusArea !== 'moon-base-analog',
+    ).length,
+  }));
+
+  // The page promises the collection, so its own top belongs here.
+  const strongest = [...predictions].sort((a, b) => b.analogScore - a.analogScore).slice(0, 6);
 
   return (
     <main className="summary-page">
@@ -190,6 +209,58 @@ export function SummaryPage({ predictions, datasetCount }: SummaryPageProps) {
               so {pipelineDatasets.length} datasets cover the surface but not the rest.
             </p>
           </div>
+        </Panel>
+
+        <Panel title="Target split" subtitle="Mean fit against each destination">
+          {predictions.length === 0 ? (
+            <p className="summary-empty">No scored sites in this build yet.</p>
+          ) : (
+            <>
+              <ul className="summary-bars">
+                {targets.map((target) => (
+                  <li key={target.label}>
+                    <span className="summary-bars-label">{target.label}</span>
+                    <span className="summary-bars-track">
+                      <span
+                        style={{
+                          width: `${target.mean * 100}%`,
+                          background: scoreColor(target.mean),
+                        }}
+                      />
+                    </span>
+                    <b>{formatScore(target.mean)}</b>
+                  </li>
+                ))}
+              </ul>
+              <p className="summary-depth-note">
+                {targets[0].tagged} sites are scored against the Moon and {targets[1].tagged}{' '}
+                against Mars; a dual-analog site counts for both.
+              </p>
+            </>
+          )}
+        </Panel>
+
+        <Panel title="Strongest fits" subtitle="Top six, best first" className="summary-wide">
+          {strongest.length === 0 ? (
+            <p className="summary-empty">No scored sites in this build yet.</p>
+          ) : (
+            <ul className="summary-bars">
+              {strongest.map((prediction) => (
+                <li key={prediction.id}>
+                  <span className="summary-bars-label">{prediction.siteName}</span>
+                  <span className="summary-bars-track">
+                    <span
+                      style={{
+                        width: `${prediction.analogScore * 100}%`,
+                        background: scoreColor(prediction.analogScore),
+                      }}
+                    />
+                  </span>
+                  <b>{formatScore(prediction.analogScore)}</b>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
       </div>
     </main>
