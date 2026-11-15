@@ -5891,22 +5891,50 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-2);
 }
 
-.investigations-grid {
+.investigations-list {
   display: grid;
-  /* Five tracks on a wide screen, fewer as the window narrows: the cards are
-     tall, so auto-fit avoids a lonely second row. */
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
+/* One row per line, closed until asked: five columns of prompts met a reader as
+   a wall of text before they had chosen a site. Each row carries its own tint
+   (set inline as --tint) so the five lines stay distinguishable once stacked. */
 .investigation {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px;
-  background: var(--surface);
+  background:
+    radial-gradient(520px 140px at 0% 0%, rgb(var(--tint) / 0.2), transparent 72%),
+    linear-gradient(120deg, rgb(var(--tint) / 0.06), transparent 58%),
+    var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease);
+}
+
+.investigation[open] {
+  border-color: rgb(var(--tint) / 0.42);
+}
+
+/* The native disclosure is the control; hide the marker and draw our own. */
+.investigation-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.investigation-summary::-webkit-details-marker {
+  display: none;
+}
+
+.investigation-summary:hover {
+  background: rgb(var(--tint) / 0.09);
+}
+
+.investigation-summary:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -2px;
 }
 
 .investigation-kind {
@@ -5914,13 +5942,36 @@ html[data-a11y-motion='reduced'] *::after {
   font-size: 0.54rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--signal);
+  color: rgb(var(--tint));
+  white-space: nowrap;
 }
 
-.investigation-head h3 {
-  margin: 2px 0 4px;
-  font-size: 0.86rem;
+.investigation-title {
+  margin: 0;
+  font-size: 0.9rem;
   letter-spacing: -0.01em;
+}
+
+.investigation-chevron {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  flex: none;
+  border-right: 1.5px solid var(--ink-2);
+  border-bottom: 1.5px solid var(--ink-2);
+  transform: rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+
+.investigation[open] .investigation-chevron {
+  transform: rotate(225deg);
+}
+
+.investigation-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 14px 14px;
 }
 
 .investigation-aim {

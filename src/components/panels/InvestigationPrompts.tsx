@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { Prediction } from '../../data-contracts/types';
 import { photoPageUrl, photosFor, photoUrl } from '../../data/sitePhotos';
 import { engineComparisons, measuredTerrain } from '../../services/pipeline';
@@ -117,6 +118,12 @@ interface Track {
   kind: string;
   title: string;
   aim: string;
+  /**
+   * The row's own colour, as space-separated RGB components so CSS can hold it
+   * at any alpha (`rgb(var(--tint) / 0.2)`). Five stacked rows need to stay
+   * distinguishable once they are no longer five separate columns.
+   */
+  tint: string;
   prompts: Prompt[];
 }
 
@@ -125,6 +132,7 @@ const TRACKS: Track[] = [
     id: 'mobility',
     kind: 'Line 01',
     title: 'Terrain & Mobility',
+    tint: '34 211 238',
     aim: 'Could this terrain help researchers investigate rover mobility on comparable landforms? Slope, roughness and elevation are what a navigation study would actually test.',
     prompts: [
       {
@@ -145,6 +153,7 @@ const TRACKS: Track[] = [
     id: 'geology',
     kind: 'Line 02',
     title: 'Geology & Materials',
+    tint: '251 191 36',
     aim: 'Do the available geological maps or spectral observations indicate comparable surface materials? That question sets the follow-up observations any claim would need.',
     prompts: [
       {
@@ -167,6 +176,7 @@ const TRACKS: Track[] = [
     id: 'environment',
     kind: 'Line 03',
     title: 'Environmental Processes',
+    tint: '52 211 153',
     aim: 'Could this location support studies of dust, wind, erosion, volcanic activity or sedimentation under Earth-comparable processes?',
     prompts: [
       {
@@ -189,6 +199,7 @@ const TRACKS: Track[] = [
     id: 'resources',
     kind: 'Line 04',
     title: 'Resources & Subsurface',
+    tint: '91 124 250',
     aim: 'Are there measurable indicators relevant to water, ice, permafrost, caves or lava tubes? This is where the evidence boundary for resource claims runs.',
     prompts: [
       {
@@ -209,6 +220,7 @@ const TRACKS: Track[] = [
     id: 'prep',
     kind: 'Line 05',
     title: 'Human & Robotic Prep',
+    tint: '244 114 182',
     aim: 'Could this environment support instrument testing, field procedures or robotics research? And which planetary conditions cannot transfer at all?',
     prompts: [
       {
@@ -255,45 +267,57 @@ export function InvestigationPrompts({ prediction = null }: InvestigationPrompts
         <p className="investigations-lede">
           Five lines of investigation the pipeline's own measurements can support — each prompt
           starts from a number or a verdict that already exists, states what it does not settle, and
-          names the field work that would.
+          names the field work that would. Open a line to read its prompts.
         </p>
       </header>
 
-      <div className="investigations-grid">
+      {/* Five columns of prompts met a reader as a wall of text before they had
+          chosen a site. The same five lines are now one row each, closed until
+          asked; <details> carries the open state for the keyboard and for a
+          reader with no JavaScript, so no script is spent on a disclosure. */}
+      <div className="investigations-list">
         {plates.map(({ track, photo }) => (
-          <article key={track.id} className="investigation">
-            {photo ? (
-              <figure className="investigation-photo">
-                <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
-                  <img
-                    src={photoUrl(photo, 640)}
-                    alt={photo.caption}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-                <figcaption>
-                  {photo.credit} · {photo.license}
-                </figcaption>
-              </figure>
-            ) : null}
-            <header className="investigation-head">
+          <details
+            key={track.id}
+            className="investigation"
+            style={{ '--tint': track.tint } as CSSProperties}
+          >
+            <summary className="investigation-summary">
               <span className="investigation-kind">{track.kind}</span>
-              <h3>{track.title}</h3>
+              <h3 className="investigation-title">{track.title}</h3>
+              <span className="investigation-chevron" aria-hidden="true" />
+            </summary>
+
+            <div className="investigation-body">
+              {photo ? (
+                <figure className="investigation-photo">
+                  <a href={photoPageUrl(photo)} target="_blank" rel="noreferrer">
+                    <img
+                      src={photoUrl(photo, 640)}
+                      alt={photo.caption}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
+                  <figcaption>
+                    {photo.credit} · {photo.license}
+                  </figcaption>
+                </figure>
+              ) : null}
               <p className="investigation-aim">{track.aim}</p>
-            </header>
-            <ol className="investigation-prompts">
-              {track.prompts.map((prompt) => (
-                <li key={prompt.question}>
-                  <p className="investigation-question">{prompt.question}</p>
-                  <p className="investigation-evidence">
-                    <span className="investigation-tag">Evidence</span>
-                    {prompt.evidence}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </article>
+              <ol className="investigation-prompts">
+                {track.prompts.map((prompt) => (
+                  <li key={prompt.question}>
+                    <p className="investigation-question">{prompt.question}</p>
+                    <p className="investigation-evidence">
+                      <span className="investigation-tag">Evidence</span>
+                      {prompt.evidence}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </details>
         ))}
       </div>
 
