@@ -456,11 +456,6 @@ body::before {
   color: var(--ink);
 }
 
-.kpi-sub {
-  color: var(--ink-3);
-  font-size: 0.74rem;
-}
-
 .error {
   margin: 12px 0 0;
   padding: 9px 12px;
