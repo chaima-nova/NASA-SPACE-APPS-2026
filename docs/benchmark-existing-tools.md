@@ -313,7 +313,7 @@ The bottom strip is collapsible so the globe can take 100vh in demo mode.
 ## 6. Sources
 
 Challenge
-- NASA Space Apps 2026 challenge page, Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars: https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/
+- NASA Space Apps 2026 challenge page, Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars: https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/
 - 2025 award definitions: https://www.spaceappschallenge.org/2025/awards/
 
 Winners

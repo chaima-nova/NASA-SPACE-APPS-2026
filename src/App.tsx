@@ -735,7 +735,7 @@ export default function App() {
           ) : null}
           <a
             className="topbar-link"
-            href="https://www.spaceappschallenge.org/2026/challenges/identify-earth-locations-that-analog-the-permanent-moon-base-locations-and-mars/"
+            href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/"
             target="_blank"
             rel="noreferrer"
           >
