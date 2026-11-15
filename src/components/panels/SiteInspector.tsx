@@ -199,9 +199,6 @@ export function SiteInspector({
   }
 
   const classification = classifySite(prediction, target);
-  // The highlighted half of the classification: only the dimensions that matched.
-  const matches = classification.dimensions.filter((verdict) => verdict.state === 'similar');
-  const others = classification.dimensions.filter((verdict) => verdict.state !== 'similar');
   const siteDatasets = datasetsFor(prediction, datasets);
   const photos = photosFor(prediction);
   const photoCount = photos.length;
@@ -475,11 +472,7 @@ export function SiteInspector({
 
       {/* How the site compares, below the actions that act on it: the dossier
           opens with what the site is and closes with the verdict. */}
-      {/* The three verdicts, which are the whole classification. Only the ones
-          that matched are highlighted: a coloured badge on a "Different"
-          dimension reads as a finding, and the reader meets three of them before
-          anything says what did match. The rest are listed below, unhighlighted,
-          so nothing measured is hidden — only the emphasis moves. */}
+      {/* The three verdicts, which are the whole classification. */}
       <div className="dimensions">
         <div className="dimensions-head">
           <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
@@ -490,46 +483,24 @@ export function SiteInspector({
         <p className="dimensions-note">
           Each percentage belongs to its own dimension and is never averaged into a site score.
         </p>
-        {matches.length > 0 ? (
-          matches.map((verdict) => {
-            const similarity = similarityFor(verdict, target);
-            return (
-              <DimensionBlock
-                key={verdict.id}
-                verdict={verdict}
-                similarity={similarity}
-                onExplain={() => setExplained(similarity)}
-              />
-            );
-          })
-        ) : (
-          <p className="dimensions-none">
-            No dimension matches this target. The measured differences and the data gaps are
-            below, with the same numbers behind them.
-          </p>
-        )}
+        {/* All three verdicts, in the guide's order. A dimension that matched keeps
+            the bright badge; the ones that did not keep their numbers and their basis
+            text but lose the emphasis, so a site always shows what it shares with the
+            target as well as where it departs — the analogue claim is not hidden
+            behind a heading that only appears when something matches. */}
+        {classification.dimensions.map((verdict) => {
+          const similarity = similarityFor(verdict, target);
+          return (
+            <DimensionBlock
+              key={verdict.id}
+              verdict={verdict}
+              similarity={similarity}
+              onExplain={() => setExplained(similarity)}
+              muted={verdict.state !== 'similar'}
+            />
+          );
+        })}
       </div>
-
-      {others.length > 0 ? (
-        <div className="dimensions dimensions-others">
-          <div className="dimensions-head">
-            <span className="kicker">Differences and gaps</span>
-            <span className="dimensions-count">{others.length}</span>
-          </div>
-          {others.map((verdict) => {
-            const similarity = similarityFor(verdict, target);
-            return (
-              <DimensionBlock
-                key={verdict.id}
-                verdict={verdict}
-                similarity={similarity}
-                onExplain={() => setExplained(similarity)}
-                muted
-              />
-            );
-          })}
-        </div>
-      ) : null}
 
       <p className="verdict">{classificationSummary(classification)}</p>
 

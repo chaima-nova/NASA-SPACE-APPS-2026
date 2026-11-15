@@ -51,6 +51,7 @@ import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
 import {
   purposeFits,
+  MISSION_PURPOSE_ORDER,
   travelAccessOf,
   travelExport,
   type MissionPurpose,
@@ -413,8 +414,9 @@ export default function App() {
       // reaches is not a worse candidate, it is one the reader cannot use.
       .filter((p) => !travelOnly || travelAccessOf(p).access !== 'none')
       // Purpose is the same kind of cut: a site that no crew can fly into is not
-      // a worse analogue, it is one the reader's mission cannot use.
-      .filter((p) => purposeFits(purpose, p))
+      // a worse analogue, it is one the reader's mission cannot use. The target
+      // comes in because navigation and construction read the classification.
+      .filter((p) => purposeFits(purpose, p, target))
       .map((prediction) => ({
         prediction,
         classification: classifySite(prediction, target),
@@ -584,6 +586,29 @@ export default function App() {
       setSelectedId(ranked[0].prediction.id);
     }
   }, [ranked, selectedId, community.reportedSites]);
+
+  /**
+   * How many sites each purpose leaves, counted over the whole catalogue rather
+   * than the current list: the chips sit above the terrain cut, so a count that
+   * changed with the search box would say nothing about the purpose itself.
+   */
+  const purposeCounts = useMemo(() => {
+    const counts: Record<MissionPurpose, number> = {
+      any: predictions.length,
+      landing: 0,
+      mobility: 0,
+      navigation: 0,
+      robotic: 0,
+      human: 0,
+      construction: 0,
+    };
+    for (const prediction of predictions) {
+      for (const key of MISSION_PURPOSE_ORDER) {
+        if (purposeFits(key, prediction, target)) counts[key] += 1;
+      }
+    }
+    return counts;
+  }, [predictions, target]);
 
   /** Two honest counts instead of a mean fit and a "strong" count. */
   const stats = useMemo(() => {
@@ -865,6 +890,7 @@ export default function App() {
         onTravelOnly={setTravelOnly}
         purpose={purpose}
         onPurpose={setPurpose}
+        purposeCounts={purposeCounts}
       />
 
       {error ? <p className="error">⚠ {error}</p> : null}

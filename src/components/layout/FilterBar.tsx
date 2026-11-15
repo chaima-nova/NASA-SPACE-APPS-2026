@@ -26,9 +26,11 @@ interface FilterBarProps {
   /** True when the list is cut to sites that commercial travel can reach. */
   travelOnly: boolean;
   onTravelOnly: (travelOnly: boolean) => void;
-  /** What the reader is planning: any purpose, a crewed campaign, or a robot. */
+  /** What the reader is planning, out of the six purposes the brief names. */
   purpose: MissionPurpose;
   onPurpose: (purpose: MissionPurpose) => void;
+  /** How many sites each purpose would leave, so no chip is a dead end. */
+  purposeCounts: Record<MissionPurpose, number>;
 }
 
 /**
@@ -61,6 +63,7 @@ export function FilterBar({
   onTravelOnly,
   purpose,
   onPurpose,
+  purposeCounts,
 }: FilterBarProps) {
   const [open, setOpen] = useState(false);
 
@@ -164,15 +167,20 @@ export function FilterBar({
                     onClick={() => onPurpose(value)}
                   >
                     {MISSION_PURPOSE_LABELS[value]}
+                    <span className="chip-count">{purposeCounts[value]}</span>
                   </button>
                 ))}
               </div>
-              {/* Says what the filter is actually reading, so a chip that removes
-                  a site cannot be mistaken for a safety or habitability verdict. */}
+              {/* Says what each purpose reads, so a chip that removes a site cannot
+                  be mistaken for a safety, trafficability or habitability verdict. */}
               <p className="constraints-hint">
-                Read from commercial access: crewed work needs somewhere to fly into, robotic
-                work can use the expedition-only ground a crew cannot reach. Neither is a
-                habitability or hazard assessment.
+                Each purpose reads a signal this build already holds. Landing — a measured
+                slope window with scheduled service into the gate. Mobility — a measured slope
+                window, however the site is reached. Navigation — a named target-site crosswalk.
+                Robotic Operations — charter or expedition logistics, with no scheduled service.
+                Human Exploration — scheduled service into the gate. Construction — a geology
+                class shared with the target’s own crosswalk. None of them is a hazard,
+                trafficability or habitability assessment.
               </p>
 
               <p className="constraints-title">Logistics</p>

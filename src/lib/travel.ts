@@ -20,6 +20,9 @@
 
 import type { Table } from './export';
 import { distanceKm, type Origin } from './geo';
+import type { Prediction } from '../data-contracts/types';
+import { classifySite } from './classification';
+import { terrainMeasurementFor } from '../services/pipeline';
 
 /** Real airports, real coordinates. These are the gates to the analog sites. */
 interface Gateway {
@@ -139,28 +142,88 @@ export function travelAccessOf(site: Place): TravelAccess {
 }
 
 /**
- * What the reader is planning, and what the catalogue can say about it.
+ * What the reader is planning, and how the build answers it.
  *
- * The 2026 challenge page asks for analogues of future `base and landing sites`
- * and names no mission taxonomy of its own, so these are the two purposes this
- * build can actually answer from data it holds: whether a crewed campaign has
- * somewhere to fly into, or whether the ground is expedition-only — the terrain
- * a robotic precursor is sent to first. Nothing here claims a site is safe for
- * people, only how it can be reached.
+ * The 2026 challenge page asks for analogues of future base and landing sites
+ * and names no mission taxonomy of its own. These six purposes are the ones the
+ * brief keeps returning to, and each is decided by a signal this repository
+ * actually holds — never by a hazard, trafficability or habitability judgement,
+ * which would need data nobody has ingested:
+ *
+ *   * Landing — its local slope window has been measured, and scheduled
+ *     service reaches its gate;
+ *   * Mobility — the local slope window has been measured, so a traverse has
+ *     numbers to plan against, however the site is reached;
+ *   * Navigation — the site is crosswalked to a named region on the target,
+ *     which is the ground it stands in for;
+ *   * Robotic Operations — no scheduled service: charter or expedition
+ *     logistics only, which is what an uncrewed campaign can use;
+ *   * Human Exploration — scheduled service reaches the site's gate;
+ *   * Construction — the site shares a geology class with the target's own
+ *     crosswalk, which is the only unit claim this build can make.
+ *
+ * Nothing here says a site is safe for people, only how it can be reached and
+ * what has been read about it.
  */
-export type MissionPurpose = 'any' | 'human' | 'robotic';
+export type MissionPurpose =
+  | 'any'
+  | 'landing'
+  | 'mobility'
+  | 'navigation'
+  | 'robotic'
+  | 'human'
+  | 'construction';
+
+/** The six purposes, in the order the brief lists them. */
+export const MISSION_PURPOSE_ORDER: Array<Exclude<MissionPurpose, 'any'>> = [
+  'landing',
+  'mobility',
+  'navigation',
+  'robotic',
+  'human',
+  'construction',
+];
 
 export const MISSION_PURPOSE_LABELS: Record<MissionPurpose, string> = {
   any: 'All Purposes',
+  landing: 'Landing',
+  mobility: 'Mobility',
+  navigation: 'Navigation',
+  robotic: 'Robotic Operations',
   human: 'Human Exploration',
-  robotic: 'Robotic Only',
+  construction: 'Construction',
 };
 
-/** Does this site fit the chosen purpose? Read from commercial access alone. */
-export function purposeFits(purpose: MissionPurpose, site: Place): boolean {
+/**
+ * Does this site fit the chosen purpose?
+ *
+ * Every branch reads a published signal: the commercial access the gateway
+ * table already decides, the measured SRTM window the pipeline published, the
+ * target crosswalk carried by the prediction, and the two dimensions the
+ * classification already settles. No purpose invents a threshold.
+ */
+export function purposeFits(
+  purpose: MissionPurpose,
+  prediction: Prediction,
+  target: 'moon' | 'mars',
+): boolean {
   if (purpose === 'any') return true;
-  const { access } = travelAccessOf(site);
-  return purpose === 'human' ? access !== 'none' : access === 'none';
+
+  const { access } = travelAccessOf(prediction);
+  const scheduled = access === 'scheduled';
+
+  if (purpose === 'human') return scheduled;
+  // Charter and expedition ground are what an uncrewed campaign can still use:
+  // no scheduled seat is exactly the case a robot is sent to solve.
+  if (purpose === 'robotic') return !scheduled;
+  if (purpose === 'navigation') return Boolean(prediction.targetSites?.[target]);
+
+  if (purpose === 'construction') {
+    return classifySite(prediction, target).dimensions[1].state === 'similar';
+  }
+
+  const measured = terrainMeasurementFor(prediction.pointId ?? prediction.id)?.status === 'measured';
+  return purpose === 'landing' ? measured && scheduled : measured;
 }
 
 export const ACCESS_LABELS: Record<Access, string> = {

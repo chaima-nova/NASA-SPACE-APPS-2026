@@ -7487,22 +7487,12 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 }
 
 /*
- * The dossier's second half.
+ * Emphasis inside the one list of three.
  *
  * A match keeps the coloured badge and the white percentage; a difference or a
- * data gap keeps its numbers but loses the highlight, so the eye lands on what
- * matched first and still finds the rest without leaving the column.
+ * data gap keeps its numbers and its basis text but loses the highlight, so the
+ * eye lands on what matched first and still finds the rest in the same column.
  */
-.dimensions-none {
-  margin: 6px 0 2px;
-  font-size: 0.8rem;
-  line-height: 1.55;
-  color: var(--ink-2);
-}
-
-.dimensions-others {
-  margin-top: 14px;
-}
 
 .dimension.is-muted .state-badge {
   background: transparent;
