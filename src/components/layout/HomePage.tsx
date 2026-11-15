@@ -19,8 +19,9 @@ const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
  * for; brushing the frame then reveals the mountains behind them, which is the
  * landscape the rover sites actually sit against. There is no second mountain
  * photograph in the repository, so this is the arctic ridge already used as the
- * Moon cover, mirrored when it is drawn: same skyline, opposite way round, so the
- * two covers never read as the same picture.
+ * Moon cover, and the two photographs simply trade places: on the Moon the ridge
+ * is the frame and the dunes are painted; on Mars the dunes are the frame and the
+ * ridge is painted, in its own orientation.
  */
 const RIDGE_PHOTO = ARCTIC_PHOTO;
 
@@ -195,17 +196,9 @@ export function HomePage({ sites, datasets, still, target }: HomePageProps) {
       // the ice feature it is meant to replace.
       const dx = (width - dw) / 2;
       const dy = (height - dh) * 0.46;
-      if (target === 'mars') {
-        // The ridge is the Moon's own mountain frame, so it is drawn mirrored:
-        // hover Mars and the same skyline comes back the other way round rather
-        // than repeating the picture already seen on the other cover.
-        flatCtx.save();
-        flatCtx.translate(width, 0);
-        flatCtx.scale(-1, 1);
-        flatCtx.drawImage(image, dx, dy, dw, dh);
-        flatCtx.restore();
-        return;
-      }
+      // The same cover-fit for both targets: the Mars brush lays the ridge down
+      // in its own orientation, so Mars is the Moon frame with the photographs
+      // exchanged and nothing turned around.
       flatCtx.drawImage(image, dx, dy, dw, dh);
     };
 
