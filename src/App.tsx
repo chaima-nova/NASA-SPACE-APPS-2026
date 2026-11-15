@@ -46,14 +46,13 @@ import type { CommunityActions } from './components/panels/SiteCommunity';
 import { useAccessibility } from './lib/accessibility';
 import { routeHref, useRoute } from './lib/route';
 import { EMPTY_COMMUNITY, makeNote, makeReview, upsertReportedSite } from './lib/community';
-import { scoreColor } from './lib/colors';
+import { BAND_COLORS, scoreColor } from './lib/colors';
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
 import { travelAccessOf, travelExport } from './lib/travel';
 import {
   imageryWindow,
-  latestImageryDate,
   newestAvailableImageryDate,
 } from './lib/earthImagery';
 import {
@@ -198,10 +197,24 @@ export default function App() {
     const where = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
     return `The globe is lit for ${when}. The Sun stands overhead at ${where}, so that point is in full daylight and its antipode is at midnight.`;
   }, [globeTime]);
-  const [imageryDate, setImageryDate] = useState(() => latestImageryDate());
-  /** The pickable span, re-based once the archive's newest day is known. */
+  /** The archive's newest day and the span behind it, re-based once probed. */
   const [imageryWindowBounds, setImageryWindowBounds] = useState(() => imageryWindow());
   const [imagery, setImagery] = useState<ImageryState | null>(null);
+  /**
+   * The day the cloud layer shows, taken from the same clock as the sunlight.
+   *
+   * The terminator and the clouds describe one instant, so they cannot keep two
+   * clocks: moving the sun's clock now asks the archive for that day's pass as
+   * well, instead of leaving the previous day's clouds over the new night. GIBS
+   * holds a rolling window, so a moment outside it snaps to the nearest archived
+   * day — and the caption says that it did rather than pretending it did not.
+   */
+  const cloudDate = useMemo(() => {
+    const day = new Date(globeTime).toISOString().slice(0, 10);
+    if (day < imageryWindowBounds.min) return imageryWindowBounds.min;
+    if (day > imageryWindowBounds.max) return imageryWindowBounds.max;
+    return day;
+  }, [globeTime, imageryWindowBounds]);
   const [showClouds, setShowClouds] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(true);
   /** True while a site's local 3D terrain is open over the globe. */
@@ -274,7 +287,6 @@ export default function App() {
     let alive = true;
     void newestAvailableImageryDate().then((date) => {
       if (!alive || !date) return;
-      setImageryDate(date);
       setImageryWindowBounds(imageryWindow(new Date(), date));
     });
     return () => {
@@ -505,12 +517,17 @@ export default function App() {
       : imagery.live
         ? 'NASA VIIRS · clouds'
         : 'Blue Marble · NASA';
+  /** True when the clock is outside the archive and the day has been snapped. */
+  const cloudClamped =
+    showClouds && new Date(globeTime).toISOString().slice(0, 10) !== cloudDate;
   const imageryNote = !showClouds
     ? 'Cloud-free mosaic · live terminator'
     : imagery === null
-      ? `${imageryDate} UTC · live terminator`
+      ? `${cloudDate} UTC · live terminator`
       : imagery.live
-        ? `${imageryDate} UTC · true color · live terminator`
+        ? `${cloudDate} UTC · true color · live terminator${
+            cloudClamped ? ` · archive holds ${imageryWindowBounds.max}` : ''
+          }`
         : 'Cloud imagery unavailable';
 
   // Turning clouds on hides the stale caption until the new pass decodes;
@@ -930,7 +947,7 @@ export default function App() {
               selectedId={selectedId}
               target={target}
               onSelect={setSelectedId}
-              imageryDate={imageryDate}
+              imageryDate={cloudDate}
               sunAt={globeTime}
               onImagery={setImagery}
               showClouds={showClouds}
@@ -947,22 +964,14 @@ export default function App() {
               <div className="globe-tag">
                 <span className="kicker">{imageryKicker}</span>
                 <p>{imageryNote}</p>
-                {showClouds ? (
-                  <label className="imagery-date">
-                    <span className="sr-only">NASA imagery date (UTC)</span>
-                    <input
-                      type="date"
-                      value={imageryDate}
-                      min={imageryWindowBounds.min}
-                      max={imageryWindowBounds.max}
-                      onChange={(event) => {
-                        const next = event.target.value;
-                        if (!next || next === imageryDate) return;
-                        setImageryDate(next);
-                        setImagery(null);
-                      }}
-                    />
-                  </label>
+                {/* No second date field: the clock below already names the
+                    instant, and two controls that could disagree is how the
+                    clouds ended up a day behind the terminator. */}
+                {cloudClamped ? (
+                  <p className="imagery-clamp">
+                    Clouds stop at {imageryWindowBounds.max}: the archive has nothing newer
+                    to show.
+                  </p>
                 ) : null}
                 {/* The sun's own clock: the day/night line is a reading of the
                     Earth at an instant, so it can be moved to any instant. */}
@@ -986,15 +995,15 @@ export default function App() {
               <div className="globe-side">
                 <ul className="legend" aria-label="Marker legend">
                   <li>
-                    <span className="legend-dot" style={{ background: scoreColor(0.9) }} />
+                    <span className="legend-dot" style={{ background: BAND_COLORS.strong }} />
                     Strong
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: scoreColor(0.65) }} />
+                    <span className="legend-dot" style={{ background: BAND_COLORS.promising }} />
                     Promising
                   </li>
                   <li>
-                    <span className="legend-dot" style={{ background: scoreColor(0.4) }} />
+                    <span className="legend-dot" style={{ background: BAND_COLORS.weak }} />
                     Weak
                   </li>
                   <li>

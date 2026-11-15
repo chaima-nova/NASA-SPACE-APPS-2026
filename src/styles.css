@@ -4139,6 +4139,15 @@ html[data-a11y-dyslexia='on'] :where(p, li, dd, dt, blockquote, .site-name, .sit
 
 /* High contrast: lift the ink and the rules, and drop the photograph wash that
    dims the panels underneath it. */
+/* The archive-clamp note under the globe caption: one line, quiet, and only
+   present when the clock asked for a day the archive does not hold. */
+.imagery-clamp {
+  margin: 4px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
 /**
  * High contrast, as an actual contrast change.
  *
@@ -4163,13 +4172,16 @@ html[data-a11y-contrast='on'] {
   --ink-2: #f2f2f2;
   --ink-3: #dcdcdc;
 
-  --signal: #5ee7ff;
-  --signal-rgb: 94 231 255;
-  --moon: #b9e2ff;
-  --moon-rgb: 185 226 255;
-  --mars: #ffb37a;
-  --amber: #ffd84d;
-  --danger: #ff8f8f;
+  /* One accent, and it is the one a high-contrast theme is expected to use:
+     yellow on black is the pair with the most headroom, and it reads as an
+     accent rather than as another shade of body text. */
+  --signal: #ffe600;
+  --signal-rgb: 255 230 0;
+  --moon: #ffffff;
+  --moon-rgb: 255 255 255;
+  --mars: #ffffff;
+  --amber: #ffe600;
+  --danger: #ff9d9d;
 }
 
 /* The page wash, the photographs behind the shell and the card gradients all cut
@@ -4196,9 +4208,55 @@ html[data-a11y-contrast='on']
   opacity: 1 !important;
 }
 
-/* Focus has to win against a white page as well as a black one. */
+/* Edges, not surfaces: at this contrast a card is a rectangle of black with a
+   white rule around it, which is what an OS high-contrast theme draws too. */
+html[data-a11y-contrast='on']
+  :where(.card, .panel, .dossier, .filterbar, .tabs, .a11y-panel, .site-row, .reported-row, .btn, .globe-toggle, .globe-reset, .topbar-toggle) {
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-a11y-contrast='on'] :where(.btn, .globe-toggle, .globe-reset, .topbar-toggle) {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Secondary text is the first thing a page dims and the first thing a reader
+   loses, so it is promoted to full white here rather than left at 60%. */
+html[data-a11y-contrast='on']
+  :where(.kicker, .site-meta, .strip-meta, .card-head p, .foot-hint, .home-lede, .empty-sub, .globe-hint) {
+  color: #ffffff !important;
+}
+
+/* Links and the selected row carry the accent: colour is a signal in this mode,
+   used once, for the two things a reader needs to find. */
+html[data-a11y-contrast='on'] :where(a, .topbar-link, .tab) {
+  color: #ffe600 !important;
+}
+
+html[data-a11y-contrast='on'] :where(.site-row.is-selected, .reported-row.is-selected) {
+  background: #000000 !important;
+  outline: 2px solid #ffe600;
+  outline-offset: -2px;
+}
+
+/* Photographs stay — they carry the ground the page is about — but flatten to
+   grey, so the hero cannot put white text over a pale dune. */
+html[data-a11y-contrast='on'] :where(img, .site-backdrop img, .home-photo img) {
+  filter: grayscale(1) contrast(1.35) !important;
+}
+
+/* Glows are the other half of a low-contrast theme: they smear a boundary that
+   should be a line. */
+html[data-a11y-contrast='on'] :where(.globe-tip, .site-bar, .legend-dot, .legend-ring, .brand-mark) {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Focus has to win against a white page as well as a black one, and against the
+   yellow accent — so it is white with a black inner ring. */
 html[data-a11y-contrast='on'] :focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 3px solid #ffe600;
   outline-offset: 2px;
 }
 

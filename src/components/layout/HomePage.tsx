@@ -12,18 +12,31 @@ import { routeHref } from '../../lib/route';
  */
 const ARCTIC_PHOTO = `${import.meta.env.BASE_URL}home/arctic.jpg`;
 const DESERT_PHOTO = `${import.meta.env.BASE_URL}home/desert.jpg`;
+/**
+ * The ridge behind the Mars dune field, painted in under the pointer.
+ *
+ * Mars opens on the dunes because that is the ground a Mars analogue stands in
+ * for; brushing the frame then reveals the mountains behind them, which is the
+ * landscape the rover sites actually sit against. The file is a drop-in: if it
+ * is absent the painter decodes nothing and the dune frame simply stays.
+ */
+const RIDGE_PHOTO = `${import.meta.env.BASE_URL}home/mars-ridge.jpg`;
 
 /**
- * Which of the two committed photographs is the cover, by target.
+ * Which photograph is the cover, by target.
  *
  * On the Moon the frame is the arctic one: ice in front, its dune analogue painted
- * in under the pointer. On Mars the frame is already the dune field, with its
- * ridge standing behind it, because that is the ground a Mars analogue is standing
- * in for — a snowfield under an orange shell reads as the wrong planet. There is
- * nothing left to paint in there, so the brush stays still.
+ * in under the pointer. On Mars the frame is already the dune field, because that
+ * is the ground a Mars analogue stands in for — a snowfield under an orange shell
+ * reads as the wrong planet.
  */
 function coverFor(target: 'moon' | 'mars'): string {
   return target === 'mars' ? DESERT_PHOTO : ARCTIC_PHOTO;
+}
+
+/** What the brush lays down: the desert under ice, the ridge under dunes. */
+function paintFor(target: 'moon' | 'mars'): string {
+  return target === 'mars' ? RIDGE_PHOTO : DESERT_PHOTO;
 }
 
 interface HomePageProps {
@@ -111,14 +124,12 @@ export function HomePage({ sites, datasets, still, target }: HomePageProps) {
   useEffect(() => {
     const canvas = sandRef.current;
     const hero = heroRef.current;
-    // Mars shows the dune field as the frame itself, so there is no second
-    // photograph to brush in; the handler simply has no painter to talk to.
-    if (!canvas || !hero || still || target === 'mars') return;
+    if (!canvas || !hero || still) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const image = new Image();
-    image.src = DESERT_PHOTO;
+    image.src = paintFor(target);
 
     // `flat` is the desert drawn to cover the frame; `mask` holds the dabs. The
     // visible canvas is `flat` clipped by `mask`, recomposed at most once a frame.
@@ -318,7 +329,8 @@ export function HomePage({ sites, datasets, still, target }: HomePageProps) {
         resize();
       })
       .catch(() => {
-        // A missing photograph leaves the ice frame: nothing else to do.
+        // A missing photograph leaves the frame underneath untouched, which is
+        // the intended look rather than a broken one: on Mars the dunes stay.
       });
 
     // The handlers live in React, but they need the painter; expose it on the

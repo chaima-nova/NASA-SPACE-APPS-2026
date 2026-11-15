@@ -3,6 +3,8 @@
  * Kept in one place so map, charts and 3D stay visually consistent.
  */
 
+import { SCORE_BANDS } from '../data-contracts/types';
+
 export interface Rgb {
   r: number;
   g: number;
@@ -49,4 +51,27 @@ export function scoreColor(score: number): string {
 export function scoreColorHex(score: number): string {
   const { r, g, b } = scoreRgb(score);
   return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+/**
+ * The four bands the legend promises, as one palette.
+ *
+ * The rail used to colour each row with the continuous ramp, which drew a
+ * different hue for 0.53 and 0.54 while the legend beside the globe showed a
+ * single "Promising" swatch. A reader comparing the two had no way to tell
+ * which band 0.53 was in. Colour now changes only where the word changes, so a
+ * row's colour and its label are the same fact.
+ */
+export type Band = 'strong' | 'promising' | 'weak';
+
+export const BAND_COLORS: Record<Band, string> = {
+  strong: '#fbbf24',
+  promising: '#22d3ee',
+  weak: '#5b7cfa',
+};
+
+/** Band for a score, using the same thresholds as the labels everywhere else. */
+export function bandOf(score: number): { band: Band; color: string } {
+  const band: Band = score >= SCORE_BANDS.strong ? 'strong' : score >= SCORE_BANDS.promising ? 'promising' : 'weak';
+  return { band, color: BAND_COLORS[band] };
 }
