@@ -6775,13 +6775,14 @@ a.compare-thumb {
    metres or the bands this ground actually occupies. */
 .terrain-scale {
   position: relative;
-  flex: 1;
-  min-height: 0;
+  /* Skinny on purpose. The boxes either side of this carry the words; this
+     carries the ramp, and a ramp does not need to be 200 px wide. */
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  padding: 9px 10px;
+  gap: 6px;
+  width: 108px;
+  padding: 7px 8px;
   background: rgba(6, 10, 16, 0.78);
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -6799,10 +6800,9 @@ a.compare-thumb {
 }
 
 .terrain-scale-body {
-  flex: 1;
-  min-height: 0;
+  height: 128px;
   display: flex;
-  gap: 8px;
+  gap: 7px;
 }
 
 .terrain-scale-bar {
@@ -6824,6 +6824,11 @@ a.compare-thumb {
 
 .terrain-scale-note {
   margin: 0;
+  padding: 7px 9px;
+  background: rgba(6, 10, 16, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  backdrop-filter: blur(6px);
   font-size: 0.52rem;
   line-height: 1.45;
   color: var(--ink-3);
@@ -6835,5 +6840,13 @@ a.compare-thumb {
     top: 88px;
     bottom: 152px;
     width: 168px;
+  }
+
+  .terrain-scale {
+    width: 100px;
+  }
+
+  .terrain-scale-body {
+    height: 108px;
   }
 }
