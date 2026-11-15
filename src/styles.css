@@ -4455,32 +4455,37 @@ html[data-a11y-motion='reduced'] *::after {
 
 .home-features ul {
   display: grid;
-  /* Denser than the steps above: one paragraph each, so they pack in as many
-     per row as the window allows rather than forcing three. */
-  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
-  gap: 14px;
+  /* The same three-across rhythm as the steps above: one paragraph each, so
+     they read in the same shape as the steps they follow. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 34px);
   margin: 20px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .home-features li {
-  padding: 14px 16px 16px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+}
+
+.home-feature-n {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--signal);
 }
 
 .home-features h4 {
-  margin: 0 0 6px;
-  font-size: 0.88rem;
+  margin: 10px 0 6px;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
 }
 
 .home-features p {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   line-height: 1.6;
   color: var(--ink-3);
 }
@@ -4521,7 +4526,8 @@ html[data-a11y-motion='reduced'] *::after {
 }
 
 @media (max-width: 900px) {
-  .home-steps ol {
+  .home-steps ol,
+  .home-features ul {
     grid-template-columns: 1fr;
   }
 }

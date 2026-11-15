@@ -468,8 +468,11 @@ export function HomePage({ sites, datasets, still }: HomePageProps) {
       <section className="home-features" aria-labelledby="home-features-title">
         <h3 id="home-features-title">Feature highlight</h3>
         <ul>
-          {FEATURES.map(([title, body]) => (
+          {FEATURES.map(([title, body], index) => (
             <li key={title}>
+              <span className="home-feature-n" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
               <h4>{title}</h4>
               <p>{body}</p>
             </li>
