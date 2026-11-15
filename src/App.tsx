@@ -20,6 +20,7 @@ import { SiteGallery } from './components/panels/SiteGallery';
 import { SiteInspector } from './components/panels/SiteInspector';
 import { SiteList, type RankedItem } from './components/panels/SiteList';
 import { EarthGlobe, type ImageryState, type ReportedMarker } from './components/three/EarthGlobe';
+import { earthLighting } from './lib/astro';
 import { MarsMap } from './components/three/MarsMap';
 import { MoonMap } from './components/three/MoonMap';
 import { SiteTerrain } from './components/three/SiteTerrain';
@@ -101,6 +102,18 @@ const fold = (value: string) =>
     .toLowerCase();
 
 /** Deep-linkable state: `?target=mars&terrain=cave&site=pred-004`. */
+/**
+ * `2026-11-14T09:30`, in the reader's own zone, for a datetime-local input.
+ *
+ * The input has no zone of its own: it takes and gives wall-clock strings, so the
+ * epoch has to be shifted by the local offset before slicing an ISO string, or
+ * the control drifts by the offset every time it is opened.
+ */
+function toLocalInput(ms: number): string {
+  const local = new Date(ms - new Date(ms).getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
 export default function App() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [datasets, setDatasets] = useState<DataSource[]>([]);
@@ -141,6 +154,30 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
   const [copied, setCopied] = useState(false);
+  /** The instant whose daylight the globe shows, epoch ms; "Now" resets it. */
+  const [globeTime, setGlobeTime] = useState(() => Date.now());
+
+  /**
+   * The chosen instant in words. The terminator is a picture of this, so a reader
+   * who is listening gets the same reading: the moment, the sub-solar point, and
+   * which half of the planet that leaves lit.
+   */
+  const sunSummary = useMemo(() => {
+    const moment = new Date(globeTime);
+    const when = moment.toLocaleString(undefined, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const lighting = earthLighting(moment);
+    const lat = lighting.subSolarLat;
+    const lon = lighting.subSolarLon;
+    const where = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
+    return `The globe is lit for ${when}. The Sun stands overhead at ${where}, so that point is in full daylight and its antipode is at midnight.`;
+  }, [globeTime]);
   const [imageryDate, setImageryDate] = useState(() => latestImageryDate());
   /** The pickable span, re-based once the archive's newest day is known. */
   const [imageryWindowBounds, setImageryWindowBounds] = useState(() => imageryWindow());
@@ -860,6 +897,9 @@ export default function App() {
             not: the same sites appear there in the same order, each with its terrain, its
             Moon fit and its Mars fit.
           </p>
+          {/* The terminator in words: which half of the planet is lit, and where
+              the Sun stands at the chosen moment. */}
+          <p className="sr-only">{sunSummary}</p>
           <div className="globe-stage">
             {/* Remounted when the motion preference changes: the scene reads the
                 setting once, when it builds its animation loop. */}
@@ -870,6 +910,7 @@ export default function App() {
               target={target}
               onSelect={setSelectedId}
               imageryDate={imageryDate}
+              sunAt={globeTime}
               onImagery={setImagery}
               showClouds={showClouds}
               onToggleClouds={toggleClouds}
@@ -902,6 +943,24 @@ export default function App() {
                     />
                   </label>
                 ) : null}
+                {/* The sun's own clock: the day/night line is a reading of the
+                    Earth at an instant, so it can be moved to any instant. */}
+                <div className="globe-time">
+                  <span>Sun at</span>
+                  <input
+                    type="datetime-local"
+                    aria-label="Date and time whose daylight the globe shows"
+                    title="Move the day/night line to this date and time"
+                    value={toLocalInput(globeTime)}
+                    onChange={(event) => {
+                      const next = new Date(event.target.value).getTime();
+                      if (!Number.isNaN(next)) setGlobeTime(next);
+                    }}
+                  />
+                  <button type="button" onClick={() => setGlobeTime(Date.now())}>
+                    Now
+                  </button>
+                </div>
               </div>
               <div className="globe-side">
                 <ul className="legend" aria-label="Marker legend">
@@ -934,6 +993,7 @@ export default function App() {
                   setTerrainOpen(false);
                   setHomeSignal((n) => n + 1);
                 }}
+
               />
             ) : null}
 
@@ -1156,6 +1216,12 @@ export default function App() {
           they walk to after it. */}
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {blindAnnouncement}
+      </p>
+
+      {/* A second region rather than a longer sentence in the first: the site
+          announcement must not be re-read every time the time control moves. */}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {a11y.mode === 'blind' && route === 'solution' ? sunSummary : ''}
       </p>
 
       <AccessibilityDock settings={a11y} onMode={chooseMode} onChange={updateA11y} />

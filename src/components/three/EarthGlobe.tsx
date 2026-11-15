@@ -33,6 +33,8 @@ interface EarthGlobeProps {
   onSelect: (id: string) => void;
   /** UTC day of NASA VIIRS true-colour imagery to show on the globe. */
   imageryDate: string;
+  /** Epoch ms whose daylight the globe should show. */
+  sunAt: number;
   onImagery: (state: ImageryState) => void;
   /** Live cloud cover layer, off by default so the surface reads cleanly. */
   showClouds: boolean;
@@ -187,6 +189,7 @@ export function EarthGlobe({
   target,
   onSelect,
   imageryDate,
+  sunAt,
   onImagery,
   showClouds,
   onToggleClouds,
@@ -194,6 +197,31 @@ export function EarthGlobe({
   reportedSites,
   homeSignal,
 }: EarthGlobeProps) {
+
+  /**
+   * The Earth material, kept so the time control can move the sun without
+   * rebuilding the scene: the sun is a shader uniform, not a light with its own
+   * state.
+   */
+  const sunMaterialRef = useRef<THREE.ShaderMaterial | null>(null);
+
+  /**
+   * Move the day/night line to the chosen moment.
+   *
+   * One uniform, so the globe keeps its orientation and the camera keeps the view
+   * the reader had. Nothing runs on the first mount: the scene is built with
+   * `sunAt` already applied.
+   */
+  useEffect(() => {
+    const material = sunMaterialRef.current;
+    if (!material) return;
+    const lighting = earthLighting(new Date(sunAt));
+    material.uniforms.uSunDir.value = latLonToVec(
+      lighting.subSolarLat,
+      lighting.subSolarLon,
+      1,
+    ).normalize();
+  }, [sunAt]);
   const mountRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<GlobeApi | null>(null);
@@ -314,7 +342,7 @@ export function EarthGlobe({
     const nightPlaceholder = makePlaceholder([0, 0, 0, 255]);
     const normalPlaceholder = makePlaceholder([128, 128, 255, 255]);
 
-    const lighting = earthLighting(now);
+    const lighting = earthLighting(new Date(sunAt));
     const sunDirection = latLonToVec(lighting.subSolarLat, lighting.subSolarLon, 1).normalize();
 
     const earthMaterial = new THREE.ShaderMaterial({
@@ -833,6 +861,8 @@ export function EarthGlobe({
     renderer.domElement.addEventListener('pointercancel', onPointerCancel);
     renderer.domElement.addEventListener('pointerleave', onPointerLeave);
     renderer.domElement.addEventListener('click', onClick);
+
+    sunMaterialRef.current = earthMaterial;
 
     // ---- Resize ------------------------------------------------------------
     const resizeObserver = new ResizeObserver(() => {
