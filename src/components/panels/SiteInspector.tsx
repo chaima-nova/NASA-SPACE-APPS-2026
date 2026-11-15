@@ -2,6 +2,7 @@ import type { CommunityState, DataSource, Prediction } from '../../data-contract
 import { photosFor } from '../../data/sitePhotos';
 import { SiteCommunity, type CommunityActions } from './SiteCommunity';
 import { scoreColor } from '../../lib/colors';
+import { sourceUrl } from '../../lib/sourceLinks';
 import {
   datasetsFor,
   FACTOR_HINTS,
@@ -234,18 +235,29 @@ export function SiteInspector({
         Sources <span className="section-count">{siteDatasets.length}</span>
       </h3>
       <div className="chips chips-wrap">
-        {siteDatasets.map((dataset) => (
-          <a
-            key={dataset.id}
-            className="chip chip-link"
-            href={dataset.url}
-            target="_blank"
-            rel="noreferrer"
-            title={`${dataset.provider} · ${dataset.spatialResolution ?? '—'}`}
-          >
-            {dataset.instrument ?? dataset.name}
-          </a>
-        ))}
+        {siteDatasets.map((dataset) => {
+          const href = sourceUrl(dataset);
+          const label = dataset.instrument || dataset.name;
+          const hint = [dataset.provider, dataset.spatialResolution]
+            .filter(Boolean)
+            .join(' · ');
+          return href ? (
+            <a
+              key={dataset.id}
+              className="chip chip-link"
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              title={hint}
+            >
+              {label}
+            </a>
+          ) : (
+            <span key={dataset.id} className="chip" title={hint}>
+              {label}
+            </span>
+          );
+        })}
       </div>
 
       <dl className="facts">
