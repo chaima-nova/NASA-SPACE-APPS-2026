@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { TerrainType } from '../../data-contracts/types';
-import { RADIUS_OPTIONS, type Origin } from '../../lib/geo';
+import type { Origin } from '../../lib/geo';
 import { formatScore, TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
 
 interface FilterBarProps {
@@ -53,6 +53,10 @@ export function FilterBar({
   onTravelOnly,
 }: FilterBarProps) {
   const [open, setOpen] = useState(false);
+
+  // What the radius box shows while it is being typed in. It is held as text
+  // so a half-typed "1" or a just-emptied box does not become a filter.
+  const [radiusDraft, setRadiusDraft] = useState(() => String(radiusKm));
 
   // The full display name is a paragraph; the row only needs the head of it.
   const originLabel = origin
@@ -154,18 +158,37 @@ export function FilterBar({
                 {origin ? (
                   <label className="logistics-range">
                     <span className="logistics-name">Within</span>
-                    <select
-                      className="distance-range"
-                      value={radiusKm}
-                      aria-label="Maximum distance from the chosen origin"
-                      onChange={(event) => onRadius(Number(event.target.value))}
-                    >
-                      {RADIUS_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option.toLocaleString('en-US')} km
-                        </option>
-                      ))}
-                    </select>
+                    <span className="logistics-field">
+                      <input
+                        type="number"
+                        className="distance-range"
+                        min={1}
+                        max={40000}
+                        inputMode="numeric"
+                        value={radiusDraft}
+                        aria-label="Maximum distance from the chosen origin, in kilometres"
+                        onChange={(event) => {
+                          // Commit as soon as the box holds a distance; an empty box mid-retype
+                          // is left alone rather than read as zero, which would filter the whole
+                          // catalogue out between two keystrokes.
+                          setRadiusDraft(event.target.value);
+                          const next = Number(event.target.value);
+                          if (Number.isFinite(next) && next > 0) onRadius(next);
+                        }}
+                        onBlur={() => {
+                          // "0", a minus sign or an empty box must not narrow the list to
+                          // nothing, so the field snaps back to the radius actually in force.
+                          const next = Number(radiusDraft);
+                          const settled =
+                            Number.isFinite(next) && next > 0
+                              ? Math.min(40000, Math.round(next))
+                              : radiusKm;
+                          setRadiusDraft(String(settled));
+                          if (settled !== radiusKm) onRadius(settled);
+                        }}
+                      />
+                      <span className="logistics-unit">km</span>
+                    </span>
                   </label>
                 ) : null}
 

@@ -5393,6 +5393,45 @@ html[data-a11y-motion='reduced'] *::after {
   cursor: default;
 }
 
+/* The radius is typed rather than chosen: the useful values are not seven
+   round ones, and a judge measuring "within 800 km" should not have to round
+   to a thousand. The row keeps the label on the left, a small mono field on the
+   right, and the unit beside it. */
+.logistics-field {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: none;
+}
+
+.logistics-field .distance-range {
+  width: 7ch;
+  padding: 3px 4px;
+  text-align: right;
+  border-radius: 4px;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Spinners are noise on a value that is read and typed in kilometres. */
+.logistics-field .distance-range::-webkit-outer-spin-button,
+.logistics-field .distance-range::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.logistics-field .distance-range:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 1px;
+}
+
+.logistics-unit {
+  font-family: var(--mono);
+  font-size: 0.57rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
 /* ---- Travel dialog ------------------------------------------------------- */
 
 .travel-summary {

@@ -13,9 +13,6 @@ export interface Origin {
   label: string;
 }
 
-/** Radii offered in the filter, in kilometres. */
-export const RADIUS_OPTIONS = [250, 500, 1000, 2500, 5000, 10000, 20000];
-
 const EARTH_RADIUS_KM = 6371.0088;
 
 const toRad = (deg: number) => (deg * Math.PI) / 180;
