@@ -74,6 +74,29 @@ function DimensionBlock({ verdict }: { verdict: DimensionVerdict }) {
  * verdicts, the four physical limits no Earth site escapes, the measured ground,
  * the datasets behind the numbers, and an export that survives the demo.
  */
+/**
+ * The dossier's open/close control.
+ *
+ * An arrow, not a word: the chip that used to sit here said "Expand" in 0.56rem
+ * mono, which read as a label rather than a button and was easy to miss beside
+ * the rank chip. The glyph is drawn at a 2.6 px stroke so it stays a clear shape
+ * on the card's dark surface, and it turns to point back into the column once the
+ * dossier is open.
+ */
+function ExpandGlyph() {
+  return (
+    <svg
+      className="dossier-expand-glyph"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M7 17 17 7" />
+      <path d="M10 7h7v7" />
+    </svg>
+  );
+}
+
 export function SiteInspector({
   prediction,
   rank,
@@ -99,8 +122,14 @@ export function SiteInspector({
         {/* Still offered when there is nothing to show: an opened dossier that
             lost its selection must not trap the reader in an empty overlay. */}
         {expanded ? (
-          <button type="button" className="dossier-expand" onClick={onToggleExpand}>
-            Collapse
+          <button
+            type="button"
+            className="dossier-expand"
+            onClick={onToggleExpand}
+            aria-label="Collapse the dossier"
+            title="Return the dossier to its column"
+          >
+            <ExpandGlyph />
           </button>
         ) : null}
       </div>
@@ -125,6 +154,7 @@ export function SiteInspector({
             type="button"
             className="dossier-expand"
             aria-pressed={expanded}
+            aria-label={expanded ? 'Collapse the dossier' : 'Expand the dossier'}
             onClick={onToggleExpand}
             title={
               expanded
@@ -132,7 +162,7 @@ export function SiteInspector({
                 : 'Open the dossier across the page to read it'
             }
           >
-            {expanded ? 'Collapse' : 'Expand'}
+            <ExpandGlyph />
           </button>
         </span>
       </div>
@@ -142,6 +172,17 @@ export function SiteInspector({
         {prediction.region ?? '—'} · {terrainLabel(prediction)} ·{' '}
         {formatElevation(prediction.elevationM)}
       </p>
+
+      {/* The coordinates identify the site as much as the name does, so they sit
+          with the header rather than at the foot of the column beside the model
+          id. Its own one-column facts grid: a screened cell's pair is long
+          enough to clip against a second column. */}
+      <dl className="facts facts-coords">
+        <div>
+          <dt>Coordinates</dt>
+          <dd>{formatCoords(prediction.lat, prediction.lon)}</dd>
+        </div>
+      </dl>
 
       {/* The three verdicts, which are the whole classification. */}
       <div className="dimensions">
@@ -338,10 +379,6 @@ export function SiteInspector({
       </div>
 
       <dl className="facts">
-        <div>
-          <dt>Coordinates</dt>
-          <dd>{formatCoords(prediction.lat, prediction.lon)}</dd>
-        </div>
         <div>
           <dt>Model</dt>
           <dd>

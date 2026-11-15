@@ -1,18 +1,17 @@
-import type { EvidenceState, Prediction } from '../../data-contracts/types';
+import type { Prediction } from '../../data-contracts/types';
 import type { SiteClassification } from '../../lib/classification';
 import { STATE_LABELS } from '../../lib/classification';
 import { formatCoords, terrainLabel } from '../../lib/site';
 
-/** The three dimensions as one letter each, in the order the guide lists them. */
-const STATE_GLYPHS: Record<EvidenceState, string> = {
-  similar: '✓',
-  different: '✕',
-  insufficient_evidence: '?',
-  not_comparable: '–',
-};
-
-/** One letter per dimension, so a row can carry all three in ~90 px. */
-const SHORT_LABELS = { terrain: 'T', geology: 'G', thermal: 'Th' } as const;
+/**
+ * What a chip says: the dimension's own word, then its state's word.
+ *
+ * The row used to print one letter and one mark per dimension — "T ✕", "TH ?" —
+ * and nothing on the screen said which dimension the letter stood for or what
+ * the mark meant. Two words fit; the chips wrap to a second line when the panel
+ * is narrow rather than shrinking back into initials.
+ */
+const DIMENSION_WORDS = { terrain: 'Terrain', geology: 'Geology', thermal: 'Thermal' } as const;
 
 export interface RankedItem {
   prediction: Prediction;
@@ -67,29 +66,32 @@ export function SiteList({ items, selectedId, target, total, onSelect }: SiteLis
             >
               <span className="site-rank">{String(index + 1).padStart(2, '0')}</span>
               <span className="site-main">
-                <span className="site-name">{prediction.siteName.split(',')[0]}</span>
+                {/* The whole name, country included: the row used to drop
+                    everything after the first comma and then ellipsise what was
+                    left, so it identified the site twice over badly. */}
+                <span className="site-name">{prediction.siteName}</span>
                 <span className="site-meta">
                   {terrainLabel(prediction)} · {formatCoords(prediction.lat, prediction.lon)}
                   {distanceKm === undefined
                     ? null
                     : ' · ' + Math.round(distanceKm).toLocaleString('en-US') + ' km away'}
                 </span>
-              </span>
-              <span className="site-states">
-                {classification.dimensions.map((dimension) => (
-                  <span
-                    key={dimension.id}
-                    className={`state-chip is-${dimension.state}`}
-                    title={`${dimension.label}: ${STATE_LABELS[dimension.state]}`}
-                  >
-                    <span className="state-chip-dim" aria-hidden="true">
-                      {SHORT_LABELS[dimension.id]}
+                <span className="site-states">
+                  {classification.dimensions.map((dimension) => (
+                    <span
+                      key={dimension.id}
+                      className={`state-chip is-${dimension.state}`}
+                      title={`${dimension.label}: ${STATE_LABELS[dimension.state]}`}
+                    >
+                      <span className="state-chip-dim" aria-hidden="true">
+                        {DIMENSION_WORDS[dimension.id]}
+                      </span>
+                      <span className="state-chip-state" aria-hidden="true">
+                        {STATE_LABELS[dimension.state]}
+                      </span>
                     </span>
-                    <span className="state-chip-glyph" aria-hidden="true">
-                      {STATE_GLYPHS[dimension.state]}
-                    </span>
-                  </span>
-                ))}
+                  ))}
+                </span>
               </span>
               {/* The three states as a sentence, for a reader who is listening or
                   cannot separate the glyphs: the chips never carry it alone. */}

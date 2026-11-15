@@ -2,6 +2,10 @@ import { useState } from 'react';
 import type { TerrainType } from '../../data-contracts/types';
 import type { Origin } from '../../lib/geo';
 import { TERRAIN_LABELS, TERRAIN_ORDER, type Target } from '../../lib/site';
+import {
+  MISSION_PURPOSE_LABELS,
+  type MissionPurpose,
+} from '../../lib/travel';
 
 interface FilterBarProps {
   target: Target;
@@ -22,6 +26,9 @@ interface FilterBarProps {
   /** True when the list is cut to sites that commercial travel can reach. */
   travelOnly: boolean;
   onTravelOnly: (travelOnly: boolean) => void;
+  /** What the reader is planning: any purpose, a crewed campaign, or a robot. */
+  purpose: MissionPurpose;
+  onPurpose: (purpose: MissionPurpose) => void;
 }
 
 /**
@@ -30,8 +37,9 @@ interface FilterBarProps {
  * Terrain and logistics used to sit here as two rows of chips, which pushed the
  * KPIs off the right edge and buried "can I even get there?" among the rock
  * types. Both now live behind one button — Mission constraints — that opens a
- * popout on the left: terrain first, because it is about the ground, then
- * logistics, because it is about the journey. The bar itself keeps only what a
+ * popout on the left: terrain first, because it is about the ground; mission
+ * purpose next, because it says what the reader is planning; then logistics,
+ * because it is about the journey. The bar itself keeps only what a
  * reader needs at a glance: the target and the four numbers.
  */
 export function FilterBar({
@@ -51,6 +59,8 @@ export function FilterBar({
   onOpenDistance,
   travelOnly,
   onTravelOnly,
+  purpose,
+  onPurpose,
 }: FilterBarProps) {
   const [open, setOpen] = useState(false);
 
@@ -65,7 +75,10 @@ export function FilterBar({
     : null;
 
   const active =
-    (terrain === 'all' ? 0 : 1) + (origin ? 1 : 0) + (travelOnly ? 1 : 0);
+    (terrain === 'all' ? 0 : 1) +
+    (origin ? 1 : 0) +
+    (travelOnly ? 1 : 0) +
+    (purpose === 'any' ? 0 : 1);
 
   return (
     <div className="filterbar">
@@ -139,6 +152,28 @@ export function FilterBar({
                   </button>
                 ))}
               </div>
+
+              <p className="constraints-title">Mission Purpose</p>
+              <div className="chips" role="group" aria-label="Mission purpose">
+                {(Object.keys(MISSION_PURPOSE_LABELS) as MissionPurpose[]).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="chip"
+                    aria-pressed={purpose === value}
+                    onClick={() => onPurpose(value)}
+                  >
+                    {MISSION_PURPOSE_LABELS[value]}
+                  </button>
+                ))}
+              </div>
+              {/* Says what the filter is actually reading, so a chip that removes
+                  a site cannot be mistaken for a safety or habitability verdict. */}
+              <p className="constraints-hint">
+                Read from commercial access: crewed work needs somewhere to fly into, robotic
+                work can use the expedition-only ground a crew cannot reach. Neither is a
+                habitability or hazard assessment.
+              </p>
 
               <p className="constraints-title">Logistics</p>
               <div className="logistics">

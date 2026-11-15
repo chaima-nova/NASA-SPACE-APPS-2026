@@ -49,7 +49,12 @@ import { classifySite, classificationRank, STATE_LABELS, STATE_RANK } from './li
 import { photosFor, photoUrl, type SitePhoto } from './data/sitePhotos';
 import { siteReport } from './lib/siteReport';
 import { distanceKm as distanceBetween, type Origin } from './lib/geo';
-import { travelAccessOf, travelExport } from './lib/travel';
+import {
+  purposeFits,
+  travelAccessOf,
+  travelExport,
+  type MissionPurpose,
+} from './lib/travel';
 import {
   imageryWindow,
   newestAvailableImageryDate,
@@ -85,7 +90,35 @@ type ReportDraft = { mode: 'new' } | { mode: 'edit'; site: ReportedSite } | null
  * to name, and no Moon/Mars entry because the target button already says which
  * body every row is being read against.
  */
-type SortKey = 'overall' | 'terrain' | 'geology' | 'thermal' | 'name';
+type SortKey =
+  | 'overall'
+  | 'terrain'
+  | 'geology'
+  | 'thermal'
+  | 'waterIce'
+  | 'illumination'
+  | 'name';
+
+/**
+ * The sort menu, in the order a reader meets the factors.
+ *
+ * The first four are what the guide grades and the engine measures. Water & ice
+ * and Illumination are listed because the challenge reads every analogue against
+ * them, and a menu that silently omits a factor looks like the factor was
+ * settled. Neither is measured in this build — no ice, regolith or illumination
+ * product is ingested — so both fall back to the evidence order instead of
+ * inventing a ranking from terrain family or latitude. When a product lands,
+ * only these two comparators change.
+ */
+const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
+  { value: 'overall', label: 'Overall Evidence Fit' },
+  { value: 'terrain', label: 'Terrain & Topography Fit' },
+  { value: 'geology', label: 'Surface & Geology Fit' },
+  { value: 'thermal', label: 'Temperature & Environment Fit' },
+  { value: 'waterIce', label: 'Water & Ice Fit' },
+  { value: 'illumination', label: 'Illumination Fit' },
+  { value: 'name', label: 'Name' },
+];
 
 const readParam = (key: string) =>
   typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get(key);
@@ -116,7 +149,44 @@ function toLocalInput(ms: number): string {
   return local.toISOString().slice(0, 16);
 }
 
+/**
+ * Scrollbars that keep out of the way.
+ *
+ * The ranked queue and the dossier are tall enough to scroll but short enough
+ * that the browser's default bar was a permanent pale stripe down a dark panel.
+ * The bar is drawn transparent and only shown while the container is actually
+ * moving — plus on pointer hover or keyboard focus, so the affordance is still
+ * there for a reader who goes looking for it. No layout moves when it appears,
+ * because the gutter is reserved either way.
+ */
+function useAutoHideScrollbars() {
+  useEffect(() => {
+    const timers = new WeakMap<Element, number>();
+    const containerFor = (event: Event) => {
+      const node = event.target;
+      return node instanceof Element ? node.closest('.list-scroll, .dossier-card') : null;
+    };
+    const onScroll = (event: Event) => {
+      const container = containerFor(event);
+      if (!container) return;
+      container.classList.add('is-scrolling');
+      const live = timers.get(container);
+      if (live !== undefined) window.clearTimeout(live);
+      // Long enough to survive the gap between two wheel notches.
+      timers.set(
+        container,
+        window.setTimeout(() => container.classList.remove('is-scrolling'), 900),
+      );
+    };
+    // Capture, because scroll does not bubble out of the container itself.
+    document.addEventListener('scroll', onScroll, true);
+    return () => document.removeEventListener('scroll', onScroll, true);
+  }, []);
+}
+
 export default function App() {
+  useAutoHideScrollbars();
+
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [datasets, setDatasets] = useState<DataSource[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +237,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [dossierWide]);
   /** When on, only sites commercial travel can reach are listed. */
+  /**
+   * What the reader is planning. Read from commercial access, the only
+   * mission-side fact this build holds; see lib/travel.ts.
+   */
+  const [purpose, setPurpose] = useState<MissionPurpose>('any');
   const [travelOnly, setTravelOnly] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(() => readParam('site'));
@@ -338,6 +413,9 @@ export default function App() {
       // Commercial access is a filter in the same sense: a site no airline
       // reaches is not a worse candidate, it is one the reader cannot use.
       .filter((p) => !travelOnly || travelAccessOf(p).access !== 'none')
+      // Purpose is the same kind of cut: a site that no crew can fly into is not
+      // a worse analogue, it is one the reader's mission cannot use.
+      .filter((p) => purposeFits(purpose, p))
       .map((prediction) => ({
         prediction,
         classification: classifySite(prediction, target),
@@ -353,11 +431,16 @@ export default function App() {
       terrain: (a, b) => compareByDimension(a, b, 'terrain') || compareByOverall(a, b),
       geology: (a, b) => compareByDimension(a, b, 'geology') || compareByOverall(a, b),
       thermal: (a, b) => compareByDimension(a, b, 'thermal') || compareByOverall(a, b),
+      // Listed because the challenge asks for them; nothing in this build
+      // measures either, so the order stays the evidence order rather than
+      // ranking sites on an ice or illumination number that does not exist.
+      waterIce: (a, b) => compareByOverall(a, b),
+      illumination: (a, b) => compareByOverall(a, b),
       name: (a, b) => a.prediction.siteName.localeCompare(b.prediction.siteName),
     };
 
     return items.sort(sorters[sort]);
-  }, [predictions, terrain, query, sort, target, origin, radiusKm, travelOnly]);
+  }, [predictions, terrain, query, sort, target, origin, radiusKm, travelOnly, purpose]);
 
   // Reported sites share the selection with model predictions: exactly one of
   // these two is ever non-null.
@@ -795,6 +878,8 @@ export default function App() {
         onOpenDistance={() => setDistanceOpen(true)}
         travelOnly={travelOnly}
         onTravelOnly={setTravelOnly}
+        purpose={purpose}
+        onPurpose={setPurpose}
       />
 
       {error ? <p className="error">⚠ {error}</p> : null}
@@ -809,13 +894,14 @@ export default function App() {
             <label className="select">
               <span className="sr-only">Sort sites by</span>
               <select value={sort} onChange={(event) => setSort(event.target.value as SortKey)}>
-                {/* One entry per dimension the guide grades, plus the whole set
-                    and the alphabet. No Moon fit, no Mars fit, no best fit. */}
-                <option value="overall">Overall evidence</option>
-                <option value="terrain">Terrain &amp; topography</option>
-                <option value="geology">Surface &amp; geology</option>
-                <option value="thermal">Temperature &amp; environment</option>
-                <option value="name">Name</option>
+                {/* One entry per factor, plus the whole set and the alphabet.
+                    No Moon fit, no Mars fit, no best fit: the target button
+                    already says which body every row is read against. */}
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
           </header>

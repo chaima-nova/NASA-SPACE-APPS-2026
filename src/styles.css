@@ -602,6 +602,54 @@ body::before {
 
 /* ---- Ranked list -------------------------------------------------------- */
 
+/* Overlay-style bars: transparent at rest, visible while the panel is scrolled
+   (the `is-scrolling` class the shell adds for 900 ms) or while the pointer is
+   over it. The gutter is reserved in every state, so nothing shifts when the bar
+   appears. Firefox reads `scrollbar-color`; Chromium reads both it and the
+   `::-webkit-scrollbar` rules below. */
+.list-scroll,
+.dossier-card {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.list-scroll:hover,
+.list-scroll:focus-within,
+.list-scroll.is-scrolling,
+.dossier-card:hover,
+.dossier-card:focus-within,
+.dossier-card.is-scrolling {
+  scrollbar-color: rgba(255, 255, 255, 0.34) transparent;
+}
+
+.list-scroll::-webkit-scrollbar,
+.dossier-card::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.list-scroll::-webkit-scrollbar-track,
+.dossier-card::-webkit-scrollbar-track,
+.list-scroll::-webkit-scrollbar-corner,
+.dossier-card::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.list-scroll::-webkit-scrollbar-thumb,
+.dossier-card::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.list-scroll:hover::-webkit-scrollbar-thumb,
+.list-scroll:focus-within::-webkit-scrollbar-thumb,
+.list-scroll.is-scrolling::-webkit-scrollbar-thumb,
+.dossier-card:hover::-webkit-scrollbar-thumb,
+.dossier-card:focus-within::-webkit-scrollbar-thumb,
+.dossier-card.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.34);
+}
+
 .list-scroll {
   flex: 1;
   min-height: 0;
@@ -625,8 +673,10 @@ body::before {
 
 .site-row {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  align-items: center;
+  /* Two columns now: the chips moved under the name, where they have the width
+     to spell themselves out instead of hiding behind initials. */
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
   gap: 7px;
   width: 100%;
   padding: 9px 4px;
@@ -670,9 +720,8 @@ body::before {
   font-size: 0.94rem;
   font-weight: 500;
   color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Wraps rather than clipping: "Atacama …" identified nothing. */
+  overflow-wrap: anywhere;
 }
 
 .site-row.is-selected .site-name {
@@ -683,9 +732,8 @@ body::before {
   font-size: 0.72rem;
   /* White, not grey: this line is the row's evidence, not a caption. */
   color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Also wraps: the coordinate pair was being cut to "23.50°…". */
+  overflow-wrap: anywhere;
 }
 
 .site-bar {
@@ -5332,6 +5380,15 @@ html[data-a11y-motion='reduced'] *::after {
   color: var(--ink-3);
 }
 
+/* The sentence under Mission Purpose: what the filter reads, and what it does
+   not claim. */
+.constraints-hint {
+  margin: -2px 0 14px;
+  font-size: 0.64rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
 .constraints-title + .chips {
   margin-bottom: 14px;
 }
@@ -5672,25 +5729,56 @@ html[data-a11y-motion='reduced'] *::after {
   gap: 6px;
 }
 
+/* The dossier's open/close control: one arrow, white and large enough to read
+   as the way in rather than as another label beside the rank chip. */
+/* One column, so a long latitude/longitude pair never clips against an empty
+   second slot. */
+.facts-coords {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
 .dossier-expand {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 1px solid var(--line-2);
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--surface-2);
-  color: var(--ink-3);
-  font-family: var(--mono);
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: #ffffff;
   cursor: pointer;
-  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.dossier-expand-glyph {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.18s var(--ease);
+}
+
+/* Open: the same arrow turns to point back into the column. */
+.dossier-expand[aria-pressed='true'] .dossier-expand-glyph {
+  transform: rotate(180deg);
 }
 
 .dossier-expand:hover,
-.dossier-expand:focus-visible,
 .dossier-expand[aria-pressed='true'] {
-  color: var(--signal);
-  border-color: var(--signal);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.dossier-expand:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
 }
 
 /* Opened out: the card leaves the column instead of stretching it, so the globe
@@ -7147,13 +7235,13 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 .state-chip {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
-  padding: 2px 7px;
+  gap: 5px;
+  padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid currentColor;
-  font-size: 0.62rem;
-  line-height: 1.4;
-  letter-spacing: 0.06em;
+  font-size: 0.6rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -7163,13 +7251,15 @@ html[data-a11y-contrast='on'] .investigation-body.has-photo {
 .state-chip.is-insufficient_evidence { color: #22d3ee; }
 .state-chip.is-not_comparable { color: #a7b0c0; }
 
-.state-chip-dim { opacity: 0.6; }
-.state-chip-glyph { font-weight: 650; }
+/* The dimension is the quiet half of the chip; the state is the claim. */
+.state-chip-dim { opacity: 0.72; }
+.state-chip-state { font-weight: 650; }
 
 .site-states {
-  display: inline-flex;
-  gap: 4px;
-  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 2px 0 0;
   align-items: center;
 }
 

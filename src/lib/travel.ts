@@ -138,6 +138,31 @@ export function travelAccessOf(site: Place): TravelAccess {
   };
 }
 
+/**
+ * What the reader is planning, and what the catalogue can say about it.
+ *
+ * The 2026 challenge page asks for analogues of future `base and landing sites`
+ * and names no mission taxonomy of its own, so these are the two purposes this
+ * build can actually answer from data it holds: whether a crewed campaign has
+ * somewhere to fly into, or whether the ground is expedition-only — the terrain
+ * a robotic precursor is sent to first. Nothing here claims a site is safe for
+ * people, only how it can be reached.
+ */
+export type MissionPurpose = 'any' | 'human' | 'robotic';
+
+export const MISSION_PURPOSE_LABELS: Record<MissionPurpose, string> = {
+  any: 'All Purposes',
+  human: 'Human Exploration',
+  robotic: 'Robotic Only',
+};
+
+/** Does this site fit the chosen purpose? Read from commercial access alone. */
+export function purposeFits(purpose: MissionPurpose, site: Place): boolean {
+  if (purpose === 'any') return true;
+  const { access } = travelAccessOf(site);
+  return purpose === 'human' ? access !== 'none' : access === 'none';
+}
+
 export const ACCESS_LABELS: Record<Access, string> = {
   scheduled: 'Commercial Travel Available',
   charter: 'Charter needed',
