@@ -1,27 +1,24 @@
 import type {
   CommunityState,
   DataSource,
-  EvidenceState,
   Prediction,
 } from '../../data-contracts/types';
 import { photosFor, photoUrl } from '../../data/sitePhotos';
 import { terrainMeasurementFor } from '../../services/pipeline';
 import { SiteCommunity, type CommunityActions } from './SiteCommunity';
-import { scoreColor } from '../../lib/colors';
 import { sourceUrl } from '../../lib/sourceLinks';
 import {
+  classificationSummary,
+  classifySite,
+  STATE_LABELS,
+  type DimensionVerdict,
+} from '../../lib/classification';
+import {
   datasetsFor,
-  FACTOR_HINTS,
-  FACTOR_LABELS,
-  FACTOR_ORDER,
-  factorsOf,
-  fitFor,
   formatCoords,
   formatElevation,
-  formatScore,
   TARGET_LABELS,
   terrainLabel,
-  verdictOf,
   type Target,
 } from '../../lib/site';
 
@@ -37,7 +34,7 @@ interface SiteInspectorProps {
   onExport: () => void;
   /** Opens the Plan My Trip route planner for this site. */
   onPlanTrip: () => void;
-  /** Opens the side-by-side comparison against another scored site. */
+  /** Opens the side-by-side comparison against another classified site. */
   onCompareSites: () => void;
   onCopyLink: () => void;
   onSeeSite: () => void;
@@ -49,58 +46,33 @@ interface SiteInspectorProps {
 }
 
 /**
- * The engine's four states as a reader should meet them.
+ * One dimension, as the dossier states it.
  *
- * The data-contract words are kept verbatim in the payload and the interface
- * says what they mean: `insufficient_evidence` is "incomplete", not "bad", and
- * the difference is the whole point of carrying the state rather than a number.
+ * The verdict is a word and the basis is the measurement behind it; the caveats
+ * are what the dimension could not decide. Removing the percentage meters is the
+ * point of this block: three independent verdicts, no composite.
  */
-const EVIDENCE_LABELS: Record<EvidenceState, string> = {
-  similar: 'Evidence: similar',
-  different: 'Evidence: different',
-  insufficient_evidence: 'Evidence: incomplete',
-  not_comparable: 'Evidence: not comparable',
-};
-
-function Meter({
-  label,
-  value,
-  accent,
-  active,
-  hint,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-  active?: boolean;
-  hint?: string;
-}) {
+function DimensionBlock({ verdict }: { verdict: DimensionVerdict }) {
   return (
-    <div className={active ? 'meter is-active' : 'meter'}>
-      <div className="meter-head">
-        <span className="meter-label" title={hint}>
-          {label}
-        </span>
-        <span className="meter-value">{Math.round(value * 100)}%</span>
+    <div className={`dimension is-${verdict.state}`}>
+      <div className="dimension-head">
+        <span className="dimension-label">{verdict.label}</span>
+        <span className={`state-badge is-${verdict.state}`}>{STATE_LABELS[verdict.state]}</span>
       </div>
-      <div
-        className="meter-track"
-        role="progressbar"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(value * 100)}
-      >
-        <span className="meter-fill" style={{ width: `${Math.max(2, value * 100)}%`, background: accent }} />
-      </div>
+      <p className="dimension-basis">{verdict.basis}</p>
+      {verdict.caveats.map((caveat) => (
+        <p className="dimension-caveat" key={caveat}>
+          {caveat}
+        </p>
+      ))}
     </div>
   );
 }
 
 /**
- * Everything a judge needs about one site, in one column: the verdict, the
- * Moon-vs-Mars split, the four brief axes, the datasets behind the numbers,
- * and an export that survives the demo.
+ * Everything a judge needs about one site, in one column: the three dimension
+ * verdicts, the four physical limits no Earth site escapes, the measured ground,
+ * the datasets behind the numbers, and an export that survives the demo.
  */
 export function SiteInspector({
   prediction,
@@ -135,11 +107,8 @@ export function SiteInspector({
     );
   }
 
-  const fit = fitFor(prediction, target);
-  const factors = factorsOf(prediction);
+  const classification = classifySite(prediction, target);
   const siteDatasets = datasetsFor(prediction, datasets);
-  const moonFit = fitFor(prediction, 'moon');
-  const marsFit = fitFor(prediction, 'mars');
   const photos = photosFor(prediction);
   const photoCount = photos.length;
   const terrain = terrainMeasurementFor(prediction.pointId);
@@ -174,61 +143,36 @@ export function SiteInspector({
         {formatElevation(prediction.elevationM)}
       </p>
 
-      <div className="dossier-score">
-        <span className="dossier-score-value" style={{ color: scoreColor(fit) }}>
-          {formatScore(fit)}
-        </span>
-        <span className="dossier-score-side">
-          <span className="dossier-score-label">{TARGET_LABELS[target]} analog fit</span>
-          <span className="pill">{prediction.label}</span>
-        </span>
-      </div>
-
-      <div className="split">
-        <Meter
-          label="Moon Fit"
-          value={moonFit}
-          accent="var(--moon)"
-          active={target === 'moon'}
-          hint="Fit against permanent Moon base conditions"
-        />
-        <Meter
-          label="Mars Fit"
-          value={marsFit}
-          accent="var(--mars)"
-          active={target === 'mars'}
-          hint="Fit against Martian surface conditions"
-        />
-      </div>
-
-      <div className="divider" />
-
-      <h3 className="section-title">Why this site</h3>
-      <div className="factors">
-        {FACTOR_ORDER.map((key) => (
-          <Meter
-            key={key}
-            label={FACTOR_LABELS[key]}
-            value={factors[key]}
-            accent="var(--signal)"
-            hint={FACTOR_HINTS[key]}
-          />
+      {/* The three verdicts, which are the whole classification. */}
+      <div className="dimensions">
+        <div className="dimensions-head">
+          <span className="kicker">Classified against {TARGET_LABELS[target]}</span>
+          <span className="dimensions-count">
+            {classification.agreements} of 3 similar
+          </span>
+        </div>
+        {classification.dimensions.map((verdict) => (
+          <DimensionBlock key={verdict.id} verdict={verdict} />
         ))}
       </div>
 
-      <p className="verdict">{verdictOf(prediction, target)}</p>
+      <p className="verdict">{classificationSummary(classification)}</p>
 
-      {/* The engine's state, where one exists. The rail carried this badge but
-          the opened dossier did not, so a reader who clicked through to make the
-          decision met the score without its qualifier. */}
-      {prediction.evidence ? (
-        <div className={`evidence-row is-${prediction.evidence}`}>
-          <span className="evidence-badge">{EVIDENCE_LABELS[prediction.evidence]}</span>
-          {prediction.evidenceNote ? (
-            <p className="evidence-text">{prediction.evidenceNote}</p>
-          ) : null}
-        </div>
-      ) : null}
+      {/* The four limits, which apply to every site on the list. */}
+      <h3 className="section-title">
+        Physical limits <span className="section-count">All sites</span>
+      </h3>
+      <ul className="limits">
+        {classification.limitations.map((limit) => (
+          <li key={limit.id}>
+            <span className="limit-name">{limit.label}</span>
+            <span className="limit-pair">
+              {limit.earth} → {limit.target}
+            </span>
+            <p className="limit-why">{limit.why}</p>
+          </li>
+        ))}
+      </ul>
 
       {/* The ground under the site, measured from SRTM rather than typed into a
           fixture. Only the curated sites have a row; a screened cell carries its
@@ -278,8 +222,9 @@ export function SiteInspector({
           or dies on lighting, and nothing in this build can compute it. */}
       {target === 'moon' ? (
         <p className="dossier-caveat">
-          Illumination is not part of this score: a permanent south polar base depends on
-          horizon-scale sunlight and direct Earth visibility, and this build models neither.
+          Illumination is not part of this classification: a permanent south polar base
+          depends on horizon-scale sunlight and direct Earth visibility, and this build
+          models neither.
         </p>
       ) : null}
 
@@ -337,8 +282,6 @@ export function SiteInspector({
               eight cells: at 16 px a panel is about 2 px deep and a finer grid
               turns to noise. */}
           <svg viewBox="0 0 24 24" aria-hidden="true" className="compare-icon">
-            {/* The mark is asymmetric, so the rotation alone leaves its ink off
-                centre; the shift recentres it in the 16 px box. */}
             <g transform="translate(-1.15 1.1) rotate(45 12 12)">
               <rect x="10.2" y="5.3" width="2.9" height="1.7" rx="0.7" />
               <rect x="9.95" y="6.9" width="4.1" height="6" rx="1.2" />
@@ -400,10 +343,6 @@ export function SiteInspector({
           <dd>{formatCoords(prediction.lat, prediction.lon)}</dd>
         </div>
         <div>
-          <dt>Confidence</dt>
-          <dd>{Math.round(prediction.confidence * 100)}%</dd>
-        </div>
-        <div>
           <dt>Model</dt>
           <dd>
             {prediction.model.id} {prediction.model.version}
@@ -427,9 +366,6 @@ export function SiteInspector({
         {/* Export and the copy-link action belong together: you export what is
             on screen, or you share the permalink to it. The comparison question
             is the longer one, so it keeps a row of its own underneath. */}
-        {/* The way out runs the full width above them, not beside them: a party
-            planning a field season settles how it gets there before what it
-            exports, and the strip gives that decision the weight it has. */}
         <button type="button" className="btn btn-primary dossier-trip" onClick={onPlanTrip}>
           Plan My Trip
         </button>

@@ -10,7 +10,6 @@
  * the numeric feature vectors are illustrative sample values, not measurements.
  */
 
-import { SCORE_BANDS } from './types';
 import type {
   DataSource,
   FocusArea,
@@ -34,8 +33,6 @@ interface SiteSpec {
   targetSites: Record<'moon' | 'mars', TargetSite>;
 }
 
-const round3 = (n: number) => Math.round(n * 1000) / 1000;
-const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 /** Terse helper for the target-body crosswalk rows. */
 const target = (name: string, lat: number, lon: number): TargetSite => ({ name, lat, lon });
@@ -255,179 +252,30 @@ function buildGeoPoints(): GeoPoint[] {
 
 export const mockGeoPoints: GeoPoint[] = buildGeoPoints();
 
+
 /**
- * The eight scientific dimensions the score is built from.
+ * The fixtures carry identity and position, nothing derived.
  *
- * These replace the earlier four-pillar grouping. The brief's comparison table
- * names eight measurable dimensions, and folding them into four hid exactly the
- * distinctions a selection panel asks about: water and ice are not "thermal",
- * and a lava tube is not "mineralogy".
+ * There is no fit, band, confidence or factor table here any more: those were a
+ * stand-in for a model that never existed, and the project's classification now
+ * comes from the guide (lib/classification.ts) applied to measured terrain and
+ * the USGS crosswalk. A fixture that computed its own score would put an invented
+ * number back on screen the moment nothing else supplied one.
  */
-export const DIMENSION_KEYS = [
-  'terrain',
-  'surface',
-  'thermal',
-  'water',
-  'atmosphere',
-  'biology',
-  'subsurface',
-  'exploration',
-] as const;
-
-export type DimensionKey = (typeof DIMENSION_KEYS)[number];
-
-export const DIMENSION_LABELS: Record<DimensionKey, string> = {
-  terrain: 'Terrain & Topography',
-  surface: 'Surface & Geology',
-  thermal: 'Temperature & Environment',
-  water: 'Water & Ice',
-  atmosphere: 'Atmospheric Processes',
-  biology: 'Biology & Habitability',
-  subsurface: 'Subsurface Environments',
-  exploration: 'Exploration Relevance',
-};
-
-type Weights = Record<DimensionKey, number>;
-
-/** Analog fit: what makes a place usable as an analog at all. Sums to 1. */
-const WEIGHTS: Weights = {
-  terrain: 0.17,
-  surface: 0.17,
-  thermal: 0.17,
-  water: 0.11,
-  atmosphere: 0.13,
-  biology: 0.07,
-  subsurface: 0.07,
-  exploration: 0.11,
-};
-
-/** The Moon rewards regolith, vacuum-grade dryness, radiation and shelter. */
-const MOON_WEIGHTS: Weights = {
-  terrain: 0.15,
-  surface: 0.22,
-  thermal: 0.18,
-  water: 0.12,
-  atmosphere: 0.11,
-  biology: 0.05,
-  subsurface: 0.09,
-  exploration: 0.08,
-};
-
-/** Mars rewards dust, water ice, thermal swing and biological limits. */
-const MARS_WEIGHTS: Weights = {
-  terrain: 0.13,
-  surface: 0.16,
-  thermal: 0.15,
-  water: 0.18,
-  atmosphere: 0.18,
-  biology: 0.1,
-  subsurface: 0.04,
-  exploration: 0.06,
-};
-
-/** Weighted sum of one site's dimensions under one body's weighting. */
-const scoreOf = (dimensions: Weights, weights: Weights) =>
-  round3(
-    clamp01(
-      DIMENSION_KEYS.reduce((sum, key) => sum + weights[key] * dimensions[key], 0),
-    ),
-  );
-
-/**
- * Deterministic stand-in for Harshil's model output. The features feed a simple
- * weighted formula so the UI shows plausible ranking structure until the real
- * pipeline lands.
- */
-function buildPredictions(points: GeoPoint[], specs: SiteSpec[]): Prediction[] {
-  return points.map((point, i) => {
-    const f = point.features;
-    const tempSwingNorm = clamp01(f.diurnalTempSwingC / 40);
-    const elevationNorm = clamp01((f.elevationM + 100) / 4500);
-    // Two dimensions depend on landform rather than on a measured feature.
-    const polar = point.terrainType === 'polar';
-    const volcanic = point.terrainType === 'volcanic';
-    const cave = point.terrainType === 'cave';
-
-    /**
-     * One value per scientific dimension, each in [0, 1]. Every term is a raw
-     * feature, so any dimension can be traced back to what produced it — which
-     * is the point of scoring on eight named axes instead of one opaque blob.
-     */
-    const dimensions: Weights = {
-      // Slope, relief, roughness and landform.
-      terrain: round3(clamp01(0.55 * f.terrainRoughness + 0.45 * elevationNorm)),
-      // Surface materials and mineralogy, plus the subsurface material hint.
-      surface: round3(clamp01(0.8 * f.regolithMatch + 0.2 * f.lavaTubePotential)),
-      // Thermal swing, illumination extremes and radiation load.
-      thermal: round3(
-        clamp01(0.5 * tempSwingNorm + 0.3 * f.solarUvIndex + 0.2 * f.radiationAnalog),
-      ),
-      // Dryness, and whether the ground carries ice or permafrost.
-      water: round3(clamp01(0.55 * f.aridity + 0.45 * (polar ? 1 : cave ? 0.4 : 0.15))),
-      // Dust, wind-driven erosion, sedimentation and volcanism. A dry, dusty,
-      // volcanic site is the good analog here, not a still one.
-      atmosphere: round3(clamp01(0.8 * f.dustIndex + 0.2 * (volcanic ? 1 : 0))),
-      // Biological limits: how hard the site is on life. Dryness, radiation and
-      // unfiltered UV are what an extremophile study comes here for, so a
-      // hostile site scores high — this measures analogue relevance, not comfort.
-      biology: round3(
-        clamp01(0.5 * f.aridity + 0.3 * f.radiationAnalog + 0.2 * (1 - f.solarUvIndex)),
-      ),
-      // Lava tubes, caves and structural voids.
-      subsurface: round3(clamp01(0.8 * f.lavaTubePotential + 0.2 * (cave ? 1 : 0))),
-      // Fieldwork relevance: how reachable and how trafficable the site is.
-      exploration: round3(
-        clamp01(
-          0.55 * (1 - f.isolationIndex) +
-            0.25 * (1 - f.terrainRoughness) +
-            0.2 * (1 - f.aridity),
-        ),
-      ),
-    };
-
-    // One dimension table, three weightings: the general analog fit plus a
-    // separate Moon and Mars score. Two worlds, not one blob.
-    const analogScore = scoreOf(dimensions, WEIGHTS);
-    const moonFit = scoreOf(dimensions, MOON_WEIGHTS);
-    const marsFit = scoreOf(dimensions, MARS_WEIGHTS);
-
-    // The same table the score was built from, carried to the dossier so the
-    // chart and the ranking cannot disagree. The real model may supply
-    // `factors` directly.
-    const factors = dimensions;
-
-    const label =
-      analogScore >= SCORE_BANDS.strong ? 'Strong' : analogScore >= SCORE_BANDS.promising ? 'Promising' : 'Weak';
-
-    return {
-      id: `pred-${i.toString().padStart(3, '0')}`,
-      pointId: point.id,
-      siteName: point.name,
-      lat: point.lat,
-      lon: point.lon,
-      focusArea: point.focusArea,
-      model: { id: 'analog-fit-baseline', version: '0.1.0-mock' },
-      predictedAt: '2026-01-15T00:00:00.000Z',
-      analogScore: round3(analogScore),
-      moonFit: round3(moonFit),
-      marsFit: round3(marsFit),
-      terrainType: point.terrainType,
-      region: point.region,
-      elevationM: point.elevationM,
-      targetSites: specs[i].targetSites,
-      factors,
-      label,
-      confidence: round3(0.6 + 0.35 * ((Math.sin(i * 7.13) + 1) / 2)),
-      // Weighted contribution of each dimension to the analog fit: what moved
-      // the score, named the way the comparison table names it.
-      featureContributions: Object.fromEntries(
-        DIMENSION_KEYS.map((key) => [DIMENSION_LABELS[key], round3(WEIGHTS[key] * dimensions[key])]),
-      ),
-    };
-  });
-}
-
-export const mockPredictions: Prediction[] = buildPredictions(mockGeoPoints, SITES);
+export const mockPredictions: Prediction[] = mockGeoPoints.map((point, index) => ({
+  id: `pred-${index.toString().padStart(3, '0')}`,
+  pointId: point.id,
+  siteName: point.name,
+  lat: point.lat,
+  lon: point.lon,
+  focusArea: point.focusArea,
+  model: { id: 'analog-fit-baseline', version: '0.1.0-mock' },
+  predictedAt: '2026-01-15T00:00:00.000Z',
+  terrainType: point.terrainType,
+  region: point.region,
+  elevationM: point.elevationM,
+  targetSites: SITES[index].targetSites,
+}));
 
 export const mockDatasets: DataSource[] = [
   {

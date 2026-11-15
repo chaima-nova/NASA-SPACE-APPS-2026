@@ -5,7 +5,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import type { Prediction, TargetSite } from '../../data-contracts/types';
-import { scoreColorHex } from '../../lib/colors';
+import { stateColorHex } from '../../lib/colors';
+import { classifySite, STATE_LABELS } from '../../lib/classification';
 import { createStarfield } from '../../lib/starfield';
 import { createTargetMarker } from '../../lib/highlight';
 import { latLonToVec } from '../../lib/globe';
@@ -198,7 +199,8 @@ export function MoonMap({ predictions, showMarkers = true, highlight = null }: M
 
     if (showMarkers) predictions.forEach((p) => {
       const position = latLonToVec(p.lat, p.lon, RADIUS + 0.02);
-      const color = scoreColorHex(p.analogScore);
+      const terrainState = classifySite(p, 'moon').dimensions[0].state;
+      const color = stateColorHex(terrainState);
 
       const material = new THREE.MeshBasicMaterial({ color });
       materials.push(material);
@@ -206,9 +208,9 @@ export function MoonMap({ predictions, showMarkers = true, highlight = null }: M
       mesh.position.copy(position);
       mesh.userData = {
         siteName: p.siteName,
-        label: p.label,
+        label: STATE_LABELS[terrainState],
         focusArea: p.focusArea,
-        analogScore: p.analogScore,
+        terrainState,
       };
       markerGroup.add(mesh);
 
@@ -228,7 +230,8 @@ export function MoonMap({ predictions, showMarkers = true, highlight = null }: M
       pulse.lookAt(0, 0, 0);
       markerGroup.add(pulse);
 
-      markers.push({ mesh, pulse, score: p.analogScore });
+      // The pulse carries presence, not a magnitude: the states are categorical.
+      markers.push({ mesh, pulse, score: 0.6 });
     });
 
     // ---- Click / hover interaction -----------------------------------------
@@ -253,13 +256,13 @@ export function MoonMap({ predictions, showMarkers = true, highlight = null }: M
           siteName: string;
           label: string;
           focusArea: string;
-          analogScore: number;
+          terrainState: string;
         };
         tip.style.opacity = '1';
         tip.style.transform = `translate(${event.offsetX + 14}px, ${event.offsetY + 14}px)`;
         tip.innerHTML =
           `<strong>${data.siteName}</strong><br/>` +
-          `Analog fit: ${data.label} (${data.analogScore.toFixed(2)})<br/>` +
+          `Terrain: ${data.label}<br/>` +
           `<span class="moon-tip-meta">${data.focusArea.replace(/-/g, ' ')}</span>`;
         renderer.domElement.style.cursor = 'pointer';
       } else {

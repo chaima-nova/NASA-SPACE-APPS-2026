@@ -4,9 +4,13 @@
  * The UI must never be blocked on the model: every helper here degrades to a
  * documented fallback when the optional contract fields are absent. That keeps
  * the shell working against older `Prediction` payloads from the backend.
+ *
+ * There is deliberately no `fitFor` or `formatScore` here any more. The project
+ * does not publish a composite analog score (see lib/classification.ts), so the
+ * helpers that produced one — the eight weighted dimensions, the band table and
+ * the derived verdict — went with it.
  */
 
-import { SCORE_BANDS } from '../data-contracts/types';
 import type {
   DataSource,
   Prediction,
@@ -14,6 +18,7 @@ import type {
   TargetSite,
   TerrainType,
 } from '../data-contracts/types';
+import { classifySite, classificationRank, type SiteClassification } from './classification';
 import type { Table } from './export';
 
 /**
@@ -41,7 +46,7 @@ export function siteRefOf(reported: ReportedSite): SiteRef {
   };
 }
 
-/** Which world the current ranking is scored against. */
+/** Which world the current classification is made against. */
 export type Target = 'moon' | 'mars';
 
 export const TERRAIN_ORDER: TerrainType[] = [
@@ -87,158 +92,16 @@ export function terrainLabel(site: Pick<Prediction, 'terrainType'>): string {
 /**
  * Where this site lands on the chosen target body, or null when the payload
  * predates the crosswalk. Callers hide the marker rather than inventing a
- * coordinate, for the same reason an unscored report gets no analog fit.
+ * coordinate, for the same reason an unmeasured dimension gets no verdict.
  */
 export function targetSiteOf(prediction: Prediction, target: Target): TargetSite | null {
   return prediction.targetSites?.[target] ?? null;
 }
 
-/** Score used for ranking and colouring, given the active comparison target. */
-export function fitFor(prediction: Prediction, target: Target): number {
-  if (target === 'mars') return prediction.marsFit ?? prediction.analogScore;
-  return prediction.moonFit ?? prediction.analogScore;
-}
-
-/**
- * The eight scientific dimensions the fit is scored on. The keys match the
- * brief's comparison table, so a score, its label and the parameter it stands
- * for are always the same three things.
- */
-export type SiteFactors = {
-  terrain: number;
-  surface: number;
-  thermal: number;
-  water: number;
-  atmosphere: number;
-  biology: number;
-  subsurface: number;
-  exploration: number;
-};
-
-export const FACTOR_ORDER = [
-  'terrain',
-  'surface',
-  'thermal',
-  'water',
-  'atmosphere',
-  'biology',
-  'subsurface',
-  'exploration',
-] as const;
-
-export const FACTOR_LABELS: Record<keyof SiteFactors, string> = {
-  terrain: 'Terrain & Topography',
-  surface: 'Surface & Geology',
-  thermal: 'Temperature & Environment',
-  water: 'Water & Ice',
-  atmosphere: 'Atmospheric Processes',
-  biology: 'Biology & Habitability',
-  subsurface: 'Subsurface Environments',
-  exploration: 'Exploration Relevance',
-};
-
-/** The measurable parameters behind each dimension, shown in the dossier. */
-export const FACTOR_HINTS: Record<keyof SiteFactors, string> = {
-  terrain: 'Elevation, slope, roughness, craters and landforms',
-  surface: 'Geological units, surface materials and mineralogy',
-  thermal: 'Surface temperature and illumination extremes',
-  water: 'Indicators of water, ice, snow and permafrost',
-  atmosphere: 'Dust, wind, erosion, sedimentation and volcanism',
-  biology: 'Extremophile habitats and biological limits',
-  subsurface: 'Caves, lava tubes and structural pits',
-  exploration: 'Fieldwork testing, robotics and mobility research',
-};
-
-/**
- * Baseline feature weights, repeated here only so an older payload's signed
- * contributions can be divided back out into the raw feature they came from.
- */
-const FEATURE_WEIGHTS: Record<string, number> = {
-  aridity: 0.2,
-  diurnalTempSwingC: 0.16,
-  regolithMatch: 0.18,
-  dustIndex: 0.12,
-  solarUvIndex: 0.1,
-  radiationAnalog: 0.1,
-  terrainRoughness: 0.06,
-  isolationIndex: 0.08,
-};
-
-/**
- * Per-dimension scores for the dossier.
- *
- * Uses the model's `factors` when present. Older payloads carry only signed
- * feature contributions; those are divided by the weight the baseline model
- * applies, which recovers the raw feature, and the same eight-dimension
- * composition the fixtures use is applied on top. That is an approximation and
- * the dossier says so — but it is derived, not invented.
- */
-export function factorsOf(prediction: Prediction): SiteFactors {
-  if (prediction.factors) return prediction.factors;
-
-  const contributions = prediction.featureContributions;
-  const clamp = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0);
-  const raw = (key: string) =>
-    clamp(Math.abs(contributions[key] ?? 0) / (FEATURE_WEIGHTS[key] ?? 1));
-
-  const terrain = prediction.terrainType;
-  const polar = terrain === 'polar';
-  const cave = terrain === 'cave';
-  const volcanic = terrain === 'volcanic';
-  const elevation = clamp(((prediction.elevationM ?? 0) + 100) / 4500);
-  const tempSwing = raw('diurnalTempSwingC');
-  const aridity = raw('aridity');
-  const uv = raw('solarUvIndex');
-  const radiation = raw('radiationAnalog');
-  const tube = raw('lavaTubePotential');
-
-  return {
-    terrain: clamp(0.55 * raw('terrainRoughness') + 0.45 * elevation),
-    surface: clamp(0.8 * raw('regolithMatch') + 0.2 * tube),
-    thermal: clamp(0.5 * tempSwing + 0.3 * uv + 0.2 * radiation),
-    water: clamp(0.55 * aridity + 0.45 * (polar ? 1 : cave ? 0.4 : 0.15)),
-    atmosphere: clamp(0.65 * raw('dustIndex') + 0.2 * (1 - aridity) + 0.15 * (volcanic ? 1 : 0)),
-    biology: clamp(0.5 * (1 - uv) + 0.3 * (1 - radiation) + 0.2 * (1 - aridity)),
-    subsurface: clamp(0.8 * tube + 0.2 * (cave ? 1 : 0)),
-    exploration: clamp(
-      0.55 * (1 - raw('isolationIndex')) +
-        0.25 * (1 - raw('terrainRoughness')) +
-        0.2 * (1 - aridity),
-    ),
-  };
-}
-
-/** Strongest of the eight dimensions, used by the plain-language verdict. */
-export function topFactor(prediction: Prediction): { key: keyof SiteFactors; value: number } {
-  const factors = factorsOf(prediction);
-  return FACTOR_ORDER.reduce(
-    (best, key) => (factors[key] > best.value ? { key, value: factors[key] } : best),
-    { key: 'surface' as keyof SiteFactors, value: -1 },
-  );
-}
-
-/**
- * One-sentence answer to "should I care about this site?" — a decision, not a
- * dump of variables. Prefers a model-authored verdict when one is supplied.
- */
-export function verdictOf(prediction: Prediction, target: Target): string {
-  if (prediction.verdict) return prediction.verdict;
-
-  const terrain = terrainLabel(prediction).toLowerCase();
-  const { key, value } = topFactor(prediction);
-  const score = fitFor(prediction, target);
-  const band =
-    score >= SCORE_BANDS.strong ? 'Strong' : score >= SCORE_BANDS.promising ? 'Promising' : 'Marginal';
-
-  return `${band} ${TARGET_LABELS[target]} analog: ${terrain} terrain, strongest on ${FACTOR_LABELS[
-    key
-  ].toLowerCase()} (${Math.round(value * 100)}%).`;
-}
-
-/** Earth-observation datasets that actually feed this site's scores. */
+/** Earth-observation datasets that actually feed this site's classification. */
 export function datasetsFor(prediction: Prediction, datasets: DataSource[]): DataSource[] {
   // When the pipeline says exactly which products fed this site, that list wins:
-  // it is the record of the data behind the score, not an approximation of it.
+  // it is the record of the data behind the verdict, not an approximation of it.
   if (prediction.datasetIds) {
     const picked = datasets.filter((d) => prediction.datasetIds?.includes(d.id));
     if (picked.length > 0) return picked;
@@ -250,9 +113,9 @@ export function datasetsFor(prediction: Prediction, datasets: DataSource[]): Dat
    * Every dataset records which target(s) it serves, so a site's sources are the
    * products tagged for its focus area plus the dual-use ones that serve both
    * bodies. This replaces a hand-kept list of ids ('modis-lst', 'lro-diviner',
-   * 'mola-topography', ...) that matched nothing once the catalogue was
-   * rebuilt — which is why the dossier said "Sources 0" for every site while ten
-   * datasets sat in the provenance card.
+   * 'mola-topography', ...) that matched nothing once the catalogue was rebuilt —
+   * which is why the dossier said "Sources 0" for every site while ten datasets
+   * sat in the provenance card.
    */
   const tagged = datasets.filter((dataset) => {
     const areas = dataset.focusAreas ?? [];
@@ -261,7 +124,7 @@ export function datasetsFor(prediction: Prediction, datasets: DataSource[]): Dat
   if (tagged.length > 0) return tagged;
 
   // An untagged catalogue still names the build's sources rather than none of
-  // them; the alternative is claiming a scored site has no data behind it.
+  // them; the alternative is claiming a classified site has no data behind it.
   return datasets;
 }
 
@@ -279,13 +142,18 @@ export function formatElevation(elevationM: number | undefined): string {
   return `${metres > 0 ? '+' : ''}${metres.toLocaleString('en-US')} m`;
 }
 
-export function formatScore(score: number): string {
-  return score.toFixed(2);
+/** `insufficient_evidence` -> `Insufficient evidence`, for a column or a badge. */
+export function formatState(state: string): string {
+  return state.replace(/_/g, ' ').replace(/^./, (character) => character.toUpperCase());
 }
 
 /**
- * The ranking as a table, best fit first. One producer for every export
- * format, so CSV, the workbook and the HTML page cannot drift apart.
+ * The classification as a table, most settled first. One producer for every
+ * export format, so CSV, the workbook and the HTML page cannot drift apart.
+ *
+ * The columns are the guide's three dimensions and nothing that averages them:
+ * a spreadsheet with a "fit" column is exactly the composite score the project
+ * refuses to publish.
  */
 export function siteTable(rows: Prediction[], target: Target): Table {
   const header = [
@@ -296,31 +164,43 @@ export function siteTable(rows: Prediction[], target: Target): Table {
     'lat',
     'lon',
     'elevation_m',
-    'moon_fit',
-    'mars_fit',
-    'analog_fit',
-    'label',
-    'confidence',
+    'terrain_state',
+    'geology_state',
+    'thermal_state',
+    'terrain_overlap',
     'target',
   ];
 
-  const ranked = [...rows].sort((a, b) => fitFor(b, target) - fitFor(a, target));
+  const classified = rows.map((prediction) => ({
+    prediction,
+    classification: classifySite(prediction, target),
+  }));
+
+  classified.sort(
+    (a, b) =>
+      classificationRank(a.classification) - classificationRank(b.classification) ||
+      a.prediction.siteName.localeCompare(b.prediction.siteName),
+  );
+
+  const stateOf = (classification: SiteClassification, id: 'terrain' | 'geology' | 'thermal') =>
+    classification.dimensions.find((dimension) => dimension.id === id)?.state ?? '';
 
   return {
     header,
-    rows: ranked.map((p, i) => [
-      String(i + 1),
-      p.siteName,
-      p.region ?? '',
-      terrainOf(p) ?? '',
-      p.lat.toFixed(4),
-      p.lon.toFixed(4),
-      p.elevationM === undefined ? '' : String(p.elevationM),
-      fitFor(p, 'moon').toFixed(3),
-      fitFor(p, 'mars').toFixed(3),
-      p.analogScore.toFixed(3),
-      p.label,
-      p.confidence.toFixed(2),
+    rows: classified.map(({ prediction, classification }, index) => [
+      String(index + 1),
+      prediction.siteName,
+      prediction.region ?? '',
+      terrainOf(prediction) ?? '',
+      prediction.lat.toFixed(4),
+      prediction.lon.toFixed(4),
+      prediction.elevationM === undefined ? '' : String(prediction.elevationM),
+      stateOf(classification, 'terrain'),
+      stateOf(classification, 'geology'),
+      stateOf(classification, 'thermal'),
+      classification.terrainOverlap === undefined
+        ? ''
+        : classification.terrainOverlap.toFixed(3),
       target,
     ]),
   };

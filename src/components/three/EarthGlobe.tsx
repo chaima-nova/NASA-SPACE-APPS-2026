@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { Prediction } from '../../data-contracts/types';
-import { scoreColorHex } from '../../lib/colors';
+import type { EvidenceState, Prediction } from '../../data-contracts/types';
+import { stateColorHex } from '../../lib/colors';
+import { classifySite, STATE_LABELS } from '../../lib/classification';
 import { reducedMotion } from '../../lib/accessibility';
 import { createStarfield } from '../../lib/starfield';
 import { latLonToVec } from '../../lib/globe';
@@ -13,8 +14,6 @@ import {
   SIDEREAL_DEG_PER_SEC,
 } from '../../lib/astro';
 import {
-  fitFor,
-  formatScore,
   TARGET_LABELS,
   terrainLabel,
   type Target,
@@ -107,7 +106,7 @@ interface MarkerItem {
   name: string;
   lat: number;
   lon: number;
-  fit: number;
+  state: EvidenceState;
   label: string;
   terrain: string;
   /** Model-scored beacon, or an unscored researcher report. */
@@ -647,7 +646,7 @@ export function EarthGlobe({
         const reported = item.kind === 'reported';
         const material = new THREE.SpriteMaterial({
           map: reported ? ringTexture : markerTexture,
-          color: new THREE.Color(reported ? REPORTED_COLOR : scoreColorHex(item.fit)),
+          color: new THREE.Color(reported ? REPORTED_COLOR : stateColorHex(item.state)),
           transparent: true,
           opacity: reported ? 0.9 : 0.95,
           depthTest: true,
@@ -655,7 +654,8 @@ export function EarthGlobe({
           blending: reported ? THREE.NormalBlending : THREE.AdditiveBlending,
         });
         const sprite = new THREE.Sprite(material);
-        const base = reported ? 0.24 : 0.2 + item.fit * 0.16;
+        // One beacon size: the states are categorical, so size is not a second axis.
+        const base = reported ? 0.24 : 0.26;
         sprite.scale.setScalar(base);
         sprite.position.copy(latLonToVec(item.lat, item.lon, RADIUS + 0.015));
         sprite.userData = { ...item, base };
@@ -821,7 +821,7 @@ export function EarthGlobe({
           `<span class="tip-name">${data.name}</span>` +
           (data.kind === 'reported'
             ? `<span class="tip-score tip-score-report">Reported</span>`
-            : `<span class="tip-score">${formatScore(data.fit)}</span>`) +
+            : `<span class="tip-score">${data.label}</span>`) +
           `<span class="tip-meta">${data.meta}</span>`;
         renderer.domElement.style.cursor = 'pointer';
         hovered = data.id;
@@ -973,27 +973,30 @@ export function EarthGlobe({
     const api = apiRef.current;
     if (!api) return;
     api.rebuild([
-      ...predictions.map((p) => ({
-        id: p.id,
-        name: p.siteName,
-        lat: p.lat,
-        lon: p.lon,
-        fit: fitFor(p, target),
-        label: p.label,
-        terrain: terrainLabel(p),
-        kind: 'model' as const,
-        meta: `${terrainLabel(p)} · ${TARGET_LABELS[target]} fit · ${p.label}`,
-      })),
+      ...predictions.map((p) => {
+        const terrainState = classifySite(p, target).dimensions[0].state;
+        return {
+          id: p.id,
+          name: p.siteName,
+          lat: p.lat,
+          lon: p.lon,
+          state: terrainState,
+          label: STATE_LABELS[terrainState],
+          terrain: terrainLabel(p),
+          kind: 'model' as const,
+          meta: `${terrainLabel(p)} · terrain ${STATE_LABELS[terrainState].toLowerCase()} · ${TARGET_LABELS[target]}`,
+        };
+      }),
       ...reportedSites.map((site) => ({
         id: site.id,
         name: site.name,
         lat: site.lat,
         lon: site.lon,
-        fit: 0,
+        state: 'insufficient_evidence' as const,
         label: 'Unreviewed',
         terrain: site.terrain,
         kind: 'reported' as const,
-        meta: `${site.terrain} · unscored · ${site.targets}`,
+        meta: `${site.terrain} · not classified · ${site.targets}`,
       })),
     ]);
   }, [predictions, reportedSites, target]);

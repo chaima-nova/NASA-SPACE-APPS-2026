@@ -30,6 +30,7 @@ import {
 import { engineComparisons, pipelineDatasets, screenedPredictions } from './pipeline';
 import type {
   CommunityState,
+  DimensionStates,
   EvidenceState,
   DataSource,
   FieldNote,
@@ -86,33 +87,56 @@ const normaliseName = (value: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const DIMENSION_KEY: Record<string, keyof DimensionStates> = {
+  terrain_topography: 'terrain',
+  surface_geology: 'geology',
+  temperature_thermal: 'thermal',
+};
+
+/** Only the engine words that are one of the four states survive the trip. */
+const STATUS_STATE: Record<string, EvidenceState | undefined> = {
+  similar: 'similar',
+  qualitative_match: 'similar',
+  different: 'different',
+  insufficient_evidence: 'insufficient_evidence',
+  not_comparable: 'not_comparable',
+};
+
 const ENGINE_BY_SITE = engineComparisons.map((comparison) => ({
   comparison,
   key: normaliseName(comparison.candidate),
 }));
 
 function withEngineState(prediction: Prediction): Prediction {
-  if (prediction.evidence) return prediction;
+  if (prediction.dimensionStates) return prediction;
   const name = normaliseName(prediction.siteName);
   const hit = ENGINE_BY_SITE.find(
     (entry) => name === entry.key || name.startsWith(entry.key) || entry.key.startsWith(name),
   )?.comparison;
   if (!hit) return prediction;
-  const statuses = hit.dimensions.map((dimension) => ({
-    id: dimension.id,
-    status: dimension.status.toLowerCase() as EvidenceState,
-  }));
-  const evidence: EvidenceState = statuses.some((s) => s.status === 'insufficient_evidence')
-    ? 'insufficient_evidence'
-    : statuses.every((s) => s.status === 'similar')
-      ? 'similar'
-      : 'different';
+
+  const states: DimensionStates = {};
+  for (const dimension of hit.dimensions) {
+    const key = DIMENSION_KEY[dimension.id];
+    const state = STATUS_STATE[dimension.status.toLowerCase()];
+    // `mixed` is the engine's word for a dimension that came back partly
+    // similar and partly different. It is not one of the four states, so it
+    // falls through to the classifier, which decides terrain from the overlap
+    // ratio itself rather than picking whichever part is convenient.
+    if (key && state) states[key] = state;
+  }
+
+  const note = hit.dimensions
+    .map(
+      (dimension) =>
+        `${dimension.id.replace(/_/g, ' ')} ${dimension.status.replace(/_/g, ' ').toLowerCase()}`,
+    )
+    .join(', ');
+
   return {
     ...prediction,
-    evidence,
-    evidenceNote: `Engine ${hit.engineVersion} against ${hit.targetRegion}: ${statuses
-      .map((s) => `${s.id.replace(/_/g, ' ')} ${s.status.replace('_', ' ')}`)
-      .join(', ')}.`,
+    dimensionStates: { [hit.target]: states } as Partial<Record<'moon' | 'mars', DimensionStates>>,
+    evidenceNote: `Engine ${hit.engineVersion} against ${hit.targetRegion}: ${note}.`,
   };
 }
 

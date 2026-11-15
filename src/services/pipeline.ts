@@ -25,7 +25,6 @@ import moonReport from '../../reports/comparison_results_earth_atacama_s24w069_v
 import screenedRaw from '../../reports/screened_candidates.json';
 import siteTerrainRaw from '../../reports/site_terrain.json';
 import type { DataSource, EvidenceState, FocusArea, Prediction } from '../data-contracts/types';
-import { SCORE_BANDS } from '../data-contracts/types';
 
 /* ------------------------------------------------------------ CSV parsing ---- */
 
@@ -395,13 +394,9 @@ export const screeningCoverage = {
   tiles: screened.earth_tiles,
 };
 
-const bandOf = (score: number) =>
-  score >= SCORE_BANDS.strong ? 'Strong' : score >= SCORE_BANDS.promising ? 'Promising' : 'Weak';
-
 export const screenedPredictions: Prediction[] = screened.candidates.map((cell) => {
   const moonWins = cell.moon.fit >= cell.mars.fit;
   const strongest = moonWins ? cell.moon : cell.mars;
-  const score = strongest.fit;
   return {
     id: cell.id,
     pointId: cell.id,
@@ -411,21 +406,16 @@ export const screenedPredictions: Prediction[] = screened.candidates.map((cell) 
     focusArea: 'dual-analog',
     model: { id: 'screening-pass', version: '1.0.0' },
     predictedAt: '2026-11-14T00:00:00.000Z',
-    analogScore: score,
-    moonFit: cell.moon.fit,
-    marsFit: cell.mars.fit,
+    // The screening pass measured this window from the SRTM grid, so its
+    // terrain state is carried for both targets. Geology and thermal were not
+    // compared at all, and the classifier says so rather than filling them.
+    dimensionStates: {
+      moon: { terrain: cell.moon.terrainState },
+      mars: { terrain: cell.mars.terrainState },
+    },
     terrainType: cell.terrainType,
     region: cell.region,
     elevationM: cell.elevationM,
-    label: bandOf(score),
-    confidence: Number(Math.max(0, 1 - strongest.distance / 3).toFixed(2)),
-    // Only the measured roughness goes in. Thermal, aridity and geology have no
-    // Earth grid in this repository, so a number for them would be a guess
-    // dressed as data — the evidence state says the comparison is incomplete.
-    featureContributions: {
-      terrainRoughness: Number((cell.measured.triMeanM / 1000).toFixed(3)),
-    },
-    evidence: strongest.overallState,
     evidenceNote: `Terrain-only screen of one SRTM window: mean slope ${cell.measured.slopeMeanDeg} degrees (steepest cell ${cell.measured.slopeMaxDeg} degrees), TRI ${cell.measured.triMeanM} m, relief ${cell.measured.reliefM} m. Thermal, geological and resource dimensions were not compared.`,
     verdict: `Screened from the Atacama SRTM tile: terrain ${strongest.terrainState.replace('_', ' ')} the ${
       moonWins ? 'lunar south pole' : 'Jezero'
