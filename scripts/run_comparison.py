@@ -25,7 +25,11 @@ def run_pair(candidate, target, output_dir: Path) -> Path:
     report = ComparisonEngine.compare(candidate, target)
     elapsed = time.perf_counter() - t0
     out_path = export_report(report, output_dir=output_dir)
-    print(f"  ✓  {out_path.name}  ({elapsed:.2f}s)")
+    # Also keep alias files in sync for backward compatibility
+    import shutil
+    alias_path = output_dir / f"comparison_results_atacama_vs_{target.body}.json"
+    shutil.copy2(out_path, alias_path)
+    print(f"  ✓  {out_path.name} (and alias {alias_path.name})  ({elapsed:.2f}s)")
     return out_path
 
 

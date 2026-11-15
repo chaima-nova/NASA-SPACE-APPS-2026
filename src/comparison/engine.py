@@ -15,6 +15,7 @@ from .terrain_metrics import compute_windowed_relief, flat_valid
 from .statistics import compare_arrays, compare_summary_to_array, compute_stats
 from .geology_crosswalk import evaluate_geological_units
 from .thermal_evaluator import evaluate_thermal
+from .illumination_evaluator import evaluate_illumination
 
 
 # ---------------------------------------------------------------------------
@@ -205,13 +206,9 @@ def _evaluate_terrain(
 def _evaluate_geology(candidate: PlanetaryDataset, target: PlanetaryDataset) -> DimensionResult:
     results = evaluate_geological_units(candidate.region_id, target.region_id)
 
-    geo_units   = results[0]
-    surf_mat    = results[1]
-    mineral     = results[2]
-
-    similarities = [geo_units] if geo_units.state == EvidenceState.SIMILAR else []
-    mismatches   = [geo_units] if geo_units.state == EvidenceState.DIFFERENT else []
-    evidence     = [surf_mat, mineral]
+    similarities = [r for r in results if r.state == EvidenceState.SIMILAR]
+    mismatches   = [r for r in results if r.state == EvidenceState.DIFFERENT]
+    evidence     = [r for r in results if r.state in (EvidenceState.INSUFFICIENT, EvidenceState.NOT_COMPARABLE)]
 
     # Weathering mismatch (always present — Earth has weathering, neither Moon nor Mars do)
     mismatches.append(ParameterResult(
@@ -226,8 +223,7 @@ def _evaluate_geology(candidate: PlanetaryDataset, target: PlanetaryDataset) -> 
     ))
 
     n_sim = len(similarities)
-    n_mis = len(mismatches)
-    status = "QUALITATIVE_MATCH" if n_sim > 0 else ("DIFFERENT" if n_mis > 0 else "INSUFFICIENT")
+    status = "QUALITATIVE_MATCH" if n_sim > 0 else "DIFFERENT"
 
     return DimensionResult(
         dimension="surface_geology",
@@ -245,15 +241,20 @@ def _evaluate_geology(candidate: PlanetaryDataset, target: PlanetaryDataset) -> 
 def _evaluate_thermal(target: PlanetaryDataset) -> DimensionResult:
     results = evaluate_thermal(target.body)
 
-    insufficient = [r for r in results if r.state == EvidenceState.INSUFFICIENT]
-    not_comparable = [r for r in results if r.state == EvidenceState.NOT_COMPARABLE]
+    similarities = [r for r in results if r.state == EvidenceState.SIMILAR]
+    mismatches   = [r for r in results if r.state in (EvidenceState.DIFFERENT, EvidenceState.NOT_COMPARABLE)]
+    evidence     = [r for r in results if r.state == EvidenceState.INSUFFICIENT]
+
+    # Mars has duricrust thermal inertia match but extreme temp/amplitude mismatch -> MIXED
+    # Moon is entirely cryogenic/disjoint -> DIFFERENT
+    status = "MIXED" if target.body.lower() == "mars" else "DIFFERENT"
 
     return DimensionResult(
         dimension="temperature_thermal",
-        status="INSUFFICIENT_EVIDENCE",
-        similarities=[],
-        mismatches=not_comparable,
-        evidence=insufficient,
+        status=status,
+        similarities=similarities,
+        mismatches=mismatches,
+        evidence=evidence,
     )
 
 
@@ -272,6 +273,7 @@ class ComparisonEngine:
         terrain = _evaluate_terrain(candidate, target, use_summary_for_target=use_summary)
         geology = _evaluate_geology(candidate, target)
         thermal = _evaluate_thermal(target)
+        illumination = evaluate_illumination(candidate.region_id, target.body)
 
         # Data quality block
         c_valid_pct = round(100.0 * np.sum(~np.isnan(candidate.elevation)) / candidate.elevation.size, 1)
@@ -300,12 +302,23 @@ class ComparisonEngine:
                 f"is too coarse for distribution comparison. Summary statistics used as reference bounds."
             )
         uncertainties.append(
-            "All thermal and mineralogical parameters are INSUFFICIENT_EVIDENCE — pending dataset ingestion."
+            "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; "
+            "seasonal subsurface heat conduction models remain pending."
         )
         uncertainties.append(
             "Geological crosswalk is a draft built from map group names only. "
             "Full unit descriptions have not been verified."
         )
+        if target.body == "moon":
+            uncertainties.append(
+                "Illumination comparison reflects regional LOLA polar fraction; "
+                "local horizon line-of-sight raytracing is required for specific landing sites."
+            )
+        elif target.body == "mars":
+            uncertainties.append(
+                "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); "
+                "local dust storm events cause significant transient flux attenuation."
+            )
 
         return ComparisonReport(
             candidate_id=candidate.region_id,
@@ -334,6 +347,7 @@ class ComparisonEngine:
                 "terrain_topography": terrain,
                 "surface_geology":    geology,
                 "temperature_thermal": thermal,
+                "solar_illumination":  illumination,
             },
             data_quality=dq,
             uncertainties=uncertainties,

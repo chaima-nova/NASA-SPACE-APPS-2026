@@ -42,7 +42,7 @@ def audit_file(fpath: Path) -> dict:
 
     # 3. Dimensions
     dims = doc.get('dimensions', {})
-    for d_name in ['terrain_topography', 'surface_geology', 'temperature_thermal']:
+    for d_name in ['terrain_topography', 'surface_geology', 'temperature_thermal', 'solar_illumination']:
         if d_name not in dims:
             res['passed'] = False
             res['errors'].append(f'Missing dimension: {d_name}')
@@ -81,15 +81,65 @@ def audit_file(fpath: Path) -> dict:
     else:
         res['checks'].append('absolute_elevation correctly categorized as NOT_COMPARABLE')
 
-    # Thermal params must be INSUFFICIENT_EVIDENCE
-    th_ev = dims.get('temperature_thermal', {}).get('evidence', [])
-    th_params = {x.get('parameter'): x.get('state') for x in th_ev}
+    # Thermal scientific guard
+    th_all = dims.get('temperature_thermal', {}).get('similarities', []) + \
+             dims.get('temperature_thermal', {}).get('mismatches', []) + \
+             dims.get('temperature_thermal', {}).get('evidence', [])
+    th_params = {x.get('parameter'): x.get('state') for x in th_all}
+
     for tp in ['surface_temperature', 'day_night_thermal_amplitude', 'thermal_inertia']:
-        if th_params.get(tp) != 'INSUFFICIENT_EVIDENCE':
+        if tp not in th_params:
             res['passed'] = False
-            res['errors'].append(f'{tp} not marked as INSUFFICIENT_EVIDENCE (got {th_params.get(tp)})')
+            res['errors'].append(f'Thermal missing evaluated parameter: {tp}')
         else:
-            res['checks'].append(f'{tp} correctly marked as INSUFFICIENT_EVIDENCE')
+            res['checks'].append(f'Thermal parameter {tp} evaluated as {th_params.get(tp)}')
+
+    if th_params.get('atmospheric_thermal_physics') != 'NOT_COMPARABLE':
+        res['passed'] = False
+        res['errors'].append("atmospheric_thermal_physics must be NOT_COMPARABLE")
+    else:
+        res['checks'].append("atmospheric_thermal_physics correctly categorized as NOT_COMPARABLE")
+
+    t_body = doc.get('planetary_context', {}).get('target_body', '').lower()
+    if t_body == 'mars':
+        if th_params.get('thermal_inertia') != 'SIMILAR':
+            res['passed'] = False
+            res['errors'].append(f"Mars thermal_inertia must be SIMILAR (got {th_params.get('thermal_inertia')})")
+        else:
+            res['checks'].append("Mars thermal_inertia correctly categorized as SIMILAR")
+    elif t_body == 'moon':
+        if th_params.get('thermal_inertia') != 'DIFFERENT':
+            res['passed'] = False
+            res['errors'].append(f"Moon thermal_inertia must be DIFFERENT (got {th_params.get('thermal_inertia')})")
+        else:
+            res['checks'].append("Moon thermal_inertia correctly categorized as DIFFERENT")
+
+    # Geology scientific guard
+    geo_all = dims.get('surface_geology', {}).get('similarities', []) + \
+              dims.get('surface_geology', {}).get('mismatches', []) + \
+              dims.get('surface_geology', {}).get('evidence', [])
+    geo_params = {x.get('parameter'): x.get('state') for x in geo_all}
+    if geo_params.get('surface_material_rock_abundance') != 'SIMILAR':
+        res['passed'] = False
+        res['errors'].append("surface_material_rock_abundance must be SIMILAR")
+    else:
+        res['checks'].append("surface_material_rock_abundance correctly categorized as SIMILAR")
+
+    # Illumination scientific guard
+    illum = dims.get('solar_illumination', {})
+    t_body = doc.get('planetary_context', {}).get('target_body', '').lower()
+    if t_body == 'moon':
+        if illum.get('status') != 'DIFFERENT':
+            res['passed'] = False
+            res['errors'].append(f"Moon solar_illumination status must be DIFFERENT (got {illum.get('status')})")
+        else:
+            res['checks'].append("Moon solar_illumination correctly categorized as DIFFERENT")
+    elif t_body == 'mars':
+        if illum.get('status') != 'SIMILAR':
+            res['passed'] = False
+            res['errors'].append(f"Mars solar_illumination status must be SIMILAR (got {illum.get('status')})")
+        else:
+            res['checks'].append("Mars solar_illumination correctly categorized as SIMILAR")
 
     # Limitations
     lims = doc.get('limitations', [])
@@ -118,8 +168,10 @@ def audit_file(fpath: Path) -> dict:
 if __name__ == '__main__':
     root = Path(__file__).resolve().parent.parent
     files = {
-        'Moon Comparison': root / 'reports' / 'comparison_results_atacama_vs_moon.json',
-        'Mars Comparison': root / 'reports' / 'comparison_results_atacama_vs_mars.json'
+        'Moon Canonical Deliverable': root / 'reports' / 'comparison_results_earth_atacama_s24w069_vs_moon.json',
+        'Mars Canonical Deliverable': root / 'reports' / 'comparison_results_earth_atacama_s24w069_vs_mars.json',
+        'Moon Alias Deliverable': root / 'reports' / 'comparison_results_atacama_vs_moon.json',
+        'Mars Alias Deliverable': root / 'reports' / 'comparison_results_atacama_vs_mars.json',
     }
     
     total_checks = 0
