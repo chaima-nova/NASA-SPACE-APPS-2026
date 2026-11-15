@@ -237,30 +237,32 @@ export function verdictOf(prediction: Prediction, target: Target): string {
 
 /** Earth-observation datasets that actually feed this site's scores. */
 export function datasetsFor(prediction: Prediction, datasets: DataSource[]): DataSource[] {
+  // When the pipeline says exactly which products fed this site, that list wins:
+  // it is the record of the data behind the score, not an approximation of it.
   if (prediction.datasetIds) {
     const picked = datasets.filter((d) => prediction.datasetIds?.includes(d.id));
     if (picked.length > 0) return picked;
   }
 
-  const wantTarget: Target =
-    prediction.focusArea === 'mars-base-analog'
-      ? 'mars'
-      : prediction.focusArea === 'moon-base-analog'
-        ? 'moon'
-        : 'moon';
+  /**
+   * Otherwise use the catalogue's own tagging.
+   *
+   * Every dataset records which target(s) it serves, so a site's sources are the
+   * products tagged for its focus area plus the dual-use ones that serve both
+   * bodies. This replaces a hand-kept list of ids ('modis-lst', 'lro-diviner',
+   * 'mola-topography', ...) that matched nothing once the catalogue was
+   * rebuilt — which is why the dossier said "Sources 0" for every site while ten
+   * datasets sat in the provenance card.
+   */
+  const tagged = datasets.filter((dataset) => {
+    const areas = dataset.focusAreas ?? [];
+    return areas.includes(prediction.focusArea) || areas.includes('dual-analog');
+  });
+  if (tagged.length > 0) return tagged;
 
-  const earthCore = new Set(['modis-lst', 'aster-gdem', 'landsat-oli-tirs']);
-  const moonIds = new Set(['lro-diviner', 'lro-mini-rf']);
-  const marsIds = new Set(['mro-crism', 'mola-topography', 'msl-rems']);
-  // Dual-target sites cite both target catalogues.
-  const targetIds =
-    prediction.focusArea === 'dual-analog'
-      ? new Set([...moonIds, ...marsIds])
-      : wantTarget === 'mars'
-        ? marsIds
-        : moonIds;
-
-  return datasets.filter((d) => earthCore.has(d.id) || targetIds.has(d.id));
+  // An untagged catalogue still names the build's sources rather than none of
+  // them; the alternative is claiming a scored site has no data behind it.
+  return datasets;
 }
 
 /** `23.50°S 69.20°W` — fixed decimals so rows do not jitter while sorting. */
