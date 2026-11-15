@@ -1,0 +1,1525 @@
+{
+  "generated_by": "scripts/run_all_comparisons.py",
+  "framework": "TERRANEXUS",
+  "engine_version": "1.0.0",
+  "candidate_count": 15,
+  "pairs": 30,
+  "skipped": [],
+  "candidates": [
+    {
+      "siteId": "screened-n29w014-01",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, north-east of Lanzarote",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 28.87316358216753,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n29w014-01",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, north-east of Lanzarote",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 28.87316358216753,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n29w014-02",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, north of Lanzarote",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 28.87787412790576,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n29w014-02",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, north of Lanzarote",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 28.87787412790576,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n29w014-03",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, east of Lanzarote",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 28.89196143385604,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n29w014-03",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Atlantic Ocean, east of Lanzarote",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 28.89196143385604,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 29 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-01",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, east shore",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 29.589068896419857,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-01",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, east shore",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 29.589068896419857,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-01",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Big Lost River valley, Idaho",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.55287307704726,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-01",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Big Lost River valley, Idaho",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.55287307704726,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-01",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Tule Lake basin, California",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.925984281681707,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-01",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Tule Lake basin, California",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.925984281681707,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-02",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, north basin",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 29.619415977862285,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-02",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, north basin",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 29.619415977862285,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-02",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Modoc Plateau, near Medicine Lake, California",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.992847229181436,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-02",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Modoc Plateau, near Medicine Lake, California",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.992847229181436,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-01",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qarhan playa, Qaidam Basin, China",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 27.73310573470866,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-01",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qarhan playa, Qaidam Basin, China",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 27.73310573470866,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-03",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, centre",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 29.600491329400704,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-s24w069-03",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Salar de Atacama, centre",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 29.600491329400704,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 30 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-02",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Lost River Range foothills, Idaho",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.55287307704726,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-02",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Lost River Range foothills, Idaho",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.55287307704726,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-02",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qarhan playa, east basin, China",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 27.747553685319005,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-02",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qarhan playa, east basin, China",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 27.747553685319005,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-03",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Howe, Snake River Plain, Idaho",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.559520280933597,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n43w114-03",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Howe, Snake River Plain, Idaho",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.559520280933597,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-03",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Modoc Plateau, west of Alturas, California",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 26.96424904424073,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n41w122-03",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Modoc Plateau, west of Alturas, California",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 26.96424904424073,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 27 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-03",
+      "target": "moon",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qaidam Basin, north of Qarhan playa, China",
+      "targetRegion": "Lunar South Pole",
+      "candidateResolutionM": 27.718628172147817,
+      "targetResolutionM": 7580.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 7.6 km/px averages landscape-scale features.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Illumination comparison reflects regional LOLA polar fraction; local horizon line-of-sight raytracing is required for specific landing sites."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 4,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "DIFFERENT",
+          "similar": 0,
+          "mismatched": 3,
+          "evidence": 0
+        }
+      ]
+    },
+    {
+      "siteId": "screened-n37e094-03",
+      "target": "mars",
+      "framework": "TERRANEXUS",
+      "engineVersion": "1.0.0",
+      "candidate": "Qaidam Basin, north of Qarhan playa, China",
+      "targetRegion": "Jezero Crater",
+      "candidateResolutionM": 27.718628172147817,
+      "targetResolutionM": 14800.0,
+      "uncertainties": [
+        "Resolution disparity is the dominant uncertainty: candidate at 28 m/px captures sub-km terrain; target at 14.8 km/px averages landscape-scale features.",
+        "Target grid (10\u00d710 = 100 pixels) is too coarse for distribution comparison. Summary statistics used as reference bounds.",
+        "Thermal and surface rock evaluations reflect LRO Diviner polar radiometry and Mars 2020 MEDA / TES records; seasonal subsurface heat conduction models remain pending.",
+        "Geological crosswalk is a draft built from map group names only. Full unit descriptions have not been verified.",
+        "Mars solar irradiance is modeled under mean atmospheric optical depth (tau=0.5); local dust storm events cause significant transient flux attenuation."
+      ],
+      "dimensions": [
+        {
+          "id": "terrain_topography",
+          "label": "Terrain topography",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 2,
+          "evidence": 1
+        },
+        {
+          "id": "surface_geology",
+          "label": "Surface geology",
+          "status": "QUALITATIVE_MATCH",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 1
+        },
+        {
+          "id": "temperature_thermal",
+          "label": "Temperature thermal",
+          "status": "MIXED",
+          "similar": 1,
+          "mismatched": 3,
+          "evidence": 0
+        },
+        {
+          "id": "solar_illumination",
+          "label": "Solar illumination",
+          "status": "SIMILAR",
+          "similar": 2,
+          "mismatched": 1,
+          "evidence": 0
+        }
+      ]
+    }
+  ]
+}

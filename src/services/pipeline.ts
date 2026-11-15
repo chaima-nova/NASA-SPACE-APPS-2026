@@ -22,6 +22,7 @@ import molaStats from '../../data/samples/mola_mars_stats.json';
 import srtmStats from '../../data/samples/srtm_earth_stats.json';
 import marsReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_mars.json';
 import moonReport from '../../reports/comparison_results_earth_atacama_s24w069_vs_moon.json';
+import engineIndexRaw from '../../reports/engine_index.json';
 import screenedRaw from '../../reports/screened_candidates.json';
 import screenedPlacesRaw from '../../config/screened_place_names.json?raw';
 import siteTerrainRaw from '../../reports/site_terrain.json';
@@ -184,11 +185,41 @@ function summarise(report: EngineReport, target: 'moon' | 'mars'): EngineCompari
   };
 }
 
-/** The engine's verdicts for the one Earth candidate it has been run on. */
-export const engineComparisons: EngineComparison[] = [
+/**
+ * The engine's verdicts, for every candidate it has been run on.
+ *
+ * `reports/engine_index.json` is written by `scripts/run_all_comparisons.py`,
+ * which runs the engine once per screened window against both bodies and
+ * flattens each report down to the fields this module was already reading. The
+ * two Atacama bundle reports stay first and keep coming from their own files:
+ * the curated queue's Atacama row is graded from that sample bundle rather
+ * than from a screened window, so it must not lose its verdicts to a batch run.
+ */
+const batchComparisons = (
+  engineIndexRaw as unknown as { candidates: (EngineComparison & { siteId: string })[] }
+).candidates;
+
+/** The two Atacama bundle verdicts: the curated candidate's own reports. */
+export const engineBundleComparisons: EngineComparison[] = [
   summarise(marsReport as unknown as EngineReport, 'mars'),
   summarise(moonReport as unknown as EngineReport, 'moon'),
 ];
+
+export const engineComparisons: EngineComparison[] = [
+  ...engineBundleComparisons,
+  ...batchComparisons,
+];
+
+/**
+ * Batch verdicts keyed by the id the ranked queue already carries.
+ *
+ * The screened rows are named after the ground they sit on, and no engine
+ * report's location name matches those labels, so they are attached by id:
+ * one comparison per candidate per target, looked up by `pointId`.
+ */
+export const engineComparisonsBySite = new Map(
+  batchComparisons.map((entry) => [entry.siteId, entry]),
+);
 
 /* --------------------------------------------------- measured terrain ---- */
 
