@@ -2,6 +2,7 @@
   "name": "nasa-viz-shell",
   "private": true,
   "version": "0.1.0",
+  "license": "Apache-2.0",
   "type": "module",
   "description": "Visualization/web shell (Jasmine's part) for the NASA Space Apps 2026 challenge \"Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars\": map + charts + 3D, mock-data driven and ready for real ML/data outputs.",
   "scripts": {
